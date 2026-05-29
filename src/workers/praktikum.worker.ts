@@ -72,6 +72,23 @@ self.onmessage = async (e: MessageEvent) => {
   const sampleAfter = normalized.flat().find((c) => c && c.length > 0);
   log('NORMALIZE', { before: sampleBefore || '(empty)', after: sampleAfter || '(empty)' });
 
+  let semester = '';
+  for (let r = 0; r < Math.min(normalized.length, 20); r++) {
+    for (let c = 0; c < normalized[r].length; c++) {
+      const cell = normalized[r][c].toUpperCase();
+      const semMatch = cell.match(/SEMESTER\s*[:\-]?\s*(\d{1,2})/i);
+      if (semMatch) {
+        semester = semMatch[1];
+        log('SEMESTER', { row: r, col: c, raw: matrix[r][c], parsed: semester });
+        break;
+      }
+    }
+    if (semester) break;
+  }
+  if (!semester) {
+    warn('SEMESTER', 'No semester found in first 20 rows');
+  }
+
   if (!jadwalTeoriTerpilih || jadwalTeoriTerpilih.length === 0) {
     warn('INPUT', 'No jadwalTeoriTerpilih provided');
     self.postMessage({ type: 'RESULT', data: { matched: [], matrix } });
