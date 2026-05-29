@@ -43,6 +43,16 @@ function extractSubKelas(raw: string): { kelasNormal: string; kelasOriginal: str
   return { kelasNormal: cleaned.replace(/\d+/g, '').trim(), kelasOriginal: cleaned };
 }
 
+function fuzzyMatch(a: string, b: string): boolean {
+  const clean = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().trim();
+  const ca = clean(a);
+  const cb = clean(b);
+  if (!ca || !cb) return false;
+  if (ca === cb) return true;
+  if (ca.includes(cb) || cb.includes(ca)) return true;
+  return false;
+}
+
 self.onmessage = async (e: MessageEvent) => {
   const { type, file, jadwalTeoriTerpilih } = e.data;
   if (type !== 'PARSE_PRAKTIKUM') return;
@@ -115,13 +125,72 @@ self.onmessage = async (e: MessageEvent) => {
 
   if (!jadwalTeoriTerpilih || jadwalTeoriTerpilih.length === 0) {
     warn('INPUT', 'No jadwalTeoriTerpilih provided');
-    self.postMessage({ type: 'RESULT', data: { matched: [], matrix } });
+    self.postMessage({ type: 'RESULT', data: { matched: [], matrix, refCount: 0 } });
     return;
   }
   log('REFERENCE', `${jadwalTeoriTerpilih.length} theory rows to match`);
 
+  interface CandidateRow {
+    row: number;
+    col: number;
+    cell: string;
+    kelasNormal: string;
+    kelasOriginal: string;
+    matchedKodeMK: string;
+    matchedMataKuliah: string;
+    matchedDosen: string;
+    matchScore: number;
+  }
+
+  const candidates: CandidateRow[] = [];
+
+  for (let r = 0; r < normalized.length; r++) {
+    for (let c = 0; c < normalized[r].length; c++) {
+      const cell = normalized[r][c];
+      if (!cell || cell.length < 3) continue;
+
+      const { kelasNormal, kelasOriginal } = extractSubKelas(cell);
+      if (!kelasNormal) continue;
+
+      for (const ref of jadwalTeoriTerpilih) {
+        if (kelasNormal !== ref.Kelas) continue;
+        if (semester && ref.SMT && semester !== ref.SMT) continue;
+
+        const matchMK = fuzzyMatch(cell, ref.MataKuliah);
+        const matchKode = fuzzyMatch(cell, ref.KodeMK);
+        if (!matchMK && !matchKode) continue;
+
+        let matchDosen = true;
+        if (ref.DosenPengampuh && ref.DosenPengampuh.length > 0) {
+          matchDosen = fuzzyMatch(cell, ref.DosenPengampuh);
+        }
+
+        let score = 0;
+        if (matchMK || matchKode) score += 2;
+        if (matchDosen) score += 1;
+
+        candidates.push({
+          row: r,
+          col: c,
+          cell,
+          kelasNormal,
+          kelasOriginal,
+          matchedKodeMK: ref.KodeMK,
+          matchedMataKuliah: ref.MataKuliah,
+          matchedDosen: ref.DosenPengampuh,
+          matchScore: score,
+        });
+
+        log('CROSS_MATCH', { row: r, col: c, cell, matched: ref.KodeMK, score });
+        break;
+      }
+    }
+  }
+
+  log('CROSS_RESULT', `Found ${candidates.length} candidate matches`);
+
   self.postMessage({
     type: 'RESULT',
-    data: { matched: [], matrix, refCount: jadwalTeoriTerpilih.length },
+    data: { matched: candidates, matrix, refCount: jadwalTeoriTerpilih.length },
   });
 };
