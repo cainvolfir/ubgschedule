@@ -89,29 +89,33 @@ self.onmessage = async (e: MessageEvent) => {
       }
     }
   }
-  log('TOKENS', tokens.slice(0, 15));
+  log('TOKENS_COUNT', tokens.length);
+  log('TOKENS_FIRST_10', tokens.slice(0, 10));
 
   let hariGlobal = '';
   const dataTeoriMentah: DataTeoriMentah[] = [];
 
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i].trim();
+  for (let i = 2; i < tokens.length; i++) {
+    const prevPrev = tokens[i - 2].trim();
+    const prev = tokens[i - 1].trim();
+    const current = tokens[i].trim();
 
-    const hariMatch = token.match(HARI_PATTERN);
-    if (hariMatch) {
+    const hariMatch = current.match(HARI_PATTERN);
+    if (
+      hariMatch &&
+      prev === 'Hari' &&
+      prevPrev === '.Perkuliahan'
+    ) {
       const detected = hariMatch[1];
       if (HARI_INDONESIA.includes(detected)) {
-        const lowerIdx = tokens.slice(0, i).lastIndexOf('.Perkuliahan');
-        if (lowerIdx !== -1) {
-          hariGlobal = detected;
-          log('HARI', hariGlobal);
-        }
+        hariGlobal = detected;
+        log('HARI_DETECTED', hariGlobal);
       }
     }
 
-    if (!kodeMKTerverifikasi.includes(token)) continue;
+    if (!kodeMKTerverifikasi.includes(current)) continue;
 
-    const kodeMK = token;
+    const kodeMK = current;
     log('KODE_MK_FOUND', { kodeMK, index: i });
 
     const lookaLimit = Math.min(i + 30, tokens.length);
