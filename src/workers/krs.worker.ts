@@ -1,3 +1,5 @@
+import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
 function log(step: string, data?: unknown) {
   self.postMessage({ type: 'LOG', step, data });
 }
@@ -25,7 +27,7 @@ self.onmessage = async (e: MessageEvent) => {
     return;
   }
 
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
   let pdf: import('pdfjs-dist').PDFDocumentProxy;
   try {
