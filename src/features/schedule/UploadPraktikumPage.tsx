@@ -152,23 +152,39 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
 
   const handleContinue = () => {
     const checked = filteredCandidates.filter((c) => selectedCandidateIds.has(c.id));
+
+    const groupKey = (c: typeof checked[number]) =>
+      `${c.dosen}|${c.kelas}|${c.jam}|${c.hari}|${c.ruang}`;
+
+    const groups = new Map<string, typeof checked>();
+    for (const c of checked) {
+      const key = groupKey(c);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(c);
+    }
+
+    const praktikumMerged = [...groups.values()].map((items) => {
+      const first = items[0];
+      return {
+        KodeMK: '',
+        MataKuliah: first.courseName,
+        Kelas: first.kelas,
+        SKS: String(items.length),
+        SMT: first.semester,
+        DosenPengampuh: first.dosen,
+        Hari: first.hari,
+        Jam: first.jam,
+        Ruang: first.ruang,
+        Keterangan: items.map((i) => i.keterangan).filter(Boolean).join(', ') || '-',
+      };
+    });
+
     const merged = [
       ...jadwalTeoriTerpilih.map((r) => ({
         ...r,
         Keterangan: r.Keterangan || '',
       })),
-      ...checked.map((c) => ({
-        KodeMK: '',
-        MataKuliah: c.courseName,
-        Kelas: c.kelas,
-        SKS: '',
-        SMT: c.semester,
-        DosenPengampuh: c.dosen,
-        Hari: c.hari,
-        Jam: c.jam,
-        Ruang: c.ruang,
-        Keterangan: c.keterangan || '-',
-      })),
+      ...praktikumMerged,
     ];
     setJadwalFinal(merged);
     onNext();
@@ -194,7 +210,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const hasChecked = selectedCandidateIds.size > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col px-4 pt-6 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={onBack}
