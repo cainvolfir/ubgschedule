@@ -36,17 +36,26 @@ function isJam(s: string): boolean {
   return /^\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}$/.test(s.trim());
 }
 
-function cleanQuoteReverse(acc: string[]): string {
-  const joined = acc.reverse().join(' ');
-  return joined.replace(/^["'\s]+|["'\s]+$/g, '').trim();
-}
-
 function isMetode(s: string): boolean {
   return ['Offline', 'Online', 'Blended'].includes(s.trim());
 }
 
 function isHari(s: string): boolean {
   return HARI_PATTERN.test(s.trim());
+}
+
+function prevNonSpace(tokens: string[], from: number): number {
+  for (let k = from - 1; k >= 0; k--) {
+    if (tokens[k].trim()) return k;
+  }
+  return -1;
+}
+
+function nextNonSpace(tokens: string[], from: number): number {
+  for (let k = from + 1; k < tokens.length; k++) {
+    if (tokens[k].trim()) return k;
+  }
+  return -1;
 }
 
 self.onmessage = async (e: MessageEvent) => {
@@ -98,22 +107,10 @@ self.onmessage = async (e: MessageEvent) => {
   for (let i = 0; i < tokens.length; i++) {
     const current = tokens[i].trim();
 
-    if (i >= 2) {
-      const prevPrev = tokens[i - 2].trim();
-      const prev = tokens[i - 1].trim();
-
-      const hariMatch = current.match(HARI_PATTERN);
-      if (
-        hariMatch &&
-        prev === 'Hari' &&
-        prevPrev === '.Perkuliahan'
-      ) {
-        const detected = hariMatch[1];
-        if (HARI_INDONESIA.includes(detected)) {
-          hariGlobal = detected;
-          log('HARI_DETECTED', hariGlobal);
-        }
-      }
+    const perHariMatch = current.match(/^\.Perkuliahan\s+Hari\s+(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)/i);
+    if (perHariMatch && HARI_INDONESIA.includes(perHariMatch[1])) {
+      hariGlobal = perHariMatch[1];
+      log('HARI_DETECTED', hariGlobal);
     }
 
     if (!kodeMKTerverifikasi.includes(current)) continue;
@@ -138,58 +135,64 @@ self.onmessage = async (e: MessageEvent) => {
 
     log('JAM_FOUND', { jam: tokens[jamIdx], index: jamIdx });
 
-    const sesiToken = tokens[jamIdx - 1];
-    log('SESI_IGNORED', { sesi: sesiToken });
+    const sesiIdx = prevNonSpace(tokens, jamIdx);
+    const sesi = sesiIdx >= 0 ? tokens[sesiIdx] : '';
+    log('SESI_IGNORED', { sesi });
 
-    const dosenTokens: string[] = [];
-    let foundQuote = false;
-    for (let k = jamIdx - 2; k >= 0; k--) {
-      const t = tokens[k].trim();
-      if (t === '"' || t === "'") {
-        dosenTokens.push(t);
-        foundQuote = true;
+    const dosenParts: string[] = [];
+    let dosenStartIdx = -1;
+    for (let k = sesiIdx - 1; k >= 0; k--) {
+      if (!tokens[k].trim()) continue;
+      dosenParts.push(tokens[k]);
+      if (tokens[k].startsWith('"') || tokens[k].startsWith("'")) {
+        dosenStartIdx = k;
         break;
       }
-      dosenTokens.push(t);
     }
-    const dosen = foundQuote ? cleanQuoteReverse(dosenTokens) : dosenTokens.reverse().join(' ').trim();
+    const rawDosen = dosenParts.reverse().join(' ');
+    const dosen = rawDosen.replace(/^["'\s]+|["'\s]+$/g, '').trim();
     log('DOSEN_EXTRACTED', dosen);
 
+    let smtIdx = -1;
     let kelas = '';
-    if (jamIdx - 3 >= 0) {
-      kelas = tokens[jamIdx - 3].trim();
-      if (kelas.length !== 1 || !/^[A-Z]$/.test(kelas)) {
-        kelas = '';
+    let sks = '';
+    let smt = '';
+    if (dosenStartIdx >= 0) {
+      const ki = prevNonSpace(tokens, dosenStartIdx);
+      if (ki >= 0) {
+        const raw = tokens[ki].trim();
+        if (raw.length === 1 && /^[A-Z]$/.test(raw)) {
+          kelas = raw;
+          const si = prevNonSpace(tokens, ki);
+          if (si >= 0) {
+            sks = tokens[si].trim();
+            const sti = prevNonSpace(tokens, si);
+            if (sti >= 0) {
+              smt = tokens[sti].trim();
+              smtIdx = sti;
+            }
+          }
+        }
       }
     }
     log('KELAS_EXTRACTED', kelas);
-
-    let sks = '';
-    if (jamIdx - 4 >= 0) {
-      sks = tokens[jamIdx - 4].trim();
-    }
     log('SKS_EXTRACTED', sks);
-
-    let smt = '';
-    if (jamIdx - 5 >= 0) {
-      smt = tokens[jamIdx - 5].trim();
-    }
     log('SMT_EXTRACTED', smt);
 
-    const mataKuliahTokens: string[] = [];
-    for (let k = jamIdx - 6; k >= 0; k--) {
-      const t = tokens[k].trim();
-      if (kodeMKTerverifikasi.includes(t)) break;
-      mataKuliahTokens.push(t);
+    const mkTokens: string[] = [];
+    const mkStart = smtIdx >= 0 ? smtIdx : (dosenStartIdx >= 0 ? dosenStartIdx : sesiIdx);
+    for (let k = mkStart - 1; k >= i; k--) {
+      if (!tokens[k].trim()) continue;
+      if (kodeMKTerverifikasi.includes(tokens[k].trim())) break;
+      mkTokens.push(tokens[k]);
     }
-    const mataKuliah = mataKuliahTokens.reverse().join(' ').trim();
+    const mataKuliah = mkTokens.reverse().join(' ').trim();
     log('MATA_KULIAH_EXTRACTED', mataKuliah);
 
     const ruangTokens: string[] = [];
     for (let k = jamIdx + 1; k < tokens.length; k++) {
-      const t = tokens[k].trim();
-      if (isMetode(t)) break;
-      ruangTokens.push(t);
+      if (isMetode(tokens[k])) break;
+      if (tokens[k].trim()) ruangTokens.push(tokens[k].trim());
     }
     const ruang = ruangTokens.join(' ').trim();
     log('RUANG_EXTRACTED', ruang);
@@ -204,17 +207,16 @@ self.onmessage = async (e: MessageEvent) => {
 
     let keterangan = '-';
     if (metodeIdx !== -1) {
-      const jmlMhsIdx = metodeIdx + 1;
-      const afterJmlMhs = jmlMhsIdx + 1;
-      if (afterJmlMhs < tokens.length) {
-        const next = tokens[afterJmlMhs].trim();
-        if (isHari(next)) {
+      const jmlMhsIdx = nextNonSpace(tokens, metodeIdx);
+      const firstNonSpace = jmlMhsIdx >= 0 ? nextNonSpace(tokens, jmlMhsIdx) : -1;
+      if (firstNonSpace >= 0) {
+        if (isHari(tokens[firstNonSpace])) {
           keterangan = '-';
         } else {
           const ketTokens: string[] = [];
-          for (let k = afterJmlMhs; k < tokens.length; k++) {
+          for (let k = firstNonSpace; k < tokens.length; k++) {
             if (isHari(tokens[k])) break;
-            ketTokens.push(tokens[k].trim());
+            if (tokens[k].trim()) ketTokens.push(tokens[k].trim());
           }
           keterangan = ketTokens.join(' ').trim();
         }
