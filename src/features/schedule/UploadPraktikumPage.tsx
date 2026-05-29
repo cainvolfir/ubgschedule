@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
@@ -38,6 +38,8 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const [fileName, setFileName] = useState('');
   const [fileData, setFileData] = useState<Uint8Array | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [filterKelas, setFilterKelas] = useState('__all__');
+  const [filterSemester, setFilterSemester] = useState('__all__');
   const workerRef = useRef<Worker | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -89,6 +91,8 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     setPraktikumRoomPrefixes([]);
     setSelectedRoomPrefix('');
     setPraktikumCandidates([]);
+    setFilterKelas('__all__');
+    setFilterSemester('__all__');
 
     file.arrayBuffer().then((buffer) => {
       const bytes = new Uint8Array(buffer);
@@ -102,6 +106,8 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const handlePrefixChange = useCallback((prefix: string) => {
     if (!workerRef.current || !fileData) return;
     setSelectedRoomPrefix(prefix);
+    setFilterKelas('__all__');
+    setFilterSemester('__all__');
     setIsParsing(true);
 
     workerRef.current.postMessage({
@@ -110,6 +116,25 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
       roomPrefix: prefix,
     });
   }, [fileData]);
+
+  const uniqueKelas = useMemo(
+    () => [...new Set(praktikumCandidates.map((c) => c.kelas))].sort(),
+    [praktikumCandidates],
+  );
+
+  const uniqueSemesters = useMemo(
+    () => [...new Set(praktikumCandidates.map((c) => c.semester).filter(Boolean))].sort(),
+    [praktikumCandidates],
+  );
+
+  const filteredCandidates = useMemo(
+    () => praktikumCandidates.filter((c) => {
+      if (filterKelas !== '__all__' && c.kelas !== filterKelas) return false;
+      if (filterSemester !== '__all__' && c.semester !== filterSemester) return false;
+      return true;
+    }),
+    [praktikumCandidates, filterKelas, filterSemester],
+  );
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -126,7 +151,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   };
 
   const handleContinue = () => {
-    const checked = praktikumCandidates.filter((c) => selectedCandidateIds.has(c.id));
+    const checked = filteredCandidates.filter((c) => selectedCandidateIds.has(c.id));
     const merged = [
       ...jadwalTeoriTerpilih.map((r) => ({
         ...r,
@@ -237,55 +262,102 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
 
             {hasCandidates && !isParsing && (
               <div className="border-2 border-t-0 border-cyan-400/40 px-3 py-3">
-                <p className="pixel-font mb-2 text-[9px] text-zinc-500">
+                <p className="pixel-font mb-1 text-[9px] text-zinc-500">
                   {praktikumCandidates.length} jadwal ditemukan untuk {selectedRoomPrefix}
                 </p>
-                <div className="mb-3 max-h-80 space-y-2 overflow-y-auto">
-                  {praktikumCandidates.map((cand) => {
-                    const isChecked = selectedCandidateIds.has(cand.id);
-                    return (
-                      <label
-                        key={cand.id}
-                        className={cn(
-                          'flex cursor-pointer items-start gap-2 rounded px-2 py-2 transition-colors',
-                          isChecked
-                            ? 'bg-cyan-400/10 ring-1 ring-cyan-400/30'
-                            : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleCandidateId(cand.id)}
-                          className="mt-1 h-3.5 w-3.5 accent-cyan-500"
-                        />
-                        <div className="flex-1">
-                          <p className="pixel-font text-[10px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
-                            {cand.courseName}
-                          </p>
-                          <p className="pixel-font mt-0.5 text-[8px] text-zinc-500">
-                            {cand.dosen || '—'}
-                            {cand.semester ? ` • SMT ${cand.semester}` : ''}
-                            {' • Kelas '}{cand.kelas}{cand.keterangan ? ` (${cand.keterangan})` : ''}
-                          </p>
-                          {isChecked && (
-                            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 border-t border-zinc-200 pt-1.5 dark:border-zinc-700">
-                              <span className="pixel-font text-[8px] text-zinc-400">
-                                Hari: <span className="text-zinc-600 dark:text-zinc-300">{cand.hari}</span>
-                              </span>
-                              <span className="pixel-font text-[8px] text-zinc-400">
-                                Jam: <span className="text-zinc-600 dark:text-zinc-300">{cand.jam}</span>
-                              </span>
-                              <span className="pixel-font text-[8px] text-zinc-400">
-                                Ruang: <span className="text-zinc-600 dark:text-zinc-300">{cand.ruang}</span>
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </label>
-                    );
-                  })}
+
+                <div className="mb-2 flex gap-2">
+                  <div className="flex-1">
+                    <p className="pixel-font mb-0.5 text-[8px] text-zinc-400">Kelas</p>
+                    <Select value={filterKelas} onValueChange={setFilterKelas}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="[ All Kelas ]" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">[ All Kelas ]</SelectItem>
+                        {uniqueKelas.map((k) => (
+                          <SelectItem key={k} value={k}>{k}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <p className="pixel-font mb-0.5 text-[8px] text-zinc-400">Semester</p>
+                    <Select value={filterSemester} onValueChange={setFilterSemester}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="[ All SMT ]" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">[ All SMT ]</SelectItem>
+                        {uniqueSemesters.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
+                {(filterKelas !== '__all__' || filterSemester !== '__all__') && (
+                  <p className="pixel-font mb-2 text-[8px] text-zinc-500">
+                    Filtered: {filteredCandidates.length} jadwal
+                    {filterKelas ? ` • Kelas ${filterKelas}` : ''}
+                    {filterSemester ? ` • SMT ${filterSemester}` : ''}
+                  </p>
+                )}
+
+                {filteredCandidates.length > 0 ? (
+                  <div className="mb-3 max-h-80 space-y-2 overflow-y-auto">
+                    {filteredCandidates.map((cand) => {
+                      const isChecked = selectedCandidateIds.has(cand.id);
+                      return (
+                        <label
+                          key={cand.id}
+                          className={cn(
+                            'flex cursor-pointer items-start gap-2 rounded px-2 py-2 transition-colors',
+                            isChecked
+                              ? 'bg-cyan-400/10 ring-1 ring-cyan-400/30'
+                              : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleCandidateId(cand.id)}
+                            className="mt-1 h-3.5 w-3.5 accent-cyan-500"
+                          />
+                          <div className="flex-1">
+                            <p className="pixel-font text-[10px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
+                              {cand.courseName}
+                            </p>
+                            <p className="pixel-font mt-0.5 text-[8px] text-zinc-500">
+                              {cand.dosen || '—'}
+                              {cand.semester ? ` • SMT ${cand.semester}` : ''}
+                              {' • Kelas '}{cand.kelas}{cand.keterangan ? ` (${cand.keterangan})` : ''}
+                            </p>
+                            {isChecked && (
+                              <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 border-t border-zinc-200 pt-1.5 dark:border-zinc-700">
+                                <span className="pixel-font text-[8px] text-zinc-400">
+                                  Hari: <span className="text-zinc-600 dark:text-zinc-300">{cand.hari}</span>
+                                </span>
+                                <span className="pixel-font text-[8px] text-zinc-400">
+                                  Jam: <span className="text-zinc-600 dark:text-zinc-300">{cand.jam}</span>
+                                </span>
+                                <span className="pixel-font text-[8px] text-zinc-400">
+                                  Ruang: <span className="text-zinc-600 dark:text-zinc-300">{cand.ruang}</span>
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="pixel-font py-3 text-center text-[9px] text-zinc-400">
+                    Tidak ada jadwal untuk filter ini.
+                  </p>
+                )}
+
                 {hasChecked && (
                   <Button
                     variant="default"
