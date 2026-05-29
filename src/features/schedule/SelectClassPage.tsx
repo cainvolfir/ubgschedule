@@ -23,6 +23,7 @@ export function SelectClassPage() {
   const dataTeoriMentah = useJadwalStore((s) => s.dataTeoriMentah);
   const kelasPilihanUser = useJadwalStore((s) => s.kelasPilihanUser);
   const setKelasPilihanUser = useJadwalStore((s) => s.setKelasPilihanUser);
+  const setJadwalTeoriTerpilih = useJadwalStore((s) => s.setJadwalTeoriTerpilih);
   const [globalKelas, setGlobalKelas] = useState('');
 
   const groups = useMemo(() => {
@@ -149,7 +150,13 @@ export function SelectClassPage() {
           variant={allSelected ? 'default' : 'secondary'}
           disabled={!allSelected}
           className="pixel-font w-full text-[9px]"
-          onClick={() => navigate('/upload-praktikum')}
+          onClick={() => {
+            const filtered = dataTeoriMentah.filter(
+              (row) => kelasPilihanUser[row.KodeMK] === row.Kelas,
+            );
+            setJadwalTeoriTerpilih(filtered);
+            navigate('/upload-praktikum');
+          }}
         >
           Continue
         </Button>
