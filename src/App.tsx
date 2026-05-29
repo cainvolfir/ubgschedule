@@ -14,8 +14,7 @@ const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
-      { path: '/', element: <Placeholder title="Welcome to UniSchedule" /> },
-      { path: '/upload-krs', element: <UploadKrsPage /> },
+      { path: '/', element: <UploadKrsPage /> },
       { path: '/upload-teori', element: <Placeholder title="Upload Theory Schedule" /> },
       { path: '/select-class', element: <Placeholder title="Select Classes" /> },
       { path: '/upload-praktikum', element: <Placeholder title="Upload Practical Schedule" /> },

@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJadwalStore } from '../../store/useJadwalStore';
+import { Button } from '../../components/ui/pixelact-ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/pixelact-ui/card';
 
 type DropState = 'empty' | 'processing' | 'populated';
 
 export function UploadKrsPage() {
   const navigate = useNavigate();
   const setKRSResult = useJadwalStore((s) => s.setKRSResult);
+  const dataKRS = useJadwalStore((s) => s.dataKRS);
+  const kodeMKTerverifikasi = useJadwalStore((s) => s.kodeMKTerverifikasi);
   const [dropState, setDropState] = useState<DropState>('empty');
   const [fileName, setFileName] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -106,7 +110,7 @@ export function UploadKrsPage() {
     : '';
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)] px-4">
+    <div className="flex flex-col items-center min-h-[calc(100vh-3.5rem)] px-4 pt-8">
       <div
         role="button"
         tabIndex={0}
@@ -138,13 +142,44 @@ export function UploadKrsPage() {
         onChange={handleInputChange}
       />
 
-      {dropState === 'populated' && (
-        <button
-          onClick={() => navigate('/upload-teori')}
-          className="mt-6 rounded-lg bg-zinc-900 px-6 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Continue
-        </button>
+      {dropState === 'populated' && dataKRS && (
+        <>
+          <Card className="mt-8 w-full max-w-lg">
+            <CardHeader>
+              <CardTitle>KRS Result</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Nama</span>
+                <span className="font-semibold">{dataKRS.Nama}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>NIM</span>
+                <span className="font-semibold">{dataKRS.NIM}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Semester</span>
+                <span className="font-semibold">{dataKRS.Semester}</span>
+              </div>
+              <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
+                <span className="font-semibold">Mata Kuliah ({kodeMKTerverifikasi.length})</span>
+                <ul className="mt-1 space-y-1">
+                  {kodeMKTerverifikasi.map((kode) => (
+                    <li key={kode} className="text-xs font-mono">{kode}</li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button
+            variant="success"
+            onClick={() => navigate('/upload-teori')}
+            className="mt-6"
+          >
+            Continue
+          </Button>
+        </>
       )}
     </div>
   );
