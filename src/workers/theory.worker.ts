@@ -146,6 +146,27 @@ self.onmessage = async (e: MessageEvent) => {
     }
     const dosen = foundQuote ? cleanQuoteReverse(dosenTokens) : dosenTokens.reverse().join(' ').trim();
     log('DOSEN_EXTRACTED', dosen);
+
+    let kelas = '';
+    if (jamIdx - 3 >= 0) {
+      kelas = tokens[jamIdx - 3].trim();
+      if (kelas.length !== 1 || !/^[A-Z]$/.test(kelas)) {
+        kelas = '';
+      }
+    }
+    log('KELAS_EXTRACTED', kelas);
+
+    let sks = '';
+    if (jamIdx - 4 >= 0) {
+      sks = tokens[jamIdx - 4].trim();
+    }
+    log('SKS_EXTRACTED', sks);
+
+    let smt = '';
+    if (jamIdx - 5 >= 0) {
+      smt = tokens[jamIdx - 5].trim();
+    }
+    log('SMT_EXTRACTED', smt);
   }
 
   log('RESULT', { total: dataTeoriMentah.length, first3: dataTeoriMentah.slice(0, 3) });
