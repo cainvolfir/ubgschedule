@@ -65,6 +65,15 @@ self.onmessage = async (e: MessageEvent) => {
     log('NAMA', `Final selected (Tier 1): "${nama}"`);
   }
 
+  if (!nama) {
+    const tier2Match = fullText.match(/Semester\s+([A-Za-z\s\.\']+?)\s+:\s*\d{10,13}/i);
+    log('NAMA_TIER2', tier2Match ? { captured: tier2Match[1].trim() } : 'NO_MATCH');
+    if (tier2Match) {
+      nama = tier2Match[1].trim();
+      log('NAMA', `Final selected (Tier 2): "${nama}"`);
+    }
+  }
+
   self.postMessage({
     type: 'RESULT',
     data: { Nama: nama, NIM: nim, Semester: semester, kodeMKTerverifikasi: [] },
