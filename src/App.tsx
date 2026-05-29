@@ -23,9 +23,9 @@ function WizardContent({
     case 'krs':
       return <UploadKrsPage onNext={onNext} />;
     case 'teori':
-      return <UploadTeoriPage onNext={onNext} onSkipToResult={onSkipToResult} />;
+      return <UploadTeoriPage onNext={onNext} onSkipToResult={onSkipToResult} onBack={onBack} />;
     case 'praktikum':
-      return <UploadPraktikumPage onNext={onNext} />;
+      return <UploadPraktikumPage onNext={onNext} onBack={onBack} />;
     case 'result':
       return <ResultPage onBack={onBack} />;
   }
@@ -34,15 +34,17 @@ function WizardContent({
 export default function App() {
   const [step, setStep] = useState<WizardStep>('krs');
 
-  const goTo = (s: WizardStep) => setStep(s);
+  const steps: WizardStep[] = ['krs', 'teori', 'praktikum', 'result'];
 
   const goNext = () => {
-    const steps: WizardStep[] = ['krs', 'teori', 'praktikum', 'result'];
     const idx = steps.indexOf(step);
     if (idx < steps.length - 1) setStep(steps[idx + 1]);
   };
 
-  const goBack = () => setStep('praktikum');
+  const goBack = () => {
+    const idx = steps.indexOf(step);
+    if (idx > 0) setStep(steps[idx - 1]);
+  };
 
   return (
     <BrowserRouter>
@@ -54,7 +56,7 @@ export default function App() {
               <WizardContent
                 step={step}
                 onNext={goNext}
-                onSkipToResult={() => goTo('result')}
+                onSkipToResult={() => setStep('result')}
                 onBack={goBack}
               />
             }

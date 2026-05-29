@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { ArrowLeft, Upload } from 'lucide-react';
 import { useJadwalStore, type DataTeoriMentah } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
 import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
@@ -25,7 +25,7 @@ interface CourseGroup {
   rows: DataTeoriMentah[];
 }
 
-export function UploadTeoriPage({ onNext, onSkipToResult }: { onNext: () => void; onSkipToResult: () => void }) {
+export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: () => void; onSkipToResult: () => void; onBack: () => void }) {
   const dataKRS = useJadwalStore((s) => s.dataKRS);
   const kodeMKTerverifikasi = useJadwalStore((s) => s.kodeMKTerverifikasi);
   const setDataTeoriMentah = useJadwalStore((s) => s.setDataTeoriMentah);
@@ -189,9 +189,18 @@ export function UploadTeoriPage({ onNext, onSkipToResult }: { onNext: () => void
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
-      <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
-        Theory & Class Selection
-      </p>
+      <div className="mb-4 flex items-center gap-2">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+        >
+          <ArrowLeft size={16} />
+          <span className="pixel-font text-[9px]">Back</span>
+        </button>
+        <p className="pixel-font text-[10px] uppercase tracking-wider text-zinc-400">
+          Theory & Class Selection
+        </p>
+      </div>
 
       {dataKRS && (
         <Card className="mb-3 w-full">

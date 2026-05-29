@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { ArrowLeft, Upload } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
 import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
@@ -11,7 +11,7 @@ function truncate(name: string, max = 28): string {
 
 type DropState = 'empty' | 'processing' | 'populated';
 
-export function UploadPraktikumPage({ onNext }: { onNext: () => void }) {
+export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const jadwalTeoriTerpilih = useJadwalStore((s) => s.jadwalTeoriTerpilih);
   const setDataPraktikum = useJadwalStore((s) => s.setDataPraktikum);
   const setJadwalFinal = useJadwalStore((s) => s.setJadwalFinal);
@@ -101,9 +101,18 @@ export function UploadPraktikumPage({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
-      <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
-        Upload Practical Schedule
-      </p>
+      <div className="mb-4 flex items-center gap-2">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+        >
+          <ArrowLeft size={16} />
+          <span className="pixel-font text-[9px]">Back</span>
+        </button>
+        <p className="pixel-font text-[10px] uppercase tracking-wider text-zinc-400">
+          Upload Practical Schedule
+        </p>
+      </div>
 
       <Card className={cn("w-full", dropState === 'populated' && 'shadow-none')}>
         <CardContent className="p-0">
