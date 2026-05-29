@@ -108,22 +108,21 @@ self.onmessage = async (e: MessageEvent) => {
   for (const token of tokens) {
     if (!isTabelAktif && token === 'KODE MK') {
       isTabelAktif = true;
-      log('TABLE', 'Table active trigger hit');
+      log('KODE_MK_TRIGGER', true);
       continue;
     }
 
     if (isTabelAktif) {
       if (token === 'JUMLAH') {
-        log('TABLE', 'Table end trigger hit at JUMLAH');
+        log('JUMLAH_STOP', true);
         break;
       }
       if (/^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/.test(token)) {
         kodeMKTerverifikasi.push(token);
+        log('KODE_MK_MATCH', token);
       }
     }
   }
-
-  log('RESULT', `Extracted ${kodeMKTerverifikasi.length} course codes`);
 
   self.postMessage({
     type: 'RESULT',
