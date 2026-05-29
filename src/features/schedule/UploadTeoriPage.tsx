@@ -81,6 +81,16 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
   }, [kelasPilihanUser]);
 
   useEffect(() => {
+    const selected = dataTeoriMentah.filter(
+      (row) => kelasPilihanUser[row.KodeMK] === row.Kelas,
+    );
+    if (selected.length > 0) {
+      console.log('[TeoriSelect] Saving jadwalTeoriTerpilih:', selected.length, 'rows');
+      setJadwalTeoriTerpilih(selected);
+    }
+  }, [kelasPilihanUser, dataTeoriMentah, setJadwalTeoriTerpilih]);
+
+  useEffect(() => {
     if (dataTeoriMentah.length > 0) {
       setDropState('populated');
     }
@@ -171,12 +181,6 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
   }, [kelasPilihanUser, setKelasPilihanUser]);
 
   const handleContinue = () => {
-    const filtered = dataTeoriMentah.filter(
-      (row) => kelasPilihanUser[row.KodeMK] === row.Kelas,
-    );
-    console.log('[TeoriSelect] jadwalTeoriTerpilih:', filtered.length, 'rows');
-    console.log('[TeoriSelect] First 3 rows:', filtered.slice(0, 3));
-    setJadwalTeoriTerpilih(filtered);
     onNext();
   };
 
@@ -359,7 +363,6 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
                   const filtered = dataTeoriMentah.filter(
                     (row) => kelasPilihanUser[row.KodeMK] === row.Kelas,
                   );
-                  setJadwalTeoriTerpilih(filtered);
                   setJadwalFinal(filtered);
                   onSkipToResult();
                 }}
