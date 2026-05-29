@@ -3,6 +3,13 @@ import { ArrowLeft, Upload } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
 import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/pixelact-ui/select';
 import { cn } from '../../lib/utils';
 
 function truncate(name: string, max = 28): string {
@@ -13,12 +20,23 @@ type DropState = 'empty' | 'processing' | 'populated';
 
 export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const jadwalTeoriTerpilih = useJadwalStore((s) => s.jadwalTeoriTerpilih);
-  const setDataPraktikum = useJadwalStore((s) => s.setDataPraktikum);
-  const setJadwalFinal = useJadwalStore((s) => s.setJadwalFinal);
-  const dataPraktikum = useJadwalStore((s) => s.dataPraktikum);
   const jadwalFinal = useJadwalStore((s) => s.jadwalFinal);
+  const setJadwalFinal = useJadwalStore((s) => s.setJadwalFinal);
+  const praktikumRoomPrefixes = useJadwalStore((s) => s.praktikumRoomPrefixes);
+  const setPraktikumRoomPrefixes = useJadwalStore((s) => s.setPraktikumRoomPrefixes);
+  const selectedRoomPrefix = useJadwalStore((s) => s.selectedRoomPrefix);
+  const setSelectedRoomPrefix = useJadwalStore((s) => s.setSelectedRoomPrefix);
+  const praktikumCandidates = useJadwalStore((s) => s.praktikumCandidates);
+  const setPraktikumCandidates = useJadwalStore((s) => s.setPraktikumCandidates);
+  const selectedCandidateIds = useJadwalStore((s) => s.selectedCandidateIds);
+  const toggleCandidateId = useJadwalStore((s) => s.toggleCandidateId);
+  const isParsing = useJadwalStore((s) => s.isParsing);
+  const setIsParsing = useJadwalStore((s) => s.setIsParsing);
+
   const [dropState, setDropState] = useState<DropState>('empty');
+  const [isScanning, setIsScanning] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [fileBuffer, setFileBuffer] = useState<ArrayBuffer | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,22 +58,24 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
           break;
         case 'ERROR':
           console.error(`[Praktikum Worker] ${step}:`, data);
-          setDropState('empty');
+          setIsScanning(false);
+          setIsParsing(false);
           break;
-        case 'RESULT':
-          console.log('[Praktikum Worker] RESULT:', data);
-          const jadwalPraktikumFinal = data.matched || [];
-          console.log('[Praktikum] jadwalPraktikumFinal:', jadwalPraktikumFinal.length, 'rows');
-          if (jadwalPraktikumFinal.length > 0) {
-            console.log('[Praktikum] First 3 rows:', jadwalPraktikumFinal.slice(0, 3));
-          }
-          setDataPraktikum(jadwalPraktikumFinal);
+        case 'SCAN_RESULT':
+          console.log('[Praktikum Worker] SCAN_RESULT:', data);
+          setPraktikumRoomPrefixes(data.prefixes || []);
+          setIsScanning(false);
           setDropState('populated');
+          break;
+        case 'PARSE_RESULT':
+          console.log('[Praktikum Worker] PARSE_RESULT:', data);
+          setPraktikumCandidates(data.candidates || []);
+          setIsParsing(false);
           break;
       }
     };
 
-    worker.onerror = () => setDropState('empty');
+    worker.onerror = () => { setIsScanning(false); setIsParsing(false); setDropState('empty'); };
 
     workerRef.current = worker;
     return () => { worker.terminate(); };
@@ -65,18 +85,32 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     if (!workerRef.current) return;
     setFileName(file.name);
     setDropState('processing');
+    setIsScanning(true);
+    setPraktikumRoomPrefixes([]);
+    setSelectedRoomPrefix('');
+    setPraktikumCandidates([]);
 
     file.arrayBuffer().then((buffer) => {
+      setFileBuffer(buffer);
       workerRef.current?.postMessage(
-        {
-          type: 'PARSE_PRAKTIKUM',
-          file: buffer,
-          jadwalTeoriTerpilih,
-        },
+        { type: 'SCAN_XLSX', file: buffer },
         [buffer],
       );
     });
-  }, [jadwalTeoriTerpilih]);
+  }, []);
+
+  const handlePrefixChange = useCallback((prefix: string) => {
+    if (!workerRef.current || !fileBuffer) return;
+    setSelectedRoomPrefix(prefix);
+    setIsParsing(true);
+
+    workerRef.current.postMessage({
+      type: 'PARSE_PRAKTIKUM',
+      file: fileBuffer,
+      roomPrefix: prefix,
+      jadwalTeoriTerpilih,
+    });
+  }, [fileBuffer, jadwalTeoriTerpilih]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -92,12 +126,48 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     if (file) processFile(file);
   };
 
+  const handleContinue = () => {
+    const checked = praktikumCandidates.filter((c) => selectedCandidateIds.has(c.id));
+    const merged = [
+      ...jadwalTeoriTerpilih.map((r) => ({
+        ...r,
+        Keterangan: r.Keterangan || '-',
+      })),
+      ...checked.map((c) => ({
+        KodeMK: '',
+        MataKuliah: c.courseName,
+        Kelas: c.kelas,
+        SKS: '',
+        SMT: c.semester,
+        DosenPengampuh: c.dosen,
+        Hari: c.hari,
+        Jam: c.jam,
+        Ruang: c.ruang,
+        Keterangan: c.keterangan || '-',
+      })),
+    ];
+    setJadwalFinal(merged);
+    onNext();
+  };
+
+  const handleSkip = () => {
+    if (jadwalFinal.length === 0) {
+      const merged = jadwalTeoriTerpilih.map((r) => ({
+        ...r,
+        Keterangan: r.Keterangan || '-',
+      }));
+      setJadwalFinal(merged);
+    }
+    onNext();
+  };
+
   const borderStyle = dropState === 'empty' || dropState === 'processing' ? 'border-dashed' : 'border-solid';
   const neonGlow = dropState === 'populated'
     ? 'shadow-[0_0_6px_rgba(0,255,200,0.5),0_0_14px_rgba(0,200,255,0.35),0_0_28px_rgba(150,0,255,0.2)] ring-[2px] ring-cyan-400/30'
     : '';
   const dragClasses = isDragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' : '';
-  const hasValidResult = dropState === 'populated' && (dataPraktikum?.length ?? 0) > 0;
+  const hasCandidates = praktikumCandidates.length > 0;
+  const hasChecked = selectedCandidateIds.size > 0;
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
@@ -126,54 +196,91 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
               onDragLeave={() => setIsDragOver(false)}
               className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-6 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
             >
-            {dropState === 'processing' ? (
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-zinc-300 border-t-green-500" />
-                <p className="pixel-font text-[9px] text-zinc-500">{truncate(fileName)}</p>
-              </div>
-            ) : (
-              <>
-                <Upload size={18} className="mb-1 text-zinc-400" />
-                <p className="pixel-font text-[9px] leading-relaxed text-zinc-500">
-                  {dropState === 'populated' ? truncate(fileName) : 'Drag & drop your Practical file here or click to browse'}
-                </p>
-              </>
-            )}
-          </div>
+              {dropState === 'processing' || isScanning ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-zinc-300 border-t-green-500" />
+                  <p className="pixel-font text-[9px] text-zinc-500">{truncate(fileName)}</p>
+                </div>
+              ) : (
+                <>
+                  <Upload size={18} className="mb-1 text-zinc-400" />
+                  <p className="pixel-font text-[9px] leading-relaxed text-zinc-500">
+                    {dropState === 'populated' ? truncate(fileName) : 'Drag & drop your Practical file here or click to browse'}
+                  </p>
+                </>
+              )}
+            </div>
 
-            {hasValidResult && (
+            {dropState === 'populated' && praktikumRoomPrefixes.length > 0 && (
               <div className="border-2 border-t-0 border-cyan-400/40 px-3 py-3">
-                <p className="pixel-font text-[9px] text-zinc-500">
-                  {dataPraktikum.length} jadwal praktikum terdeteksi
+                <p className="pixel-font mb-2 text-[9px] text-zinc-500">Select Room Prefix</p>
+                <Select value={selectedRoomPrefix} onValueChange={handlePrefixChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="[ Choose Room... ]" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {praktikumRoomPrefixes.map((prefix) => (
+                      <SelectItem key={prefix} value={prefix}>
+                        {prefix}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {isParsing && (
+              <div className="flex flex-col items-center gap-2 border-2 border-t-0 border-cyan-400/40 px-3 py-6">
+                <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-zinc-300 border-t-green-500" />
+                <p className="pixel-font text-[9px] text-zinc-500">Parsing schedule...</p>
+              </div>
+            )}
+
+            {hasCandidates && !isParsing && (
+              <div className="border-2 border-t-0 border-cyan-400/40 px-3 py-3">
+                <p className="pixel-font mb-2 text-[9px] text-zinc-500">
+                  {praktikumCandidates.length} jadwal ditemukan untuk {selectedRoomPrefix}
                 </p>
-                <Button
-                  variant="default"
-                  onClick={() => {
-                    const merged = [
-                      ...jadwalTeoriTerpilih.map((r) => ({
-                        ...r,
-                        Keterangan: r.Keterangan || '-',
-                      })),
-                      ...dataPraktikum.map((r: any) => ({
-                        KodeMK: r.KodeMK || '',
-                        MataKuliah: r.MataKuliah,
-                        Kelas: r.Kelas || '',
-                        SKS: r.SKS,
-                        SMT: r.SMT || '',
-                        DosenPengampuh: r.DosenPengampuh,
-                        Hari: r.Hari,
-                        Jam: r.Jam,
-                        Ruang: r.Ruang,
-                        Keterangan: r.Keterangan || '-',
-                      })),
-                    ];
-                    setJadwalFinal(merged);
-                    onNext();
-                  }}
-                  className="mt-3 w-full justify-center text-[9px]"
-                >
-                  Continue
-                </Button>
+                <div className="mb-3 max-h-64 space-y-1 overflow-y-auto">
+                  {praktikumCandidates.map((cand) => (
+                    <label
+                      key={cand.id}
+                      className={cn(
+                        'flex cursor-pointer items-start gap-2 rounded px-2 py-2 transition-colors',
+                        selectedCandidateIds.has(cand.id)
+                          ? 'bg-cyan-400/10 ring-1 ring-cyan-400/30'
+                          : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCandidateIds.has(cand.id)}
+                        onChange={() => toggleCandidateId(cand.id)}
+                        className="mt-0.5 h-3.5 w-3.5 accent-cyan-500"
+                      />
+                      <div className="flex-1">
+                        <p className="pixel-font text-[10px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
+                          {cand.courseName}
+                        </p>
+                        <p className="pixel-font text-[8px] text-zinc-500">
+                          {cand.dosen || '—'} {cand.semester ? `• SMT ${cand.semester}` : ''} • Kelas {cand.kelas}{cand.keterangan ? ` (${cand.keterangan})` : ''}
+                        </p>
+                        <p className="pixel-font text-[8px] text-zinc-400">
+                          {cand.hari} {cand.jam} • {cand.ruang}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {hasChecked && (
+                  <Button
+                    variant="default"
+                    onClick={handleContinue}
+                    className="mt-2 w-full justify-center text-[9px]"
+                  >
+                    Continue ({selectedCandidateIds.size} selected)
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -182,16 +289,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
 
       <div className="mt-4 flex justify-center">
         <button
-          onClick={() => {
-            if (jadwalFinal.length === 0) {
-              const merged = jadwalTeoriTerpilih.map((r) => ({
-                ...r,
-                Keterangan: r.Keterangan || '-',
-              }));
-              setJadwalFinal(merged);
-            }
-            onNext();
-          }}
+          onClick={handleSkip}
           className="pixel-font cursor-pointer text-center text-[9px] text-zinc-400 underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
         >
           Skip → View Schedule

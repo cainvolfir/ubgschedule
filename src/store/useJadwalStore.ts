@@ -19,6 +19,18 @@ export interface DataTeoriMentah {
   Keterangan: string;
 }
 
+export interface PraktikumCandidate {
+  id: string;
+  courseName: string;
+  kelas: string;
+  keterangan: string;
+  dosen: string;
+  semester: string;
+  hari: string;
+  jam: string;
+  ruang: string;
+}
+
 interface JadwalState {
   dataKRS: DataKRS | null;
   kodeMKTerverifikasi: string[];
@@ -28,12 +40,26 @@ interface JadwalState {
   dataPraktikum: unknown[];
   jadwalFinal: unknown[];
 
+  praktikumRoomPrefixes: string[];
+  selectedRoomPrefix: string;
+  praktikumCandidates: PraktikumCandidate[];
+  selectedCandidateIds: Set<string>;
+  isScanning: boolean;
+  isParsing: boolean;
+
   setKRSResult: (krs: DataKRS, kodeMK: string[]) => void;
   setDataTeoriMentah: (data: DataTeoriMentah[]) => void;
   setKelasPilihanUser: (pilihan: Record<string, string>) => void;
   setJadwalTeoriTerpilih: (data: DataTeoriMentah[]) => void;
   setDataPraktikum: (data: unknown[]) => void;
   setJadwalFinal: (data: unknown[]) => void;
+  setPraktikumRoomPrefixes: (prefixes: string[]) => void;
+  setSelectedRoomPrefix: (prefix: string) => void;
+  setPraktikumCandidates: (candidates: PraktikumCandidate[]) => void;
+  setSelectedCandidateIds: (ids: Set<string>) => void;
+  toggleCandidateId: (id: string) => void;
+  setIsScanning: (v: boolean) => void;
+  setIsParsing: (v: boolean) => void;
   reset: () => void;
 }
 
@@ -45,6 +71,12 @@ const initialState = {
   jadwalTeoriTerpilih: [],
   dataPraktikum: [],
   jadwalFinal: [],
+  praktikumRoomPrefixes: [],
+  selectedRoomPrefix: '',
+  praktikumCandidates: [],
+  selectedCandidateIds: new Set<string>(),
+  isScanning: false,
+  isParsing: false,
 };
 
 export const useJadwalStore = create<JadwalState>((set) => ({
@@ -62,6 +94,26 @@ export const useJadwalStore = create<JadwalState>((set) => ({
   setDataPraktikum: (data) => set({ dataPraktikum: data }),
 
   setJadwalFinal: (data) => set({ jadwalFinal: data }),
+
+  setPraktikumRoomPrefixes: (prefixes) => set({ praktikumRoomPrefixes: prefixes }),
+
+  setSelectedRoomPrefix: (prefix) => set({ selectedRoomPrefix: prefix }),
+
+  setPraktikumCandidates: (candidates) => set({ praktikumCandidates: candidates }),
+
+  setSelectedCandidateIds: (ids) => set({ selectedCandidateIds: ids }),
+
+  toggleCandidateId: (id) =>
+    set((state) => {
+      const next = new Set(state.selectedCandidateIds);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return { selectedCandidateIds: next };
+    }),
+
+  setIsScanning: (v) => set({ isScanning: v }),
+
+  setIsParsing: (v) => set({ isParsing: v }),
 
   reset: () => set({ ...initialState }),
 }));
