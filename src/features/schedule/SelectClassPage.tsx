@@ -1,6 +1,13 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJadwalStore, type DataTeoriMentah } from '../../store/useJadwalStore';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/pixelact-ui/select';
 
 interface CourseGroup {
   KodeMK: string;
@@ -12,6 +19,7 @@ interface CourseGroup {
 export function SelectClassPage() {
   const navigate = useNavigate();
   const dataTeoriMentah = useJadwalStore((s) => s.dataTeoriMentah);
+  const [globalKelas, setGlobalKelas] = useState('');
 
   const groups = useMemo(() => {
     const map = new Map<string, { MataKuliah: string; kelasSet: Set<string>; rows: typeof dataTeoriMentah }>();
@@ -38,16 +46,17 @@ export function SelectClassPage() {
     return result;
   }, [dataTeoriMentah]);
 
+  const allKelasOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of groups) {
+      for (const k of g.kelasOptions) set.add(k);
+    }
+    return [...set].sort();
+  }, [groups]);
+
   useEffect(() => {
     if (groups.length === 0) {
       navigate('/upload-teori', { replace: true });
-      return;
-    }
-
-    console.log('[SelectClass] Groups:', groups.length);
-    console.log('[SelectClass] First group:', groups[0]);
-    for (const g of groups) {
-      console.log(`[SelectClass] ${g.KodeMK} - ${g.MataKuliah}: [${g.kelasOptions.join(', ')}]`);
     }
   }, [groups, navigate]);
 
@@ -58,6 +67,25 @@ export function SelectClassPage() {
       <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
         Select Classes
       </p>
+
+      <div className="mb-4">
+        <label className="pixel-font mb-1 block text-[9px] text-zinc-500">
+          Set All Classes
+        </label>
+        <Select value={globalKelas} onValueChange={setGlobalKelas}>
+          <SelectTrigger className="w-full text-[9px]">
+            <SelectValue placeholder="[ All Classes... ]" />
+          </SelectTrigger>
+          <SelectContent>
+            {allKelasOptions.map((k) => (
+              <SelectItem key={k} value={k} className="pixel-font text-[9px]">
+                Class {k}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <p className="pixel-font text-center text-[9px] text-zinc-500">
         {groups.length} courses detected
       </p>
