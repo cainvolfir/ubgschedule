@@ -61,8 +61,12 @@ self.onmessage = async (e: MessageEvent) => {
   log('NIM', nimMatch ? { match: nimMatch[0], captured: nimMatch[1] } : 'NO_MATCH');
 
   const semesterMatch = fullText.match(/SEMESTER\s*(\d{1,2})/i);
-  const semester = semesterMatch ? semesterMatch[1] : '';
-  log('SEMESTER', semesterMatch ? semesterMatch[1] : 'NO_MATCH');
+  let semester = semesterMatch ? semesterMatch[1] : '';
+  if (!semester && nim) {
+    const afterNimMatch = fullText.match(new RegExp(`${nim}\\s+(\\d{1,2})`));
+    if (afterNimMatch) semester = afterNimMatch[1];
+  }
+  log('SEMESTER', semester || 'NO_MATCH');
 
   let nama = '';
 
@@ -126,6 +130,10 @@ self.onmessage = async (e: MessageEvent) => {
         log('KODE_MK_MATCH', token);
       }
     }
+  }
+
+  if (kodeMKTerverifikasi.length === 0) {
+    log('TOKENS_ALL', tokens);
   }
 
   self.postMessage({
