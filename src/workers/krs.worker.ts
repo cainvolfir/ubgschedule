@@ -56,8 +56,17 @@ self.onmessage = async (e: MessageEvent) => {
   const semester = semesterMatch ? semesterMatch[1] : '';
   log('SEMESTER', semesterMatch ? semesterMatch[1] : 'NO_MATCH');
 
+  let nama = '';
+
+  const tier1Match = fullText.match(/Nama Mahasiswa\s+([A-Za-z\s\.\']+?)\s+NIM/i);
+  log('NAMA_TIER1', tier1Match ? { captured: tier1Match[1].trim() } : 'NO_MATCH');
+  if (tier1Match) {
+    nama = tier1Match[1].trim();
+    log('NAMA', `Final selected (Tier 1): "${nama}"`);
+  }
+
   self.postMessage({
     type: 'RESULT',
-    data: { Nama: '', NIM: nim, Semester: semester, kodeMKTerverifikasi: [] },
+    data: { Nama: nama, NIM: nim, Semester: semester, kodeMKTerverifikasi: [] },
   });
 };
