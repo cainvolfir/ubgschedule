@@ -3,6 +3,7 @@ import { RootLayout } from './layouts/RootLayout';
 import { UploadKrsPage } from './features/schedule/UploadKrsPage';
 import { UploadTeoriPage } from './features/schedule/UploadTeoriPage';
 import { SelectClassPage } from './features/schedule/SelectClassPage';
+import { UploadPraktikumPage } from './features/schedule/UploadPraktikumPage';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -20,7 +21,7 @@ export default function App() {
           <Route path="/" element={<UploadKrsPage />} />
           <Route path="/upload-teori" element={<UploadTeoriPage />} />
           <Route path="/select-class" element={<SelectClassPage />} />
-          <Route path="/upload-praktikum" element={<Placeholder title="Upload Practical Schedule" />} />
+          <Route path="/upload-praktikum" element={<UploadPraktikumPage />} />
           <Route path="/result" element={<Placeholder title="Final Schedule" />} />
         </Route>
       </Routes>
