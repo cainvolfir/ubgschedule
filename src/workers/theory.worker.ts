@@ -167,6 +167,15 @@ self.onmessage = async (e: MessageEvent) => {
       smt = tokens[jamIdx - 5].trim();
     }
     log('SMT_EXTRACTED', smt);
+
+    const mataKuliahTokens: string[] = [];
+    for (let k = jamIdx - 6; k >= 0; k--) {
+      const t = tokens[k].trim();
+      if (kodeMKTerverifikasi.includes(t)) break;
+      mataKuliahTokens.push(t);
+    }
+    const mataKuliah = mataKuliahTokens.reverse().join(' ').trim();
+    log('MATA_KULIAH_EXTRACTED', mataKuliah);
   }
 
   log('RESULT', { total: dataTeoriMentah.length, first3: dataTeoriMentah.slice(0, 3) });
