@@ -271,6 +271,8 @@ self.onmessage = async (e: MessageEvent) => {
       enriched[j].col === current.col &&
       enriched[j].KodeMK === current.KodeMK &&
       enriched[j].Kelas === current.Kelas &&
+      enriched[j].Hari === current.Hari &&
+      enriched[j].Ruang === current.Ruang &&
       Math.abs(enriched[j].row - enriched[j - 1].row) <= 2
     ) {
       group.push(enriched[j]);
@@ -292,10 +294,15 @@ self.onmessage = async (e: MessageEvent) => {
       });
     } else {
       const totalSKS = group.reduce((sum, r) => sum + (parseInt(r.SKS) || 0), 0);
-      const jamParts = group.map((r) => r.Jam).filter(Boolean);
-      const jamStart = jamParts[0]?.split(/[-\s]/)[0] || jamParts[0] || '';
-      const jamEnd = jamParts[jamParts.length - 1]?.split(/[-\s]/).pop() || '';
-      const mergedJam = jamStart && jamEnd ? `${jamStart}-${jamEnd}` : jamParts[0] || '';
+      log('SKS_MERGE', { KodeMK: current.KodeMK, Kelas: current.Kelas, individual: group.map((r) => r.SKS).join('+'), total: totalSKS });
+
+      const jams = group.map((r) => r.Jam).filter(Boolean);
+      const allStarts = jams.flatMap((j) => j.split(/[-\s]/)[0] ? [j.split(/[-\s]/)[0]] : []);
+      const allEnds = jams.flatMap((j) => { const p = j.split(/[-\s]/); return p.length > 1 ? [p[p.length - 1]] : []; });
+      const jamStart = allStarts.sort()[0] || '';
+      const jamEnd = allEnds.sort().pop() || '';
+      const mergedJam = jamStart && jamEnd ? `${jamStart}-${jamEnd}` : jams[0] || '';
+      log('TIME_MERGE', { KodeMK: current.KodeMK, Kelas: current.Kelas, ranges: jams, minStart: jamStart, maxEnd: jamEnd, merged: mergedJam });
 
       merged.push({
         KodeMK: current.KodeMK,
@@ -309,7 +316,6 @@ self.onmessage = async (e: MessageEvent) => {
         Ruang: current.Ruang,
         Keterangan: current.Keterangan,
       });
-      log('MERGE', { KodeMK: current.KodeMK, Kelas: current.Kelas, count: group.length, totalSKS, mergedJam });
     }
 
     i = j;
