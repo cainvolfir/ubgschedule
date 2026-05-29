@@ -53,6 +53,8 @@ function fuzzyMatch(a: string, b: string): boolean {
   return false;
 }
 
+const HARI_PATTERN = /^(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)/i;
+
 self.onmessage = async (e: MessageEvent) => {
   const { type, file, jadwalTeoriTerpilih } = e.data;
   if (type !== 'PARSE_PRAKTIKUM') return;
@@ -189,8 +191,134 @@ self.onmessage = async (e: MessageEvent) => {
 
   log('CROSS_RESULT', `Found ${candidates.length} candidate matches`);
 
+  interface EnrichedRow {
+    KodeMK: string;
+    MataKuliah: string;
+    DosenPengampuh: string;
+    SKS: string;
+    SMT: string;
+    Kelas: string;
+    Hari: string;
+    Jam: string;
+    Ruang: string;
+    Keterangan: string;
+    row: number;
+    col: number;
+    ref: (typeof jadwalTeoriTerpilih)[0];
+  }
+
+  const enriched: EnrichedRow[] = [];
+
+  for (const c of candidates) {
+    let hari = '';
+    let stepsUp = 0;
+    let checkRow = c.row - 1;
+    while (checkRow >= 0) {
+      const cell = normalizeCell(matrix[checkRow][c.col] || '');
+      if (HARI_PATTERN.test(cell)) {
+        hari = cell.match(HARI_PATTERN)![1];
+        hari = hari.charAt(0).toUpperCase() + hari.slice(1).toLowerCase();
+        break;
+      }
+      checkRow--;
+      stepsUp++;
+    }
+    log('SPATIAL_HARI', { row: c.row, col: c.col, hari: hari || '(not found)', stepsUp });
+
+    let ruang = '';
+    if (hari && checkRow - 1 >= 0) {
+      ruang = normalizeCell(matrix[checkRow - 1][c.col] || '');
+    }
+    log('SPATIAL_RUANG', { row: c.row, col: c.col, ruang: ruang || '(empty)' });
+
+    const jam = normalizeCell(matrix[c.row][0] || '');
+    log('SPATIAL_JAM', { row: c.row, col: c.col, jam: jam || '(empty)' });
+
+    const ref = jadwalTeoriTerpilih.find(
+      (r: any) => r.KodeMK === c.matchedKodeMK && r.Kelas === c.kelasNormal,
+    );
+    if (!ref) continue;
+
+    enriched.push({
+      KodeMK: c.matchedKodeMK,
+      MataKuliah: c.matchedMataKuliah,
+      DosenPengampuh: c.matchedDosen,
+      SKS: ref.SKS,
+      SMT: ref.SMT || semester,
+      Kelas: c.kelasNormal,
+      Hari: hari,
+      Jam: jam,
+      Ruang: ruang,
+      Keterangan: c.kelasOriginal,
+      row: c.row,
+      col: c.col,
+      ref,
+    });
+  }
+
+  log('ENRICHED', `Spatially enriched ${enriched.length} rows`);
+
+  enriched.sort((a, b) => a.row - b.row);
+
+  const merged: (Omit<EnrichedRow, 'row' | 'col' | 'ref'>)[] = [];
+  let i = 0;
+  while (i < enriched.length) {
+    const current = enriched[i];
+    const group: EnrichedRow[] = [current];
+    let j = i + 1;
+    while (
+      j < enriched.length &&
+      enriched[j].col === current.col &&
+      enriched[j].KodeMK === current.KodeMK &&
+      enriched[j].Kelas === current.Kelas &&
+      Math.abs(enriched[j].row - enriched[j - 1].row) <= 2
+    ) {
+      group.push(enriched[j]);
+      j++;
+    }
+
+    if (group.length === 1) {
+      merged.push({
+        KodeMK: current.KodeMK,
+        MataKuliah: current.MataKuliah,
+        DosenPengampuh: current.DosenPengampuh,
+        SKS: current.SKS,
+        SMT: current.SMT,
+        Kelas: current.Kelas,
+        Hari: current.Hari,
+        Jam: current.Jam,
+        Ruang: current.Ruang,
+        Keterangan: current.Keterangan,
+      });
+    } else {
+      const totalSKS = group.reduce((sum, r) => sum + (parseInt(r.SKS) || 0), 0);
+      const jamParts = group.map((r) => r.Jam).filter(Boolean);
+      const jamStart = jamParts[0]?.split(/[-\s]/)[0] || jamParts[0] || '';
+      const jamEnd = jamParts[jamParts.length - 1]?.split(/[-\s]/).pop() || '';
+      const mergedJam = jamStart && jamEnd ? `${jamStart}-${jamEnd}` : jamParts[0] || '';
+
+      merged.push({
+        KodeMK: current.KodeMK,
+        MataKuliah: current.MataKuliah,
+        DosenPengampuh: current.DosenPengampuh,
+        SKS: String(totalSKS),
+        SMT: current.SMT,
+        Kelas: current.Kelas,
+        Hari: current.Hari,
+        Jam: mergedJam,
+        Ruang: current.Ruang,
+        Keterangan: current.Keterangan,
+      });
+      log('MERGE', { KodeMK: current.KodeMK, Kelas: current.Kelas, count: group.length, totalSKS, mergedJam });
+    }
+
+    i = j;
+  }
+
+  log('MERGED', `Final practical rows: ${merged.length} (from ${enriched.length} enriched)`);
+
   self.postMessage({
     type: 'RESULT',
-    data: { matched: candidates, matrix, refCount: jadwalTeoriTerpilih.length },
+    data: { matched: merged, matrix, refCount: jadwalTeoriTerpilih.length },
   });
 };
