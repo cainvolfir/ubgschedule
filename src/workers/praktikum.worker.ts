@@ -37,9 +37,11 @@ self.onmessage = async (e: MessageEvent) => {
   }
 
   const sheetName = workbook.SheetNames[0];
+  log('SHEET', `Using sheet: "${sheetName}"`);
   const sheet = workbook.Sheets[sheetName];
   const matrix: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
   log('MATRIX', `Dimensions: ${matrix.length} rows x ${matrix[0]?.length ?? 0} cols`);
+  log('MATRIX_SAMPLE', matrix.slice(0, 100));
 
   if (!jadwalTeoriTerpilih || jadwalTeoriTerpilih.length === 0) {
     warn('INPUT', 'No jadwalTeoriTerpilih provided');
