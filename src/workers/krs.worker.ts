@@ -2,10 +2,6 @@ function log(step: string, data?: unknown) {
   self.postMessage({ type: 'LOG', step, data });
 }
 
-function warn(step: string, data?: unknown) {
-  self.postMessage({ type: 'WARN', step, data });
-}
-
 function sendError(step: string, data?: unknown) {
   self.postMessage({ type: 'ERROR', step, data });
 }
@@ -47,68 +43,21 @@ self.onmessage = async (e: MessageEvent) => {
       }
     }
   }
-  log('PARSE', `Extracted ${tokens.length} tokens from PDF`);
+  log('TOKENS', tokens.slice(0, 10));
 
   const fullText = tokens.join(' ').replace(/\s+/g, ' ');
-  log('FLATTEN', `Flattened text length: ${fullText.length}`);
+  log('FLATTEN', fullText.substring(0, 200));
 
   const nimMatch = fullText.match(/\b(\d{10,13})\b/);
   const nim = nimMatch ? nimMatch[1] : '';
-  log('NIM', nim || 'NOT FOUND');
+  log('NIM', nimMatch ? { match: nimMatch[0], captured: nimMatch[1] } : 'NO_MATCH');
 
-  let semester = '';
-  const semMatch = fullText.match(/SEMESTER\s*(\d{1,2})/i);
-  if (semMatch) semester = semMatch[1];
-  log('SEMESTER', semester || 'NOT FOUND');
-
-  let nama = '';
-  const tierPatterns = [
-    /Nama Mahasiswa\s+([A-Za-z\s\.\']+?)\s+NIM/i,
-    /Semester\s+([A-Za-z\s\.\']+?)\s+:\s*\d{10,13}/i,
-    /(?:Ulang\s*\(U\)\.|bersangkutan,)\s*([A-Za-z\s\.\']+?)\s+NIM/i,
-    /([A-Za-z\s\.\']+?)\s+NIM\s*:?\s*\d{10,13}/i,
-  ];
-
-  for (let t = 0; t < tierPatterns.length; t++) {
-    const match = fullText.match(tierPatterns[t]);
-    if (match) {
-      nama = match[1].trim();
-      log('NAMA', `Tier ${t + 1} matched: "${nama}"`);
-      break;
-    }
-  }
-  if (!nama) warn('NAMA', 'All 4 tiers failed to find Nama');
-
-  let isTabelAktif = false;
-  const kodeMKTerverifikasi: string[] = [];
-
-  for (const token of tokens) {
-    if (!isTabelAktif && token === 'KODE MK') {
-      isTabelAktif = true;
-      log('TABLE', 'Table active trigger hit');
-      continue;
-    }
-
-    if (isTabelAktif) {
-      if (token === 'JUMLAH') {
-        log('TABLE', 'Table end trigger hit at JUMLAH');
-        break;
-      }
-      if (/^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/.test(token)) {
-        kodeMKTerverifikasi.push(token);
-      }
-    }
-  }
-
-  log('RESULT', `Extracted ${kodeMKTerverifikasi.length} course codes`);
+  const semesterMatch = fullText.match(/SEMESTER\s*(\d{1,2})/i);
+  const semester = semesterMatch ? semesterMatch[1] : '';
+  log('SEMESTER', semesterMatch ? semesterMatch[1] : 'NO_MATCH');
 
   self.postMessage({
     type: 'RESULT',
-    data: {
-      Nama: nama,
-      NIM: nim,
-      Semester: semester,
-      kodeMKTerverifikasi,
-    },
+    data: { Nama: '', NIM: nim, Semester: semester, kodeMKTerverifikasi: [] },
   });
 };
