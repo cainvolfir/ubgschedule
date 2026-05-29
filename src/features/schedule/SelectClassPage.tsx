@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJadwalStore, type DataTeoriMentah } from '../../store/useJadwalStore';
+import { Button } from '../../components/ui/pixelact-ui/button';
 import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
 import {
   Select,
@@ -57,6 +58,19 @@ export function SelectClassPage() {
     return [...set].sort();
   }, [groups]);
 
+  const allSelected = useMemo(() => groups.length > 0 && groups.every((g) => kelasPilihanUser[g.KodeMK]), [groups, kelasPilihanUser]);
+
+  const handleGlobalChange = useCallback((kelas: string) => {
+    setGlobalKelas(kelas);
+    const updated: Record<string, string> = {};
+    for (const g of groups) {
+      if (g.kelasOptions.includes(kelas)) {
+        updated[g.KodeMK] = kelas;
+      }
+    }
+    setKelasPilihanUser(updated);
+  }, [groups, setKelasPilihanUser]);
+
   const handleKelasChange = useCallback((kodeMK: string, kelas: string) => {
     setKelasPilihanUser({ ...kelasPilihanUser, [kodeMK]: kelas });
   }, [kelasPilihanUser, setKelasPilihanUser]);
@@ -79,7 +93,7 @@ export function SelectClassPage() {
         <label className="pixel-font mb-1 block text-[9px] text-zinc-500">
           Set All Classes
         </label>
-        <Select value={globalKelas} onValueChange={setGlobalKelas}>
+        <Select value={globalKelas} onValueChange={handleGlobalChange}>
           <SelectTrigger className="w-full text-[9px]">
             <SelectValue placeholder="[ All Classes... ]" />
           </SelectTrigger>
@@ -128,6 +142,17 @@ export function SelectClassPage() {
             </Card>
           );
         })}
+      </div>
+
+      <div className="mt-6 flex justify-center pb-8">
+        <Button
+          variant={allSelected ? 'default' : 'secondary'}
+          disabled={!allSelected}
+          className="pixel-font w-full text-[9px]"
+          onClick={() => navigate('/upload-praktikum')}
+        >
+          Continue
+        </Button>
       </div>
     </div>
   );
