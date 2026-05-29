@@ -29,11 +29,13 @@ self.onmessage = async (e: MessageEvent) => {
 
   let pdf: import('pdfjs-dist').PDFDocumentProxy;
   try {
-    const loadingTask = pdfjsLib.getDocument({ data: fileBuffer });
+    const data = new Uint8Array(fileBuffer);
+    log('PARSE', `Buffer size: ${data.byteLength} bytes`);
+    const loadingTask = pdfjsLib.getDocument({ data });
     pdf = await loadingTask.promise;
     log('PARSE', `PDF loaded: ${pdf.numPages} pages`);
   } catch (err) {
-    sendError('PARSE', 'Failed to open PDF document');
+    sendError('PARSE', err instanceof Error ? err.message : String(err));
     return;
   }
 
