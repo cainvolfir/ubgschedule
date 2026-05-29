@@ -2,6 +2,10 @@ function log(step: string, data?: unknown) {
   self.postMessage({ type: 'LOG', step, data });
 }
 
+function warn(step: string, data?: unknown) {
+  self.postMessage({ type: 'WARN', step, data });
+}
+
 function sendError(step: string, data?: unknown) {
   self.postMessage({ type: 'ERROR', step, data });
 }
@@ -83,8 +87,46 @@ self.onmessage = async (e: MessageEvent) => {
     }
   }
 
+  if (!nama) {
+    const tier4Match = fullText.match(/([A-Za-z\s\.\']+?)\s+NIM\s*:?\s*\d{10,13}/i);
+    log('NAMA_TIER4', tier4Match ? { captured: tier4Match[1].trim() } : 'NO_MATCH');
+    if (tier4Match) {
+      nama = tier4Match[1].trim();
+      log('NAMA', `Final selected (Tier 4): "${nama}"`);
+    }
+  }
+
+  if (nama) {
+    log('NAMA', `Final selected: "${nama}"`);
+  } else {
+    warn('NAMA_ALL_TIERS_FAILED', fullText);
+  }
+
+  let isTabelAktif = false;
+  const kodeMKTerverifikasi: string[] = [];
+
+  for (const token of tokens) {
+    if (!isTabelAktif && token === 'KODE MK') {
+      isTabelAktif = true;
+      log('TABLE', 'Table active trigger hit');
+      continue;
+    }
+
+    if (isTabelAktif) {
+      if (token === 'JUMLAH') {
+        log('TABLE', 'Table end trigger hit at JUMLAH');
+        break;
+      }
+      if (/^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/.test(token)) {
+        kodeMKTerverifikasi.push(token);
+      }
+    }
+  }
+
+  log('RESULT', `Extracted ${kodeMKTerverifikasi.length} course codes`);
+
   self.postMessage({
     type: 'RESULT',
-    data: { Nama: nama, NIM: nim, Semester: semester, kodeMKTerverifikasi: [] },
+    data: { Nama: nama, NIM: nim, Semester: semester, kodeMKTerverifikasi },
   });
 };
