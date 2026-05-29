@@ -24,14 +24,16 @@ const SelectContent = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Content
-    ref={ref}
-    className={cn("relative z-50", className)}
-    position={position}
-    {...props}
-  >
-    <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
-  </SelectPrimitive.Content>
+  <SelectPrimitive.Portal>
+    <SelectPrimitive.Content
+      ref={ref}
+      className={cn("relative z-50", className)}
+      position={position}
+      {...props}
+    >
+      <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
+    </SelectPrimitive.Content>
+  </SelectPrimitive.Portal>
 ));
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 

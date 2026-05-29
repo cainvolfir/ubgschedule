@@ -59,7 +59,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
 
   if (merged.length === 0) {
     return (
-      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col items-center justify-center px-3 pt-6">
+      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-4xl flex-col items-center justify-center px-4 pt-6 lg:px-8">
         <p className="pixel-font text-center text-[10px] text-zinc-500">
           No schedule data available.
         </p>
@@ -75,7 +75,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-2 pt-4 pb-8">
+    <div className="mx-auto w-full max-w-6xl px-4 pt-4 pb-8 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={goBack}
@@ -89,18 +89,18 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
         </p>
       </div>
 
-      {/* Desktop table — hidden on small screens */}
+      {/* Desktop table */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full border-collapse border-2 border-black dark:border-zinc-600">
           <thead>
-            <tr className="pixel-font border-b-2 border-black text-[9px] dark:border-zinc-600">
-              <th className="border-r border-black px-2 py-1.5 dark:border-zinc-600">Hari</th>
-              <th className="border-r border-black px-2 py-1.5 dark:border-zinc-600">Mata Kuliah</th>
-              <th className="border-r border-black px-2 py-1.5 dark:border-zinc-600">Dosen Pengampuh</th>
-              <th className="border-r border-black px-2 py-1.5 dark:border-zinc-600">SKS</th>
-              <th className="border-r border-black px-2 py-1.5 dark:border-zinc-600">Jam</th>
-              <th className="border-r border-black px-2 py-1.5 dark:border-zinc-600">Ruang</th>
-              <th className="px-2 py-1.5">Keterangan</th>
+            <tr className="pixel-font border-b-2 border-black text-[9px] lg:text-[10px] dark:border-zinc-600">
+              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Hari</th>
+              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Mata Kuliah</th>
+              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Dosen Pengampuh</th>
+              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">SKS</th>
+              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Jam</th>
+              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Ruang</th>
+              <th className="px-2 py-1.5 lg:px-4 lg:py-2.5">Keterangan</th>
             </tr>
           </thead>
           <tbody>
@@ -108,32 +108,32 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
               group.rows.map((row, idx) => (
                 <tr
                   key={`${group.hari}-${idx}`}
-                  className="pixel-font border-b border-black text-[9px] dark:border-zinc-700"
+                  className="pixel-font border-b border-black text-[9px] lg:text-[10px] dark:border-zinc-700"
                 >
                   {idx === 0 && (
                     <td
-                      className="border-r border-black px-2 py-1.5 align-top dark:border-zinc-600"
+                      className="border-r border-black px-2 py-1.5 align-top lg:px-4 lg:py-2.5 dark:border-zinc-600"
                       rowSpan={group.rows.length}
                     >
                       {group.hari}
                     </td>
                   )}
-                  <td className="border-r border-black px-2 py-1.5 dark:border-zinc-600">
+                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
                     {row.MataKuliah}
                   </td>
-                  <td className="border-r border-black px-2 py-1.5 dark:border-zinc-600">
+                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
                     {row.DosenPengampuh}
                   </td>
-                  <td className="border-r border-black px-2 py-1.5 text-center dark:border-zinc-600">
+                  <td className="border-r border-black px-2 py-1.5 text-center lg:px-4 lg:py-2.5 dark:border-zinc-600">
                     {row.SKS}
                   </td>
-                  <td className="border-r border-black px-2 py-1.5 dark:border-zinc-600">
+                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
                     {row.Jam}
                   </td>
-                  <td className="border-r border-black px-2 py-1.5 dark:border-zinc-600">
+                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
                     {row.Ruang}
                   </td>
-                  <td className="px-2 py-1.5">{row.Keterangan}</td>
+                  <td className="px-2 py-1.5 lg:px-4 lg:py-2.5">{row.Keterangan}</td>
                 </tr>
               )),
             )}

@@ -155,7 +155,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     const merged = [
       ...jadwalTeoriTerpilih.map((r) => ({
         ...r,
-        Keterangan: r.Keterangan || '-',
+        Keterangan: r.Keterangan || '',
       })),
       ...checked.map((c) => ({
         KodeMK: '',
@@ -178,7 +178,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     if (jadwalFinal.length === 0) {
       const merged = jadwalTeoriTerpilih.map((r) => ({
         ...r,
-        Keterangan: r.Keterangan || '-',
+        Keterangan: r.Keterangan || '',
       }));
       setJadwalFinal(merged);
     }
@@ -194,7 +194,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const hasChecked = selectedCandidateIds.size > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col px-4 pt-6 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={onBack}
@@ -306,7 +306,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
                 )}
 
                 {filteredCandidates.length > 0 ? (
-                  <div className="mb-3 max-h-80 space-y-2 overflow-y-auto">
+                  <div className="mb-3 grid max-h-[32rem] grid-cols-1 gap-2 overflow-y-auto md:grid-cols-2">
                     {filteredCandidates.map((cand) => {
                       const isChecked = selectedCandidateIds.has(cand.id);
                       return (

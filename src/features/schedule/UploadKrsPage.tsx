@@ -96,7 +96,7 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
   const dragClasses = isDragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' : '';
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-4xl flex-col px-4 pt-6 lg:px-8">
       <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
         Upload KRS (Study Plan)
       </p>

@@ -117,7 +117,7 @@ function SelectContent({
   return (
       <ShadcnSelectContent
         className={cn(
-          "relative bg-gray-100 dark:bg-zinc-800 rounded-none border-none shadow-(--pixel-box-shadow) mt-2 text-zinc-800 dark:text-zinc-100",
+          "relative z-50 max-h-60 bg-gray-100 dark:bg-zinc-800 rounded-none border-none shadow-(--pixel-box-shadow) mt-2 text-zinc-800 dark:text-zinc-100",
           inputVariants({ font }),
           className
         )}

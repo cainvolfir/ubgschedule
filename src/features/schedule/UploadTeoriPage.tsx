@@ -192,7 +192,7 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
   const hasTheoryResult = dropState === 'populated' && dataTeoriMentah.length > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col px-4 pt-6 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={onBack}
@@ -294,7 +294,7 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
             </Select>
           </div>
 
-          <div className="flex-1 overflow-y-auto flex flex-col gap-2 min-h-0">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {groups.map((g) => {
               const selected = kelasPilihanUser[g.KodeMK] || '';
               const detailRow = selected ? g.rows.find((r) => r.Kelas === selected) : null;
