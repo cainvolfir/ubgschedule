@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { RootLayout } from './layouts/RootLayout';
+import { UploadKrsPage } from './features/schedule/UploadKrsPage';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -14,7 +15,7 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { path: '/', element: <Placeholder title="Welcome to UniSchedule" /> },
-      { path: '/upload-krs', element: <Placeholder title="Upload KRS (Study Plan)" /> },
+      { path: '/upload-krs', element: <UploadKrsPage /> },
       { path: '/upload-teori', element: <Placeholder title="Upload Theory Schedule" /> },
       { path: '/select-class', element: <Placeholder title="Select Classes" /> },
       { path: '/upload-praktikum', element: <Placeholder title="Upload Practical Schedule" /> },
