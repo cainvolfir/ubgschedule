@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJadwalStore, type DataTeoriMentah } from '../../store/useJadwalStore';
+import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
 import {
   Select,
   SelectContent,
@@ -19,6 +20,8 @@ interface CourseGroup {
 export function SelectClassPage() {
   const navigate = useNavigate();
   const dataTeoriMentah = useJadwalStore((s) => s.dataTeoriMentah);
+  const kelasPilihanUser = useJadwalStore((s) => s.kelasPilihanUser);
+  const setKelasPilihanUser = useJadwalStore((s) => s.setKelasPilihanUser);
   const [globalKelas, setGlobalKelas] = useState('');
 
   const groups = useMemo(() => {
@@ -54,6 +57,10 @@ export function SelectClassPage() {
     return [...set].sort();
   }, [groups]);
 
+  const handleKelasChange = useCallback((kodeMK: string, kelas: string) => {
+    setKelasPilihanUser({ ...kelasPilihanUser, [kodeMK]: kelas });
+  }, [kelasPilihanUser, setKelasPilihanUser]);
+
   useEffect(() => {
     if (groups.length === 0) {
       navigate('/upload-teori', { replace: true });
@@ -86,9 +93,42 @@ export function SelectClassPage() {
         </Select>
       </div>
 
-      <p className="pixel-font text-center text-[9px] text-zinc-500">
-        {groups.length} courses detected
-      </p>
+      <div className="flex flex-col gap-2">
+        {groups.map((g) => {
+          const selected = kelasPilihanUser[g.KodeMK] || '';
+          return (
+            <Card key={g.KodeMK} className="w-full">
+              <CardContent className="px-3 py-2">
+                <div className="pixel-font mb-1.5 text-[9px] font-bold leading-tight">
+                  {g.KodeMK}
+                </div>
+                <div className="pixel-font mb-2 text-[8px] leading-tight text-zinc-500">
+                  {g.MataKuliah}
+                </div>
+                <Select
+                  value={selected}
+                  onValueChange={(v) => handleKelasChange(g.KodeMK, v)}
+                >
+                  <SelectTrigger className="w-full text-[9px]">
+                    <SelectValue placeholder="[ Select Class... ]" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {g.kelasOptions.map((k) => (
+                      <SelectItem
+                        key={k}
+                        value={k}
+                        className="pixel-font text-[9px]"
+                      >
+                        Class {k}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }
