@@ -115,14 +115,14 @@ function SelectContent({
   ...props
 }: SelectContentProps) {
   return (
-    <ShadcnSelectContent
-      className={cn(
-        "relative bg-oklch(1 0 0) rounded-none border-none shadow-(--pixel-box-shadow) mt-2 dark:bg-oklch(0.141 0.005 285.823)",
-        inputVariants({ font }),
-        className
-      )}
-      {...props}
-    >
+      <ShadcnSelectContent
+        className={cn(
+          "relative bg-oklch(1 0 0) rounded-none border-none shadow-(--pixel-box-shadow) mt-2 dark:bg-oklch(0.272 0.006 286.033) text-oklch(0.141 0.005 285.823) dark:text-oklch(0.985 0 0)",
+          inputVariants({ font }),
+          className
+        )}
+        {...props}
+      >
       {children}
     </ShadcnSelectContent>
   );
@@ -144,7 +144,7 @@ function SelectItem({
     <ShadcnSelectItem
       className={cn(
         className,
-        "rounded-none border-y-3 border-dashed border-oklch(0.705 0.015 286.067)/0 hover:border-oklch(0.141 0.005 285.823) dark:hover:border-oklch(0.705 0.015 286.067) dark:border-oklch(0.552 0.016 285.938)/0 dark:hover:border-oklch(0.985 0 0) dark:dark:hover:border-oklch(0.552 0.016 285.938)"
+        "rounded-none border-y-3 border-dashed border-oklch(0.705 0.015 286.067)/0 data-[highlighted]:bg-oklch(0.92 0.004 286.32) dark:data-[highlighted]:bg-oklch(0.272 0.006 286.033) text-oklch(0.141 0.005 285.823) dark:text-oklch(0.985 0 0) hover:border-oklch(0.141 0.005 285.823) dark:hover:border-oklch(0.705 0.015 286.067) dark:border-oklch(0.552 0.016 285.938)/0 dark:hover:border-oklch(0.985 0 0) dark:dark:hover:border-oklch(0.552 0.016 285.938)"
       )}
       {...props}
     >
