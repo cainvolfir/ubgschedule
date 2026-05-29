@@ -36,6 +36,11 @@ function isJam(s: string): boolean {
   return /^\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}$/.test(s.trim());
 }
 
+function cleanQuoteReverse(acc: string[]): string {
+  const joined = acc.reverse().join(' ');
+  return joined.replace(/^["'\s]+|["'\s]+$/g, '').trim();
+}
+
 self.onmessage = async (e: MessageEvent) => {
   const { type, fileBuffer, kodeMKTerverifikasi } = e.data;
   if (type !== 'PARSE_THEORY') return;
@@ -124,6 +129,23 @@ self.onmessage = async (e: MessageEvent) => {
     }
 
     log('JAM_FOUND', { jam: tokens[jamIdx], index: jamIdx });
+
+    const sesiToken = tokens[jamIdx - 1];
+    log('SESI_IGNORED', { sesi: sesiToken });
+
+    const dosenTokens: string[] = [];
+    let foundQuote = false;
+    for (let k = jamIdx - 2; k >= 0; k--) {
+      const t = tokens[k].trim();
+      if (t === '"' || t === "'") {
+        dosenTokens.push(t);
+        foundQuote = true;
+        break;
+      }
+      dosenTokens.push(t);
+    }
+    const dosen = foundQuote ? cleanQuoteReverse(dosenTokens) : dosenTokens.reverse().join(' ').trim();
+    log('DOSEN_EXTRACTED', dosen);
   }
 
   log('RESULT', { total: dataTeoriMentah.length, first3: dataTeoriMentah.slice(0, 3) });
