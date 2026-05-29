@@ -4,14 +4,7 @@ import { UploadKrsPage } from './features/schedule/UploadKrsPage';
 import { UploadTeoriPage } from './features/schedule/UploadTeoriPage';
 import { SelectClassPage } from './features/schedule/SelectClassPage';
 import { UploadPraktikumPage } from './features/schedule/UploadPraktikumPage';
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <div className="flex min-h-[calc(100dvh-3rem)] items-center justify-center px-3">
-      <h2 className="pixel-font text-center text-[10px] text-zinc-400">{title}</h2>
-    </div>
-  );
-}
+import { ResultPage } from './features/schedule/ResultPage';
 
 export default function App() {
   return (
@@ -22,7 +15,7 @@ export default function App() {
           <Route path="/upload-teori" element={<UploadTeoriPage />} />
           <Route path="/select-class" element={<SelectClassPage />} />
           <Route path="/upload-praktikum" element={<UploadPraktikumPage />} />
-          <Route path="/result" element={<Placeholder title="Final Schedule" />} />
+          <Route path="/result" element={<ResultPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

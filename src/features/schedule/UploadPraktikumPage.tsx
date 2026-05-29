@@ -47,7 +47,6 @@ export function UploadPraktikumPage() {
           console.log('[Praktikum Worker] RESULT:', data);
           if (Array.isArray(data) && data.length > 0) {
             setDataPraktikum(data);
-            setJadwalFinal(data);
             setDropState('populated');
           } else {
             console.warn('[Praktikum Worker] No rows matched');
@@ -141,7 +140,28 @@ export function UploadPraktikumPage() {
                 </p>
                 <Button
                   variant="default"
-                  onClick={() => navigate('/result')}
+                  onClick={() => {
+                    const merged = [
+                      ...jadwalTeoriTerpilih.map((r) => ({
+                        ...r,
+                        Keterangan: r.Keterangan || '-',
+                      })),
+                      ...dataPraktikum.map((r: any) => ({
+                        KodeMK: r.KodeMK || '',
+                        MataKuliah: r.MataKuliah,
+                        Kelas: r.Kelas || '',
+                        SKS: r.SKS,
+                        SMT: r.SMT || '',
+                        DosenPengampuh: r.DosenPengampuh,
+                        Hari: r.Hari,
+                        Jam: r.Jam,
+                        Ruang: r.Ruang,
+                        Keterangan: r.Keterangan || '-',
+                      })),
+                    ];
+                    setJadwalFinal(merged);
+                    navigate('/result');
+                  }}
                   className="mt-3 w-full justify-center text-[9px]"
                 >
                   Continue
