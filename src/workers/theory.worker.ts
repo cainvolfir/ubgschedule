@@ -41,6 +41,14 @@ function cleanQuoteReverse(acc: string[]): string {
   return joined.replace(/^["'\s]+|["'\s]+$/g, '').trim();
 }
 
+function isMetode(s: string): boolean {
+  return ['Offline', 'Online', 'Blended'].includes(s.trim());
+}
+
+function isHari(s: string): boolean {
+  return HARI_PATTERN.test(s.trim());
+}
+
 self.onmessage = async (e: MessageEvent) => {
   const { type, fileBuffer, kodeMKTerverifikasi } = e.data;
   if (type !== 'PARSE_THEORY') return;
@@ -176,6 +184,57 @@ self.onmessage = async (e: MessageEvent) => {
     }
     const mataKuliah = mataKuliahTokens.reverse().join(' ').trim();
     log('MATA_KULIAH_EXTRACTED', mataKuliah);
+
+    const ruangTokens: string[] = [];
+    for (let k = jamIdx + 1; k < tokens.length; k++) {
+      const t = tokens[k].trim();
+      if (isMetode(t)) break;
+      ruangTokens.push(t);
+    }
+    const ruang = ruangTokens.join(' ').trim();
+    log('RUANG_EXTRACTED', ruang);
+
+    let metodeIdx = -1;
+    for (let k = jamIdx + 1; k < tokens.length; k++) {
+      if (isMetode(tokens[k])) {
+        metodeIdx = k;
+        break;
+      }
+    }
+
+    let keterangan = '-';
+    if (metodeIdx !== -1) {
+      const jmlMhsIdx = metodeIdx + 1;
+      const afterJmlMhs = jmlMhsIdx + 1;
+      if (afterJmlMhs < tokens.length) {
+        const next = tokens[afterJmlMhs].trim();
+        if (isHari(next)) {
+          keterangan = '-';
+        } else {
+          const ketTokens: string[] = [];
+          for (let k = afterJmlMhs; k < tokens.length; k++) {
+            if (isHari(tokens[k])) break;
+            ketTokens.push(tokens[k].trim());
+          }
+          keterangan = ketTokens.join(' ').trim();
+        }
+      }
+    }
+    log('KETERANGAN_EXTRACTED', keterangan);
+
+    dataTeoriMentah.push({
+      KodeMK: kode,
+      MataKuliah: mataKuliah,
+      Kelas: kelas,
+      SKS: sks,
+      SMT: smt,
+      DosenPengampuh: dosen,
+      Hari: hariGlobal,
+      Jam: tokens[jamIdx].trim(),
+      Ruang: ruang,
+      Keterangan: keterangan,
+    });
+    log('ROW_ADDED', { total: dataTeoriMentah.length });
   }
 
   log('RESULT', { total: dataTeoriMentah.length, first3: dataTeoriMentah.slice(0, 3) });
