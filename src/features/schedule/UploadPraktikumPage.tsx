@@ -44,13 +44,8 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
           break;
         case 'RESULT':
           console.log('[Praktikum Worker] RESULT:', data);
-          if (Array.isArray(data) && data.length > 0) {
-            setDataPraktikum(data);
-            setDropState('populated');
-          } else {
-            console.warn('[Praktikum Worker] No rows matched');
-            setDropState('empty');
-          }
+          setDataPraktikum(data.matched || []);
+          setDropState('populated');
           break;
       }
     };
@@ -70,7 +65,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
       workerRef.current?.postMessage(
         {
           type: 'PARSE_PRAKTIKUM',
-          fileBuffer: buffer,
+          file: buffer,
           jadwalTeoriTerpilih,
         },
         [buffer],
