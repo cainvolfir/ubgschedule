@@ -111,29 +111,28 @@ self.onmessage = async (e: MessageEvent) => {
   }
 
   let isTabelAktif = false;
+  let foundTrigger = false;
   const kodeMKTerverifikasi: string[] = [];
 
   for (const token of tokens) {
     if (!isTabelAktif && token === 'KODE MK') {
       isTabelAktif = true;
+      foundTrigger = true;
       log('KODE_MK_TRIGGER', true);
       continue;
     }
 
-    if (isTabelAktif) {
-      if (token === 'JUMLAH') {
-        log('JUMLAH_STOP', true);
-        break;
-      }
+    if (token === 'JUMLAH') {
+      log('JUMLAH_STOP', true);
+      break;
+    }
+
+    if (isTabelAktif || !foundTrigger) {
       if (/^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/.test(token)) {
         kodeMKTerverifikasi.push(token);
         log('KODE_MK_MATCH', token);
       }
     }
-  }
-
-  if (kodeMKTerverifikasi.length === 0) {
-    log('TOKENS_ALL', tokens);
   }
 
   self.postMessage({
