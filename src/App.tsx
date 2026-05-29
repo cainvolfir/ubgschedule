@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { RootLayout } from './layouts/RootLayout';
 import { UploadKrsPage } from './features/schedule/UploadKrsPage';
 import { UploadTeoriPage } from './features/schedule/UploadTeoriPage';
+import { SelectClassPage } from './features/schedule/SelectClassPage';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -18,7 +19,7 @@ export default function App() {
         <Route element={<RootLayout />}>
           <Route path="/" element={<UploadKrsPage />} />
           <Route path="/upload-teori" element={<UploadTeoriPage />} />
-          <Route path="/select-class" element={<Placeholder title="Select Classes" />} />
+          <Route path="/select-class" element={<SelectClassPage />} />
           <Route path="/upload-praktikum" element={<Placeholder title="Upload Practical Schedule" />} />
           <Route path="/result" element={<Placeholder title="Final Schedule" />} />
         </Route>
