@@ -32,3 +32,5 @@ dist-ssr
 
 # Shadcn CLI artifact
 @/
+
+.vercel
