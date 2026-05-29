@@ -327,6 +327,8 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
                         <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
                           <span>Dosen</span>
                           <span>{detailRow.DosenPengampuh}</span>
+                          <span>Hari</span>
+                          <span>{detailRow.Hari}</span>
                           <span>Jam</span>
                           <span>{detailRow.Jam}</span>
                           <span>Ruang</span>
