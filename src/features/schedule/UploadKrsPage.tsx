@@ -1,13 +1,61 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function UploadKrsPage() {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [fileName, setFileName] = useState('');
+  const workerRef = useRef<Worker | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleDrop = (e: React.DragEvent) => {
+  useEffect(() => {
+    const worker = new Worker(
+      new URL('../../workers/krs.worker.ts', import.meta.url),
+      { type: 'module' },
+    );
+
+    worker.onmessage = (e) => {
+      const { type, step, data } = e.data;
+      switch (type) {
+        case 'LOG':
+          console.log(`[KRS Worker] ${step}:`, data);
+          break;
+        case 'WARN':
+          console.warn(`[KRS Worker] ${step}:`, data);
+          break;
+        case 'ERROR':
+          console.error(`[KRS Worker] ${step}:`, data);
+          break;
+        case 'RESULT':
+          console.log('[KRS Worker] RESULT:', data);
+          break;
+      }
+    };
+
+    worker.onerror = (err) => {
+      console.error('[KRS Worker] Unhandled error:', err);
+    };
+
+    workerRef.current = worker;
+    return () => { worker.terminate(); };
+  }, []);
+
+  const processFile = useCallback((file: File) => {
+    if (!workerRef.current) return;
+    setFileName(file.name);
+
+    file.arrayBuffer().then((buffer) => {
+      workerRef.current?.postMessage(
+        { type: 'PARSE_KRS', fileBuffer: buffer },
+        [buffer],
+      );
+    });
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-  };
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  }, [processFile]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -20,6 +68,11 @@ export function UploadKrsPage() {
 
   const handleClick = () => {
     inputRef.current?.click();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
   };
 
   const dragClasses = isDragOver
@@ -37,9 +90,16 @@ export function UploadKrsPage() {
         onDragLeave={handleDragLeave}
         className={`flex h-64 w-full max-w-lg cursor-pointer items-center justify-center rounded-xl border-2 border-dashed ${dragClasses} border-zinc-300 bg-white transition-all hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500`}
       >
-        <p className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Drag & drop your KRS PDF here or click to browse
-        </p>
+        {fileName ? (
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-green-500" />
+            <p className="text-sm text-zinc-500">Processing {fileName}...</p>
+          </div>
+        ) : (
+          <p className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            Drag & drop your KRS PDF here or click to browse
+          </p>
+        )}
       </div>
 
       <input
@@ -47,6 +107,7 @@ export function UploadKrsPage() {
         type="file"
         accept=".pdf"
         className="hidden"
+        onChange={handleInputChange}
       />
     </div>
   );
