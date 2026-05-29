@@ -44,7 +44,12 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
           break;
         case 'RESULT':
           console.log('[Praktikum Worker] RESULT:', data);
-          setDataPraktikum(data.matched || []);
+          const jadwalPraktikumFinal = data.matched || [];
+          console.log('[Praktikum] jadwalPraktikumFinal:', jadwalPraktikumFinal.length, 'rows');
+          if (jadwalPraktikumFinal.length > 0) {
+            console.log('[Praktikum] First 3 rows:', jadwalPraktikumFinal.slice(0, 3));
+          }
+          setDataPraktikum(jadwalPraktikumFinal);
           setDropState('populated');
           break;
       }
@@ -92,7 +97,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     ? 'shadow-[0_0_6px_rgba(0,255,200,0.5),0_0_14px_rgba(0,200,255,0.35),0_0_28px_rgba(150,0,255,0.2)] ring-[2px] ring-cyan-400/30'
     : '';
   const dragClasses = isDragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' : '';
-  const hasValidResult = dropState === 'populated' && dataPraktikum.length > 0;
+  const hasValidResult = dropState === 'populated' && (dataPraktikum?.length ?? 0) > 0;
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
