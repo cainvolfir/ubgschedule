@@ -29,6 +29,7 @@ dist-ssr
 *.csv
 *.png
 .env
+test-*.mjs
 
 # Shadcn CLI artifact
 @/
