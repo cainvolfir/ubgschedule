@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Upload, RefreshCw } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/pixelact-ui/card';
+import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
 
 type DropState = 'empty' | 'processing' | 'populated';
 
 export function UploadKrsPage() {
-  const navigate = useNavigate();
   const setKRSResult = useJadwalStore((s) => s.setKRSResult);
   const dataKRS = useJadwalStore((s) => s.dataKRS);
   const kodeMKTerverifikasi = useJadwalStore((s) => s.kodeMKTerverifikasi);
@@ -45,15 +44,14 @@ export function UploadKrsPage() {
             );
             setDropState('populated');
           } else {
-            console.warn('[KRS Worker] No course codes found, staying in empty state');
+            console.warn('[KRS Worker] No course codes found');
             setDropState('empty');
           }
           break;
       }
     };
 
-    worker.onerror = (err) => {
-      console.error('[KRS Worker] Unhandled error:', err);
+    worker.onerror = () => {
       setDropState('empty');
     };
 
@@ -81,58 +79,100 @@ export function UploadKrsPage() {
     if (file) processFile(file);
   }, [processFile]);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
-
-  const handleClick = () => {
-    inputRef.current?.click();
-  };
+  const handleClick = () => inputRef.current?.click();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) processFile(file);
   };
 
-  const borderStyle =
-    dropState === 'empty' ? 'border-dashed' : 'border-solid';
-  const glowStyle =
-    dropState === 'populated'
-      ? 'shadow-[0_0_20px_rgba(34,197,94,0.3)] ring-2 ring-green-500/40'
-      : '';
-  const dragClasses = isDragOver
-    ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20'
+  const handleReupload = () => {
+    setDropState('empty');
+    setFileName('');
+    setKRSResult({ Nama: '', NIM: '', Semester: '' }, []);
+  };
+
+  const borderStyle = dropState === 'empty' || dropState === 'processing' ? 'border-dashed' : 'border-solid';
+  const glowStyle = dropState === 'populated'
+    ? 'shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-2 ring-green-500/30'
     : '';
+  const dragClasses = isDragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' : '';
 
   return (
-    <div className="flex flex-col items-center min-h-[calc(100vh-3.5rem)] px-4 pt-8">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={handleClick}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={`flex h-64 w-full max-w-lg cursor-pointer items-center justify-center rounded-xl border-2 ${borderStyle} ${glowStyle} ${dragClasses} border-zinc-300 bg-white transition-all hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500`}
-      >
-        {dropState === 'processing' ? (
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-green-500" />
-            <p className="text-sm text-zinc-500">Processing {fileName}...</p>
-          </div>
-        ) : (
-          <p className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            {dropState === 'populated'
-              ? `${fileName} uploaded successfully. Click to replace.`
-              : 'Drag & drop your KRS PDF here or click to browse'}
-          </p>
-        )}
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-sm flex-col px-3 pt-6">
+      <div className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
+        Upload KRS (Study Plan)
       </div>
+
+      <Card className="w-full">
+        <CardContent className="p-0">
+          {/* Upload zone */}
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={handleClick}
+            onDrop={handleDrop}
+            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={() => setIsDragOver(false)}
+            className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-6 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${glowStyle} ${dragClasses} ${dropState === 'populated' ? 'border-b-0' : 'rounded-none border-black dark:border-zinc-600'}`}
+          >
+            {dropState === 'processing' ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-zinc-300 border-t-green-500" />
+                <p className="pixel-font text-[9px] text-zinc-500">{fileName}</p>
+              </div>
+            ) : (
+              <>
+                <Upload size={20} className="mb-1 text-zinc-400" />
+                <p className="pixel-font text-[9px] leading-relaxed text-zinc-500">
+                  {dropState === 'populated'
+                    ? `${fileName}`
+                    : 'Drag & drop or click to browse'}
+                </p>
+              </>
+            )}
+          </div>
+
+          {/* Parsed data inside same card */}
+          {dropState === 'populated' && dataKRS && (
+            <div className="border-2 border-t-0 border-black px-3 py-3 dark:border-zinc-600">
+              <div className="mb-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11px]">
+                <span className="text-zinc-400">Nama</span>
+                <span className="font-medium">{dataKRS.Nama}</span>
+                <span className="text-zinc-400">NIM</span>
+                <span className="font-medium">{dataKRS.NIM}</span>
+                <span className="text-zinc-400">Semester</span>
+                <span className="font-medium">{dataKRS.Semester}</span>
+              </div>
+
+              <details className="group mt-1">
+                <summary className="cursor-pointer text-[10px] font-medium text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+                  Mata Kuliah ({kodeMKTerverifikasi.length})
+                </summary>
+                <ul className="mt-1 flex flex-wrap gap-1">
+                  {kodeMKTerverifikasi.map((kode) => (
+                    <li
+                      key={kode}
+                      className="rounded-none border border-black px-1.5 py-0.5 text-[9px] font-mono dark:border-zinc-600"
+                    >
+                      {kode}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+
+              <Button
+                variant="default"
+                onClick={handleReupload}
+                className="mt-3 w-full justify-center gap-1.5 text-[10px]"
+              >
+                <RefreshCw size={12} />
+                Upload Different KRS
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <input
         ref={inputRef}
@@ -142,44 +182,10 @@ export function UploadKrsPage() {
         onChange={handleInputChange}
       />
 
-      {dropState === 'populated' && dataKRS && (
-        <>
-          <Card className="mt-8 w-full max-w-lg">
-            <CardHeader>
-              <CardTitle>KRS Result</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Nama</span>
-                <span className="font-semibold">{dataKRS.Nama}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>NIM</span>
-                <span className="font-semibold">{dataKRS.NIM}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Semester</span>
-                <span className="font-semibold">{dataKRS.Semester}</span>
-              </div>
-              <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
-                <span className="font-semibold">Mata Kuliah ({kodeMKTerverifikasi.length})</span>
-                <ul className="mt-1 space-y-1">
-                  {kodeMKTerverifikasi.map((kode) => (
-                    <li key={kode} className="text-xs font-mono">{kode}</li>
-                  ))}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button
-            variant="success"
-            onClick={() => navigate('/upload-teori')}
-            className="mt-6"
-          >
-            Continue
-          </Button>
-        </>
+      {dropState === 'populated' && (
+        <p className="mt-3 text-center text-[9px] text-green-600 dark:text-green-400">
+          KRS parsed successfully
+        </p>
       )}
     </div>
   );

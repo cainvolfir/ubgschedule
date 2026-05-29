@@ -7,10 +7,10 @@ export function ThemeSwitcher() {
   return (
     <button
       onClick={toggleTheme}
-      className="fixed bottom-4 left-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-300 bg-white text-zinc-700 shadow transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+      className="flex h-8 w-8 items-center justify-center rounded-none border-2 border-black bg-white text-black shadow-[3px_3px_0_0_#000] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#000] dark:border-zinc-400 dark:bg-zinc-900 dark:text-zinc-200 dark:shadow-[3px_3px_0_0_#666] dark:hover:shadow-[2px_2px_0_0_#666]"
       aria-label="Toggle theme"
     >
-      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+      {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
     </button>
   );
 }

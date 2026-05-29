@@ -1,7 +1,12 @@
+import { ThemeSwitcher } from './ThemeSwitcher';
+
 export function Navbar() {
   return (
-    <nav className="flex h-14 items-center border-b border-zinc-200 px-6 dark:border-zinc-800">
-      <h1 className="text-lg font-bold tracking-tight">UniSchedule</h1>
+    <nav className="flex h-12 items-center justify-between border-b-2 border-black px-3 dark:border-zinc-700">
+      <h1 className="pixel-font text-[10px] leading-none tracking-wide sm:text-xs">
+        UniSchedule
+      </h1>
+      <ThemeSwitcher />
     </nav>
   );
 }
