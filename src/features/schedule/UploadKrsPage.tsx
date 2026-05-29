@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useJadwalStore } from '../../store/useJadwalStore';
 
 type DropState = 'empty' | 'processing' | 'populated';
 
 export function UploadKrsPage() {
   const navigate = useNavigate();
+  const setKRSResult = useJadwalStore((s) => s.setKRSResult);
   const [dropState, setDropState] = useState<DropState>('empty');
   const [fileName, setFileName] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -33,6 +35,10 @@ export function UploadKrsPage() {
         case 'RESULT':
           console.log('[KRS Worker] RESULT:', data);
           if (data.kodeMKTerverifikasi && data.kodeMKTerverifikasi.length > 0) {
+            setKRSResult(
+              { Nama: data.Nama, NIM: data.NIM, Semester: data.Semester },
+              data.kodeMKTerverifikasi,
+            );
             setDropState('populated');
           } else {
             console.warn('[KRS Worker] No course codes found, staying in empty state');
