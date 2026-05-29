@@ -69,14 +69,14 @@ export function SelectClassPage() {
 
   const handleGlobalChange = useCallback((kelas: string) => {
     setGlobalKelas(kelas);
-    const updated: Record<string, string> = {};
+    const updated = { ...kelasPilihanUser };
     for (const g of groups) {
       if (g.kelasOptions.includes(kelas)) {
         updated[g.KodeMK] = kelas;
       }
     }
     setKelasPilihanUser(updated);
-  }, [groups, setKelasPilihanUser]);
+  }, [groups, kelasPilihanUser, setKelasPilihanUser]);
 
   const handleKelasChange = useCallback((kodeMK: string, kelas: string) => {
     setKelasPilihanUser({ ...kelasPilihanUser, [kodeMK]: kelas });
@@ -114,7 +114,7 @@ export function SelectClassPage() {
         </Select>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto flex flex-col gap-2 min-h-0">
         {groups.map((g) => {
           const selected = kelasPilihanUser[g.KodeMK] || '';
           return (
