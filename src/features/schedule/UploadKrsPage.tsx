@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
@@ -12,8 +11,7 @@ function truncate(name: string, max = 28): string {
 
 type DropState = 'empty' | 'processing' | 'populated';
 
-export function UploadKrsPage() {
-  const navigate = useNavigate();
+export function UploadKrsPage({ onNext }: { onNext: () => void }) {
   const setKRSResult = useJadwalStore((s) => s.setKRSResult);
   const dataKRS = useJadwalStore((s) => s.dataKRS);
   const kodeMKTerverifikasi = useJadwalStore((s) => s.kodeMKTerverifikasi);
@@ -159,7 +157,7 @@ export function UploadKrsPage() {
 
               <Button
                 variant="default"
-                onClick={() => navigate('/upload-teori')}
+                onClick={() => onNext()}
                 className="mt-3 w-full justify-center text-[9px]"
               >
                 Continue

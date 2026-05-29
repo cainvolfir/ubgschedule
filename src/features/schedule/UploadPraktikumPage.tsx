@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
@@ -12,8 +11,7 @@ function truncate(name: string, max = 28): string {
 
 type DropState = 'empty' | 'processing' | 'populated';
 
-export function UploadPraktikumPage() {
-  const navigate = useNavigate();
+export function UploadPraktikumPage({ onNext }: { onNext: () => void }) {
   const jadwalTeoriTerpilih = useJadwalStore((s) => s.jadwalTeoriTerpilih);
   const setDataPraktikum = useJadwalStore((s) => s.setDataPraktikum);
   const setJadwalFinal = useJadwalStore((s) => s.setJadwalFinal);
@@ -160,7 +158,7 @@ export function UploadPraktikumPage() {
                       })),
                     ];
                     setJadwalFinal(merged);
-                    navigate('/result');
+                    onNext();
                   }}
                   className="mt-3 w-full justify-center text-[9px]"
                 >

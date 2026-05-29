@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
@@ -18,8 +17,7 @@ interface FinalRow {
   Keterangan: string;
 }
 
-export function ResultPage() {
-  const navigate = useNavigate();
+export function ResultPage({ onBack }: { onBack: () => void }) {
   const jadwalFinal = useJadwalStore((s) => s.jadwalFinal);
 
   const merged = useMemo(() => {
@@ -57,7 +55,7 @@ export function ResultPage() {
     return groups;
   }, [merged]);
 
-  const goBack = () => navigate('/upload-praktikum');
+  const goBack = onBack;
 
   if (merged.length === 0) {
     return (
