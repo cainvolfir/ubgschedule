@@ -192,7 +192,7 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
   const hasTheoryResult = dropState === 'populated' && dataTeoriMentah.length > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 pt-6 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={onBack}

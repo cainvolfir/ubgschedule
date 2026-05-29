@@ -153,8 +153,18 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const handleContinue = () => {
     const checked = filteredCandidates.filter((c) => selectedCandidateIds.has(c.id));
 
-    const groupKey = (c: typeof checked[number]) =>
-      `${c.dosen}|${c.kelas}|${c.jam}|${c.hari}|${c.ruang}`;
+    const parseJam = (jam: string) => {
+      const m = jam.match(/^(\d{2})\.(\d{2})\s*-\s*(\d{2})\.(\d{2})$/);
+      if (!m) return null;
+      return { start: parseInt(m[1]) * 60 + parseInt(m[2]), end: parseInt(m[3]) * 60 + parseInt(m[4]) };
+    };
+    const formatJam = (start: number, end: number) => {
+      const s = `${String(Math.floor(start / 60)).padStart(2, '0')}.${String(start % 60).padStart(2, '0')}`;
+      const e = `${String(Math.floor(end / 60)).padStart(2, '0')}.${String(end % 60).padStart(2, '0')}`;
+      return `${s}-${e}`;
+    };
+
+    const groupKey = (c: typeof checked[number]) => `${c.courseName}|${c.dosen}|${c.kelas}|${c.hari}|${c.ruang}`;
 
     const groups = new Map<string, typeof checked>();
     for (const c of checked) {
@@ -163,21 +173,50 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
       groups.get(key)!.push(c);
     }
 
-    const praktikumMerged = [...groups.values()].map((items) => {
-      const first = items[0];
-      return {
-        KodeMK: '',
-        MataKuliah: first.courseName,
-        Kelas: first.kelas,
-        SKS: String(items.length),
-        SMT: first.semester,
-        DosenPengampuh: first.dosen,
-        Hari: first.hari,
-        Jam: first.jam,
-        Ruang: first.ruang,
-        Keterangan: items.map((i) => i.keterangan).filter(Boolean).join(', ') || '-',
-      };
-    });
+    const praktikumMerged: any[] = [];
+    for (const items of groups.values()) {
+      const parsed = items.map((c) => ({ c, jam: parseJam(c.jam) }));
+      const valid = parsed.filter((p): p is { c: typeof checked[number]; jam: NonNullable<ReturnType<typeof parseJam>> } => p.jam !== null)
+        .sort((a, b) => a.jam.start - b.jam.start);
+
+      for (const p of parsed) {
+        if (!p.jam) {
+          praktikumMerged.push({
+            KodeMK: '', MataKuliah: p.c.courseName, Kelas: p.c.kelas, SKS: '1',
+            SMT: p.c.semester, DosenPengampuh: p.c.dosen, Hari: p.c.hari,
+            Jam: p.c.jam, Ruang: p.c.ruang,
+            Keterangan: p.c.keterangan || '-',
+          });
+        }
+      }
+
+      if (valid.length === 0) continue;
+
+      let run = { items: [valid[0].c], start: valid[0].jam.start, end: valid[0].jam.end };
+      for (let i = 1; i < valid.length; i++) {
+        const v = valid[i];
+        if (v.jam.start === run.end) {
+          run.items.push(v.c);
+          run.end = v.jam.end;
+        } else {
+          const first = run.items[0];
+          praktikumMerged.push({
+            KodeMK: '', MataKuliah: first.courseName, Kelas: first.kelas,
+            SKS: String(run.items.length), SMT: first.semester, DosenPengampuh: first.dosen,
+            Hari: first.hari, Jam: formatJam(run.start, run.end), Ruang: first.ruang,
+            Keterangan: run.items.map((i) => i.keterangan).filter(Boolean).join(', ') || '-',
+          });
+          run = { items: [v.c], start: v.jam.start, end: v.jam.end };
+        }
+      }
+      const first = run.items[0];
+      praktikumMerged.push({
+        KodeMK: '', MataKuliah: first.courseName, Kelas: first.kelas,
+        SKS: String(run.items.length), SMT: first.semester, DosenPengampuh: first.dosen,
+        Hari: first.hari, Jam: formatJam(run.start, run.end), Ruang: first.ruang,
+        Keterangan: run.items.map((i) => i.keterangan).filter(Boolean).join(', ') || '-',
+      });
+    }
 
     const merged = [
       ...jadwalTeoriTerpilih.map((r) => ({
@@ -210,7 +249,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const hasChecked = selectedCandidateIds.size > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 pt-6 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={onBack}
