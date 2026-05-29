@@ -61,6 +61,12 @@ export function SelectClassPage() {
 
   const allSelected = useMemo(() => groups.length > 0 && groups.every((g) => kelasPilihanUser[g.KodeMK]), [groups, kelasPilihanUser]);
 
+  useEffect(() => {
+    if (Object.keys(kelasPilihanUser).length > 0) {
+      console.log('[SelectClass] Selection map:', kelasPilihanUser);
+    }
+  }, [kelasPilihanUser]);
+
   const handleGlobalChange = useCallback((kelas: string) => {
     setGlobalKelas(kelas);
     const updated: Record<string, string> = {};
@@ -154,6 +160,8 @@ export function SelectClassPage() {
             const filtered = dataTeoriMentah.filter(
               (row) => kelasPilihanUser[row.KodeMK] === row.Kelas,
             );
+            console.log('[SelectClass] jadwalTeoriTerpilih:', filtered.length, 'rows');
+            console.log('[SelectClass] First 3 rows:', filtered.slice(0, 3));
             setJadwalTeoriTerpilih(filtered);
             navigate('/upload-praktikum');
           }}
