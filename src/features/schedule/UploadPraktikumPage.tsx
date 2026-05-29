@@ -182,7 +182,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     const merged = [
       ...jadwalTeoriTerpilih.map((r) => ({
         ...r,
-        Keterangan: r.Keterangan || '',
+        Keterangan: '-',
       })),
       ...praktikumMerged,
     ];
@@ -194,7 +194,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     if (jadwalFinal.length === 0) {
       const merged = jadwalTeoriTerpilih.map((r) => ({
         ...r,
-        Keterangan: r.Keterangan || '',
+        Keterangan: '-',
       }));
       setJadwalFinal(merged);
     }

@@ -360,9 +360,9 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
             {allSelected && (
               <button
                 onClick={() => {
-                  const filtered = dataTeoriMentah.filter(
-                    (row) => kelasPilihanUser[row.KodeMK] === row.Kelas,
-                  );
+                  const filtered = dataTeoriMentah
+                    .filter((row) => kelasPilihanUser[row.KodeMK] === row.Kelas)
+                    .map((r) => ({ ...r, Keterangan: '-' }));
                   setJadwalFinal(filtered);
                   onSkipToResult();
                 }}
