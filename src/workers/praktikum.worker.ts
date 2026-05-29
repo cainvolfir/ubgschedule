@@ -34,6 +34,15 @@ function stripRomanNumerals(text: string): string {
   return text;
 }
 
+function extractSubKelas(raw: string): { kelasNormal: string; kelasOriginal: string } {
+  const cleaned = normalizeCell(raw);
+  const match = cleaned.match(/\b([A-Za-z])(\d+)\b/);
+  if (match) {
+    return { kelasNormal: match[1].toUpperCase(), kelasOriginal: cleaned };
+  }
+  return { kelasNormal: cleaned.replace(/\d+/g, '').trim(), kelasOriginal: cleaned };
+}
+
 self.onmessage = async (e: MessageEvent) => {
   const { type, file, jadwalTeoriTerpilih } = e.data;
   if (type !== 'PARSE_PRAKTIKUM') return;
@@ -88,6 +97,21 @@ self.onmessage = async (e: MessageEvent) => {
   if (!semester) {
     warn('SEMESTER', 'No semester found in first 20 rows');
   }
+
+  const kelasSamples: { raw: string; kelasNormal: string; kelasOriginal: string }[] = [];
+  for (let r = 0; r < Math.min(normalized.length, 50); r++) {
+    for (let c = 0; c < normalized[r].length; c++) {
+      const cell = normalized[r][c];
+      if (!cell) continue;
+      const { kelasNormal, kelasOriginal } = extractSubKelas(cell);
+      if (kelasNormal && kelasOriginal !== kelasNormal) {
+        kelasSamples.push({ raw: matrix[r][c], kelasNormal, kelasOriginal });
+        if (kelasSamples.length >= 5) break;
+      }
+    }
+    if (kelasSamples.length >= 5) break;
+  }
+  log('KELAS_SAMPLES', kelasSamples);
 
   if (!jadwalTeoriTerpilih || jadwalTeoriTerpilih.length === 0) {
     warn('INPUT', 'No jadwalTeoriTerpilih provided');
