@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+type DropState = 'empty' | 'processing' | 'populated';
 
 export function UploadKrsPage() {
-  const [isDragOver, setIsDragOver] = useState(false);
+  const navigate = useNavigate();
+  const [dropState, setDropState] = useState<DropState>('empty');
   const [fileName, setFileName] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -23,15 +28,23 @@ export function UploadKrsPage() {
           break;
         case 'ERROR':
           console.error(`[KRS Worker] ${step}:`, data);
+          setDropState('empty');
           break;
         case 'RESULT':
           console.log('[KRS Worker] RESULT:', data);
+          if (data.kodeMKTerverifikasi && data.kodeMKTerverifikasi.length > 0) {
+            setDropState('populated');
+          } else {
+            console.warn('[KRS Worker] No course codes found, staying in empty state');
+            setDropState('empty');
+          }
           break;
       }
     };
 
     worker.onerror = (err) => {
       console.error('[KRS Worker] Unhandled error:', err);
+      setDropState('empty');
     };
 
     workerRef.current = worker;
@@ -41,6 +54,7 @@ export function UploadKrsPage() {
   const processFile = useCallback((file: File) => {
     if (!workerRef.current) return;
     setFileName(file.name);
+    setDropState('processing');
 
     file.arrayBuffer().then((buffer) => {
       workerRef.current?.postMessage(
@@ -75,6 +89,12 @@ export function UploadKrsPage() {
     if (file) processFile(file);
   };
 
+  const borderStyle =
+    dropState === 'empty' ? 'border-dashed' : 'border-solid';
+  const glowStyle =
+    dropState === 'populated'
+      ? 'shadow-[0_0_20px_rgba(34,197,94,0.3)] ring-2 ring-green-500/40'
+      : '';
   const dragClasses = isDragOver
     ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20'
     : '';
@@ -88,16 +108,18 @@ export function UploadKrsPage() {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`flex h-64 w-full max-w-lg cursor-pointer items-center justify-center rounded-xl border-2 border-dashed ${dragClasses} border-zinc-300 bg-white transition-all hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500`}
+        className={`flex h-64 w-full max-w-lg cursor-pointer items-center justify-center rounded-xl border-2 ${borderStyle} ${glowStyle} ${dragClasses} border-zinc-300 bg-white transition-all hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500`}
       >
-        {fileName ? (
+        {dropState === 'processing' ? (
           <div className="flex flex-col items-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-green-500" />
             <p className="text-sm text-zinc-500">Processing {fileName}...</p>
           </div>
         ) : (
           <p className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            Drag & drop your KRS PDF here or click to browse
+            {dropState === 'populated'
+              ? `${fileName} uploaded successfully. Click to replace.`
+              : 'Drag & drop your KRS PDF here or click to browse'}
           </p>
         )}
       </div>
@@ -109,6 +131,15 @@ export function UploadKrsPage() {
         className="hidden"
         onChange={handleInputChange}
       />
+
+      {dropState === 'populated' && (
+        <button
+          onClick={() => navigate('/upload-teori')}
+          className="mt-6 rounded-lg bg-zinc-900 px-6 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+        >
+          Continue
+        </button>
+      )}
     </div>
   );
 }
