@@ -29,7 +29,7 @@ const HARI_PATTERN = /^(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)/i;
 
 const ROOM_PREFIX_PATTERN = /([A-Za-z][A-Za-z0-9]*)\s+\d{1,3}\s*[-–]\s*\d{1,3}/;
 
-async function loadXLSX(file: ArrayBuffer): Promise<{ XLSX: typeof import('xlsx'); matrix: string[][] }> {
+async function loadXLSX(file: Uint8Array | ArrayBuffer): Promise<{ XLSX: typeof import('xlsx'); matrix: string[][] }> {
   const XLSX = await import('xlsx');
   const data = new Uint8Array(file);
   const workbook = XLSX.read(data, { type: 'array' });

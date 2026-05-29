@@ -36,7 +36,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const [dropState, setDropState] = useState<DropState>('empty');
   const [isScanning, setIsScanning] = useState(false);
   const [fileName, setFileName] = useState('');
-  const [fileBuffer, setFileBuffer] = useState<ArrayBuffer | null>(null);
+  const [fileData, setFileData] = useState<Uint8Array | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -91,26 +91,25 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     setPraktikumCandidates([]);
 
     file.arrayBuffer().then((buffer) => {
-      setFileBuffer(buffer);
+      const bytes = new Uint8Array(buffer);
+      setFileData(bytes);
       workerRef.current?.postMessage(
-        { type: 'SCAN_XLSX', file: buffer },
-        [buffer],
+        { type: 'SCAN_XLSX', file: bytes },
       );
     });
   }, []);
 
   const handlePrefixChange = useCallback((prefix: string) => {
-    if (!workerRef.current || !fileBuffer) return;
+    if (!workerRef.current || !fileData) return;
     setSelectedRoomPrefix(prefix);
     setIsParsing(true);
 
     workerRef.current.postMessage({
       type: 'PARSE_PRAKTIKUM',
-      file: fileBuffer,
+      file: fileData,
       roomPrefix: prefix,
-      jadwalTeoriTerpilih,
     });
-  }, [fileBuffer, jadwalTeoriTerpilih]);
+  }, [fileData]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -241,36 +240,51 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
                 <p className="pixel-font mb-2 text-[9px] text-zinc-500">
                   {praktikumCandidates.length} jadwal ditemukan untuk {selectedRoomPrefix}
                 </p>
-                <div className="mb-3 max-h-64 space-y-1 overflow-y-auto">
-                  {praktikumCandidates.map((cand) => (
-                    <label
-                      key={cand.id}
-                      className={cn(
-                        'flex cursor-pointer items-start gap-2 rounded px-2 py-2 transition-colors',
-                        selectedCandidateIds.has(cand.id)
-                          ? 'bg-cyan-400/10 ring-1 ring-cyan-400/30'
-                          : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
-                      )}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedCandidateIds.has(cand.id)}
-                        onChange={() => toggleCandidateId(cand.id)}
-                        className="mt-0.5 h-3.5 w-3.5 accent-cyan-500"
-                      />
-                      <div className="flex-1">
-                        <p className="pixel-font text-[10px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
-                          {cand.courseName}
-                        </p>
-                        <p className="pixel-font text-[8px] text-zinc-500">
-                          {cand.dosen || '—'} {cand.semester ? `• SMT ${cand.semester}` : ''} • Kelas {cand.kelas}{cand.keterangan ? ` (${cand.keterangan})` : ''}
-                        </p>
-                        <p className="pixel-font text-[8px] text-zinc-400">
-                          {cand.hari} {cand.jam} • {cand.ruang}
-                        </p>
-                      </div>
-                    </label>
-                  ))}
+                <div className="mb-3 max-h-80 space-y-2 overflow-y-auto">
+                  {praktikumCandidates.map((cand) => {
+                    const isChecked = selectedCandidateIds.has(cand.id);
+                    return (
+                      <label
+                        key={cand.id}
+                        className={cn(
+                          'flex cursor-pointer items-start gap-2 rounded px-2 py-2 transition-colors',
+                          isChecked
+                            ? 'bg-cyan-400/10 ring-1 ring-cyan-400/30'
+                            : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCandidateId(cand.id)}
+                          className="mt-1 h-3.5 w-3.5 accent-cyan-500"
+                        />
+                        <div className="flex-1">
+                          <p className="pixel-font text-[10px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
+                            {cand.courseName}
+                          </p>
+                          <p className="pixel-font mt-0.5 text-[8px] text-zinc-500">
+                            {cand.dosen || '—'}
+                            {cand.semester ? ` • SMT ${cand.semester}` : ''}
+                            {' • Kelas '}{cand.kelas}{cand.keterangan ? ` (${cand.keterangan})` : ''}
+                          </p>
+                          {isChecked && (
+                            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 border-t border-zinc-200 pt-1.5 dark:border-zinc-700">
+                              <span className="pixel-font text-[8px] text-zinc-400">
+                                Hari: <span className="text-zinc-600 dark:text-zinc-300">{cand.hari}</span>
+                              </span>
+                              <span className="pixel-font text-[8px] text-zinc-400">
+                                Jam: <span className="text-zinc-600 dark:text-zinc-300">{cand.jam}</span>
+                              </span>
+                              <span className="pixel-font text-[8px] text-zinc-400">
+                                Ruang: <span className="text-zinc-600 dark:text-zinc-300">{cand.ruang}</span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
                 {hasChecked && (
                   <Button
