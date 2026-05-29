@@ -74,6 +74,15 @@ self.onmessage = async (e: MessageEvent) => {
     }
   }
 
+  if (!nama) {
+    const tier3Match = fullText.match(/(?:Ulang\s*\(U\)\.|bersangkutan,)\s*([A-Za-z\s\.\']+?)\s+NIM/i);
+    log('NAMA_TIER3', tier3Match ? { captured: tier3Match[1].trim() } : 'NO_MATCH');
+    if (tier3Match) {
+      nama = tier3Match[1].trim();
+      log('NAMA', `Final selected (Tier 3): "${nama}"`);
+    }
+  }
+
   self.postMessage({
     type: 'RESULT',
     data: { Nama: nama, NIM: nim, Semester: semester, kodeMKTerverifikasi: [] },
