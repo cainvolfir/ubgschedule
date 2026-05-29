@@ -16,6 +16,7 @@ export function UploadPraktikumPage({ onNext }: { onNext: () => void }) {
   const setDataPraktikum = useJadwalStore((s) => s.setDataPraktikum);
   const setJadwalFinal = useJadwalStore((s) => s.setJadwalFinal);
   const dataPraktikum = useJadwalStore((s) => s.dataPraktikum);
+  const jadwalFinal = useJadwalStore((s) => s.jadwalFinal);
   const [dropState, setDropState] = useState<DropState>('empty');
   const [fileName, setFileName] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -169,6 +170,24 @@ export function UploadPraktikumPage({ onNext }: { onNext: () => void }) {
           </div>
         </CardContent>
       </Card>
+
+      <div className="mt-4 flex justify-center">
+        <button
+          onClick={() => {
+            if (jadwalFinal.length === 0) {
+              const merged = jadwalTeoriTerpilih.map((r) => ({
+                ...r,
+                Keterangan: r.Keterangan || '-',
+              }));
+              setJadwalFinal(merged);
+            }
+            onNext();
+          }}
+          className="pixel-font cursor-pointer text-center text-[9px] text-zinc-400 underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
+        >
+          Skip → View Schedule
+        </button>
+      </div>
 
       <input
         ref={inputRef}

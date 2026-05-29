@@ -25,7 +25,7 @@ interface CourseGroup {
   rows: DataTeoriMentah[];
 }
 
-export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
+export function UploadTeoriPage({ onNext, onSkipToResult }: { onNext: () => void; onSkipToResult: () => void }) {
   const dataKRS = useJadwalStore((s) => s.dataKRS);
   const kodeMKTerverifikasi = useJadwalStore((s) => s.kodeMKTerverifikasi);
   const setDataTeoriMentah = useJadwalStore((s) => s.setDataTeoriMentah);
@@ -33,6 +33,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
   const kelasPilihanUser = useJadwalStore((s) => s.kelasPilihanUser);
   const setKelasPilihanUser = useJadwalStore((s) => s.setKelasPilihanUser);
   const setJadwalTeoriTerpilih = useJadwalStore((s) => s.setJadwalTeoriTerpilih);
+  const setJadwalFinal = useJadwalStore((s) => s.setJadwalFinal);
   const [dropState, setDropState] = useState<DropState>('empty');
   const [fileName, setFileName] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -283,6 +284,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
           <div className="flex-1 overflow-y-auto flex flex-col gap-2 min-h-0">
             {groups.map((g) => {
               const selected = kelasPilihanUser[g.KodeMK] || '';
+              const detailRow = selected ? g.rows.find((r) => r.Kelas === selected) : null;
               return (
                 <Card key={g.KodeMK} className="w-full">
                   <CardContent className="px-3 py-2">
@@ -311,21 +313,50 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
                         ))}
                       </SelectContent>
                     </Select>
+                    {detailRow && (
+                      <div className="pixel-font mt-2 border-t border-zinc-300 pt-2 text-[8px] leading-relaxed text-zinc-600 dark:border-zinc-600 dark:text-zinc-400">
+                        <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
+                          <span>Dosen</span>
+                          <span>{detailRow.DosenPengampuh}</span>
+                          <span>Jam</span>
+                          <span>{detailRow.Jam}</span>
+                          <span>Ruang</span>
+                          <span>{detailRow.Ruang || '-'}</span>
+                          <span>SKS</span>
+                          <span>{detailRow.SKS}</span>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
             })}
           </div>
 
-          <div className="flex justify-center pb-8 pt-2">
+          <div className="flex flex-col gap-2 pb-8 pt-2">
             <Button
               variant={allSelected ? 'default' : 'secondary'}
               disabled={!allSelected}
-              className="pixel-font w-full text-[9px]"
+              className="pixel-font w-full justify-center text-[9px]"
               onClick={handleContinue}
             >
               Continue to Practical
             </Button>
+            {allSelected && (
+              <button
+                onClick={() => {
+                  const filtered = dataTeoriMentah.filter(
+                    (row) => kelasPilihanUser[row.KodeMK] === row.Kelas,
+                  );
+                  setJadwalTeoriTerpilih(filtered);
+                  setJadwalFinal(filtered);
+                  onSkipToResult();
+                }}
+                className="pixel-font cursor-pointer text-center text-[9px] text-zinc-400 underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
+              >
+                Skip to Schedule
+              </button>
+            )}
           </div>
         </div>
       )}
