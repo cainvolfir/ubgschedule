@@ -98,10 +98,13 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-4xl flex-col justify-center px-4 pt-6 lg:px-8">
       <img
-        src="/favicon.png"
+        src="/mainpage.png"
         alt="UBG"
-        className="mx-auto mb-3 h-10 w-10"
+        className="mx-auto mb-2 h-auto w-32 max-w-[60%] sm:w-44 md:w-52"
       />
+      <p className="pixel-font mx-auto mb-3 max-w-xs text-center text-[8px] leading-relaxed text-zinc-500 sm:text-[9px]">
+        Upload your KRS, Jadwal Teori, and Jadwal Praktikum and get your Jadwal Perkuliahan
+      </p>
       <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
         Upload KRS (Study Plan)
       </p>
