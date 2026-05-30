@@ -164,7 +164,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
       return `${s}-${e}`;
     };
 
-    const groupKey = (c: typeof checked[number]) => `${c.courseName}|${c.dosen}|${c.kelas}|${c.hari}|${c.ruang}`;
+    const groupKey = (c: typeof checked[number]) => `${c.dosen}|${c.hari}|${c.ruang}`;
 
     const groups = new Map<string, typeof checked>();
     for (const c of checked) {
