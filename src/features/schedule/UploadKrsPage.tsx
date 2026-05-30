@@ -107,7 +107,7 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
           Upload your KRS, Jadwal Teori, and Jadwal Praktikum and get your Jadwal Perkuliahan
         </p>
       </div>
-      <div className="flex flex-1 flex-col justify-center pb-8">
+      <div className="flex w-full flex-col pt-4 pb-8">
         <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
           Upload KRS (Study Plan)
         </p>
