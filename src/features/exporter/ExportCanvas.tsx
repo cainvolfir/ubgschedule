@@ -39,7 +39,6 @@ function drawCell(
   ctx.fillRect(x, y, w, h);
 
   ctx.font = opts.font || '9px "Press Start 2P", monospace';
-  ctx.textBaseline = 'top';
   ctx.textAlign = opts.align || 'left';
   ctx.fillStyle = opts.color || '#27272a';
 
@@ -48,24 +47,29 @@ function drawCell(
   const maxW = w - px - 6;
   const maxLines = Math.max(1, Math.floor((h - 6) / lh));
   const words = text.split(' ');
-  let line = '';
-  let ly = y + 4;
-  let linesDrawn = 0;
 
+  // build wrapped lines
+  const lines: string[] = [];
+  let cur = '';
   for (const word of words) {
-    const test = line ? line + ' ' + word : word;
-    if (ctx.measureText(test).width > maxW && line) {
-      if (linesDrawn >= maxLines) break;
-      ctx.fillText(line, opts.align === 'center' ? x + w / 2 : x + px, ly);
-      line = word;
-      ly += lh;
-      linesDrawn++;
+    const test = cur ? cur + ' ' + word : word;
+    if (ctx.measureText(test).width > maxW && cur) {
+      if (lines.length >= maxLines) break;
+      lines.push(cur);
+      cur = word;
     } else {
-      line = test;
+      cur = test;
     }
   }
-  if (line && linesDrawn < maxLines) {
-    ctx.fillText(line, opts.align === 'center' ? x + w / 2 : x + px, ly);
+  if (cur && lines.length < maxLines) lines.push(cur);
+
+  const totalTextH = lines.length * lh;
+  const startY = y + (h - totalTextH) / 2;
+
+  ctx.textBaseline = 'top';
+  for (let i = 0; i < lines.length; i++) {
+    const tx = opts.align === 'center' ? x + w / 2 : x + px;
+    ctx.fillText(lines[i], tx, startY + i * lh);
   }
 
   ctx.restore();
