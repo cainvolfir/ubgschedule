@@ -21,6 +21,40 @@ interface ExportCanvasProps {
   merged: FinalRow[];
 }
 
+function drawCell(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  text: string,
+  opts: { bg?: string; align?: CanvasTextAlign; font?: string; color?: string; padX?: number },
+) {
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+
+  ctx.fillStyle = opts.bg || '#ffffff';
+  ctx.fillRect(x, y, w, h);
+
+  ctx.font = opts.font || '9px "Press Start 2P", monospace';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = opts.align || 'left';
+  ctx.fillStyle = opts.color || '#27272a';
+
+  const px = opts.padX ?? (opts.align === 'center' ? 0 : 6);
+  const tx = opts.align === 'center' ? x + w / 2 : x + px;
+  ctx.fillText(text, tx, y + h / 2);
+
+  ctx.strokeStyle = '#18181b';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, h);
+
+  ctx.restore();
+}
+
 export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -30,17 +64,17 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const totalRows = merged.length;
-    const rowHeight = 26;
-    const headerHeight = 30;
-    const pad = 10;
+    const rowHeight = 28;
+    const headerHeight = 32;
+    const pad = 12;
     const cols = [
-      { key: 'Hari', w: 70 },
-      { key: 'MataKuliah', w: 200 },
-      { key: 'DosenPengampuh', w: 170 },
-      { key: 'SKS', w: 40 },
-      { key: 'Jam', w: 110 },
-      { key: 'Ruang', w: 130 },
-      { key: 'Keterangan', w: 80 },
+      { key: 'Hari', w: 80 },
+      { key: 'MataKuliah', w: 220 },
+      { key: 'DosenPengampuh', w: 190 },
+      { key: 'SKS', w: 44 },
+      { key: 'Jam', w: 120 },
+      { key: 'Ruang', w: 150 },
+      { key: 'Keterangan', w: 90 },
     ];
 
     let totalW = pad * 2;
@@ -52,56 +86,35 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     canvas.height = totalH * dpr;
     ctx.scale(dpr, dpr);
 
-    const bc = '#18181b';
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, totalW, totalH);
-
     let x = pad;
     let y = pad;
 
-    ctx.fillStyle = '#f4f4f5';
-    ctx.fillRect(x, y, totalW - pad * 2, headerHeight);
+    const hdrBase = { font: 'bold 10px "Press Start 2P", monospace', color: '#18181b' };
+    const cellBase = { font: '9px "Press Start 2P", monospace', color: '#27272a' };
 
-    ctx.strokeStyle = bc;
-    ctx.lineWidth = 1;
-    ctx.font = 'bold 10px "Press Start 2P", monospace';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#18181b';
     const headers = ['Hari', 'Mata Kuliah', 'Dosen Pengampuh', 'SKS', 'Jam', 'Ruang', 'Keterangan'];
     let hx = x;
     for (let i = 0; i < headers.length; i++) {
-      const cw = cols[i].w;
-      ctx.strokeRect(hx, y, cw, headerHeight);
-      ctx.textAlign = headers[i] === 'SKS' ? 'center' : 'left';
-      ctx.fillText(headers[i], headers[i] === 'SKS' ? hx + cw / 2 : hx + 5, y + headerHeight / 2);
-      hx += cw;
+      drawCell(ctx, hx, y, cols[i].w, headerHeight, headers[i], {
+        ...hdrBase,
+        bg: '#f4f4f5',
+        align: headers[i] === 'SKS' ? 'center' : 'left',
+      });
+      hx += cols[i].w;
     }
     y += headerHeight;
 
     let hariRowIdx = 0;
-    for (let gi = 0; gi < dayGroups.length; gi++) {
-      const group = dayGroups[gi];
+    for (const group of dayGroups) {
       const gx = x;
-      let gy = y + hariRowIdx * rowHeight;
+      const gy = y + hariRowIdx * rowHeight;
 
-      ctx.fillStyle = '#f4f4f5';
-      ctx.fillRect(gx, gy, cols[0].w, group.rows.length * rowHeight);
-
-      ctx.strokeStyle = bc;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(gx, gy, cols[0].w, group.rows.length * rowHeight);
-      ctx.font = '10px "Press Start 2P", monospace';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#27272a';
-
-      const lines = group.hari.split(' ');
-      const lineH = 12;
-      const startY = gy + (group.rows.length * rowHeight - lines.length * lineH) / 2;
-      for (let li = 0; li < lines.length; li++) {
-        ctx.fillText(lines[li], gx + 5, startY + li * lineH);
-      }
+      drawCell(ctx, gx, gy, cols[0].w, group.rows.length * rowHeight, group.hari, {
+        ...cellBase,
+        font: '10px "Press Start 2P", monospace',
+        bg: '#f4f4f5',
+        padX: 6,
+      });
 
       for (let ri = 0; ri < group.rows.length; ri++) {
         const row = group.rows[ri];
@@ -110,16 +123,12 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
 
         const vals = [row.MataKuliah, row.DosenPengampuh, row.SKS, row.Jam, row.Ruang, row.Keterangan];
         for (let ci = 0; ci < vals.length; ci++) {
-          const cw = cols[ci + 1].w;
-          ctx.strokeStyle = bc;
-          ctx.lineWidth = 1;
-          ctx.strokeRect(cx, ry, cw, rowHeight);
-          ctx.font = '9px "Press Start 2P", monospace';
-          ctx.textAlign = ci === 2 ? 'center' : 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#27272a';
-          ctx.fillText(String(vals[ci] || ''), ci === 2 ? cx + cw / 2 : cx + 4, ry + rowHeight / 2);
-          cx += cw;
+          drawCell(ctx, cx, ry, cols[ci + 1].w, rowHeight, String(vals[ci] || ''), {
+            ...cellBase,
+            align: ci === 2 ? 'center' : 'left',
+            padX: ci === 2 ? 0 : 6,
+          });
+          cx += cols[ci + 1].w;
         }
       }
       hariRowIdx += group.rows.length;
