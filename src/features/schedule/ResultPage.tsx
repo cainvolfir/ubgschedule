@@ -150,7 +150,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                 const gi = globalIdx++;
                 const collided = collisionMap.get(gi);
                 const keterangan = collided
-                  ? `${row.Keterangan} (Bentrok dengan jam Mata Kuliah ${collided.join(', ')})`
+                  ? 'Jadwal Bentrok'
                   : row.Keterangan;
                 const cellCls = collided
                   ? 'bg-red-50 dark:bg-red-950/30 shadow-[inset_0_0_6px_rgba(239,68,68,0.35)]'
@@ -207,7 +207,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                 const gi = globalIdx++;
                 const collided = collisionMap.get(gi);
                 const keterangan = collided
-                  ? `${row.Keterangan} (Bentrok dengan jam Mata Kuliah ${collided.join(', ')})`
+                  ? 'Jadwal Bentrok'
                   : row.Keterangan;
                 const cardCls = collided
                   ? 'bg-red-50 dark:bg-red-950/30 shadow-[0_0_8px_rgba(239,68,68,0.35)] border-red-300 dark:border-red-700'

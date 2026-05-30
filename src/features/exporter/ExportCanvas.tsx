@@ -182,7 +182,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
         const gi = globalIdx++;
         const collided = collisionMap.get(gi);
     const keterangan = collided
-      ? `${row.Keterangan} (Bentrok dengan jam Mata Kuliah ${collided.join(', ')})`
+      ? 'Jadwal Bentrok'
       : row.Keterangan;
         const cellBg = collided ? '#fef2f2' : '#ffffff';
         const cellColor = collided ? '#991b1b' : '#27272a';
