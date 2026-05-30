@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
+
+const ExportCanvas = lazy(() => import('../../features/exporter/ExportCanvas'));
 
 const HARI_ORDER: Record<string, number> = {
   Senin: 1, Selasa: 2, Rabu: 3, Kamis: 4, Jumat: 5, Sabtu: 6, Minggu: 7,
@@ -84,9 +86,16 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
           <ArrowLeft size={16} />
           <span className="pixel-font text-[9px]">Back</span>
         </button>
-        <p className="pixel-font text-[10px] uppercase tracking-wider text-zinc-400">
+        <p className="pixel-font mr-auto text-[10px] uppercase tracking-wider text-zinc-400">
           Jadwal Perkuliahan
         </p>
+        <Suspense
+          fallback={
+            <span className="pixel-font text-[8px] text-zinc-400">Loading...</span>
+          }
+        >
+          <ExportCanvas dayGroups={dayGroups} merged={merged} />
+        </Suspense>
       </div>
 
       {/* Desktop table */}
