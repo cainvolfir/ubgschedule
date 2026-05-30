@@ -63,17 +63,17 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const totalRows = merged.length;
-    const rowHeight = 40;
-    const headerHeight = 46;
-    const pad = 40;
+    const rowHeight = 48;
+    const headerHeight = 56;
+    const pad = 60;
     const cols = [
-      { key: 'Hari', w: 130 },
-      { key: 'MataKuliah', w: 420 },
-      { key: 'DosenPengampuh', w: 360 },
-      { key: 'SKS', w: 72 },
-      { key: 'Jam', w: 190 },
-      { key: 'Ruang', w: 320 },
-      { key: 'Keterangan', w: 160 },
+      { key: 'Hari', w: 160 },
+      { key: 'MataKuliah', w: 520 },
+      { key: 'DosenPengampuh', w: 440 },
+      { key: 'SKS', w: 88 },
+      { key: 'Jam', w: 220 },
+      { key: 'Ruang', w: 400 },
+      { key: 'Keterangan', w: 200 },
     ];
 
     let totalW = pad * 2;
