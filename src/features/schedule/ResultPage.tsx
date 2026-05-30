@@ -135,13 +135,13 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
         <table className="w-full border-collapse border-2 border-black dark:border-zinc-600">
           <thead>
             <tr className="pixel-font border-b-2 border-black text-[9px] lg:text-[10px] dark:border-zinc-600">
-              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Hari</th>
-              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Mata Kuliah</th>
-              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Dosen Pengampuh</th>
-              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">SKS</th>
-              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Jam</th>
-              <th className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">Ruang</th>
-              <th className="px-2 py-1.5 lg:px-4 lg:py-2.5">Keterangan</th>
+              <th className="border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600">Hari</th>
+              <th className="border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600">Mata Kuliah</th>
+              <th className="border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600">Dosen Pengampuh</th>
+              <th className="border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600">SKS</th>
+              <th className="border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600">Jam</th>
+              <th className="border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600">Ruang</th>
+              <th className="px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5">Keterangan</th>
             </tr>
           </thead>
           <tbody>
@@ -165,28 +165,28 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                   >
                     {idx === 0 && (
                       <td
-                        className="border-r border-black px-2 py-1.5 align-top lg:px-4 lg:py-2.5 dark:border-zinc-600"
+                        className="border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600"
                         rowSpan={group.rows.length}
                       >
                         {group.hari}
                       </td>
                     )}
-                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
+                    <td className={`border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.MataKuliah}
                     </td>
-                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
+                    <td className={`border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.DosenPengampuh}
                     </td>
-                    <td className={`border-r border-black px-2 py-1.5 text-center lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
+                    <td className={`border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.SKS}
                     </td>
-                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
+                    <td className={`border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.Jam}
                     </td>
-                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
+                    <td className={`border-r border-black px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.Ruang}
                     </td>
-                    <td className={`px-2 py-1.5 lg:px-4 lg:py-2.5 ${ketCls} ${cellCls}`}>{keterangan}</td>
+                    <td className={`px-2 py-1.5 text-center align-middle lg:px-4 lg:py-2.5 ${ketCls} ${cellCls}`}>{keterangan}</td>
                   </tr>
                 );
               }),

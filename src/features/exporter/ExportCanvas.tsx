@@ -88,13 +88,13 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const headerHeight = 56;
     const pad = 60;
     const cols = [
-      { key: 'Hari', w: 160 },
-      { key: 'MataKuliah', w: 520 },
-      { key: 'DosenPengampuh', w: 440 },
-      { key: 'SKS', w: 88 },
-      { key: 'Jam', w: 220 },
-      { key: 'Ruang', w: 400 },
-      { key: 'Keterangan', w: 360 },
+      { key: 'Hari', w: 100 },
+      { key: 'MataKuliah', w: 200 },
+      { key: 'DosenPengampuh', w: 160 },
+      { key: 'SKS', w: 60 },
+      { key: 'Jam', w: 140 },
+      { key: 'Ruang', w: 130 },
+      { key: 'Keterangan', w: 180 },
     ];
 
     let totalW = pad * 2;
@@ -125,8 +125,8 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
       drawCell(ctx, hx, y, cols[i].w, headerHeight, headers[i], {
         ...hdrBase,
         bg: '#f4f4f5',
-        align: headers[i] === 'SKS' ? 'center' : 'left',
-        padX: headers[i] === 'SKS' ? 0 : 10,
+        align: 'center',
+        padX: 0,
       });
       hx += cols[i].w;
     }
@@ -192,8 +192,8 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
             font: '10px "Press Start 2P", monospace',
             color: cellColor,
             bg: cellBg,
-            align: ci === 2 ? 'center' : 'left',
-            padX: ci === 2 ? 0 : 10,
+            align: 'center',
+            padX: 0,
           });
           cx += cols[ci + 1].w;
         }
