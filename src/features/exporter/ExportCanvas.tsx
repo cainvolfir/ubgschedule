@@ -85,6 +85,13 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     canvas.height = totalH * dpr;
     ctx.scale(dpr, dpr);
 
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, totalW, totalH);
+
+    ctx.strokeStyle = '#a1a1aa';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(6, 6, totalW - 12, totalH - 12);
+
     let x = pad;
     let y = pad;
 
