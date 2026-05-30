@@ -154,17 +154,17 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     const checked = filteredCandidates.filter((c) => selectedCandidateIds.has(c.id));
 
     const parseJam = (jam: string) => {
-      const m = jam.match(/^(\d{2})\.(\d{2})\s*-\s*(\d{2})\.(\d{2})$/);
+      const m = jam.match(/^(\d{2})[:.](\d{2})\s*[-–]\s*(\d{2})[:.](\d{2})$/);
       if (!m) return null;
       return { start: parseInt(m[1]) * 60 + parseInt(m[2]), end: parseInt(m[3]) * 60 + parseInt(m[4]) };
     };
     const formatJam = (start: number, end: number) => {
-      const s = `${String(Math.floor(start / 60)).padStart(2, '0')}.${String(start % 60).padStart(2, '0')}`;
-      const e = `${String(Math.floor(end / 60)).padStart(2, '0')}.${String(end % 60).padStart(2, '0')}`;
+      const s = `${String(Math.floor(start / 60)).padStart(2, '0')}:${String(start % 60).padStart(2, '0')}`;
+      const e = `${String(Math.floor(end / 60)).padStart(2, '0')}:${String(end % 60).padStart(2, '0')}`;
       return `${s}-${e}`;
     };
 
-    const groupKey = (c: typeof checked[number]) => `${c.dosen}|${c.hari}|${c.ruang}`;
+    const groupKey = (c: typeof checked[number]) => `${c.courseName}|${c.dosen}|${c.hari}|${c.ruang}`;
 
     const groups = new Map<string, typeof checked>();
     for (const c of checked) {
