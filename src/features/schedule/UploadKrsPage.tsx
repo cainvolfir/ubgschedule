@@ -97,6 +97,11 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-4xl flex-col justify-center px-4 pt-6 lg:px-8">
+      <img
+        src="/favicon.png"
+        alt="UBG"
+        className="mx-auto mb-3 h-10 w-10"
+      />
       <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
         Upload KRS (Study Plan)
       </p>
