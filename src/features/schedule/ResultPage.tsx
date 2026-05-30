@@ -168,26 +168,26 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                         className="border-r border-black px-2 py-1.5 text-center align-middle leading-none lg:px-4 lg:py-2.5 dark:border-zinc-600"
                         rowSpan={group.rows.length}
                       >
-                        <span className="flex min-h-full items-center justify-center">{group.hari}</span>
+                        <span className="flex w-full items-center justify-center">{group.hari}</span>
                       </td>
                     )}
                     <td className={`border-r border-black px-2 py-1.5 text-center align-middle leading-none lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
-                      <span className="flex items-center justify-center">{row.MataKuliah}</span>
+                      <span className="flex w-full items-center justify-center">{row.MataKuliah}</span>
                     </td>
                     <td className={`border-r border-black px-2 py-1.5 text-center align-middle leading-none lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
-                      <span className="flex items-center justify-center">{row.DosenPengampuh}</span>
+                      <span className="flex w-full items-center justify-center">{row.DosenPengampuh}</span>
                     </td>
                     <td className={`border-r border-black px-2 py-1.5 text-center align-middle leading-none lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
-                      <span className="flex items-center justify-center">{row.SKS}</span>
+                      <span className="flex w-full items-center justify-center">{row.SKS}</span>
                     </td>
                     <td className={`border-r border-black px-2 py-1.5 text-center align-middle leading-none lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
-                      <span className="flex items-center justify-center">{row.Jam}</span>
+                      <span className="flex w-full items-center justify-center">{row.Jam}</span>
                     </td>
                     <td className={`border-r border-black px-2 py-1.5 text-center align-middle leading-none lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
-                      <span className="flex items-center justify-center">{row.Ruang}</span>
+                      <span className="flex w-full items-center justify-center">{row.Ruang}</span>
                     </td>
                     <td className={`px-2 py-1.5 text-center align-middle leading-none lg:px-4 lg:py-2.5 ${ketCls} ${cellCls}`}>
-                      <span className="flex items-center justify-center">{keterangan}</span>
+                      <span className="flex w-full items-center justify-center">{keterangan}</span>
                     </td>
                   </tr>
                 );
