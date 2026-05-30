@@ -28,6 +28,8 @@ dist-ssr
 *.xlsx
 *.csv
 *.png
+!public/mainpage.png
+!public/favicon.png
 .env
 test-*.mjs
 
