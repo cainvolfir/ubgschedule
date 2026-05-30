@@ -31,7 +31,6 @@ function drawCell(
   opts: { bg?: string; align?: CanvasTextAlign; font?: string; color?: string; padX?: number },
 ) {
   ctx.save();
-
   ctx.beginPath();
   ctx.rect(x, y, w, h);
   ctx.clip();
@@ -48,11 +47,11 @@ function drawCell(
   const tx = opts.align === 'center' ? x + w / 2 : x + px;
   ctx.fillText(text, tx, y + h / 2);
 
+  ctx.restore();
+
   ctx.strokeStyle = '#18181b';
   ctx.lineWidth = 1;
   ctx.strokeRect(x, y, w, h);
-
-  ctx.restore();
 }
 
 export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
@@ -64,17 +63,17 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const totalRows = merged.length;
-    const rowHeight = 34;
-    const headerHeight = 38;
-    const pad = 24;
+    const rowHeight = 40;
+    const headerHeight = 46;
+    const pad = 40;
     const cols = [
-      { key: 'Hari', w: 100 },
-      { key: 'MataKuliah', w: 300 },
-      { key: 'DosenPengampuh', w: 260 },
-      { key: 'SKS', w: 56 },
-      { key: 'Jam', w: 150 },
-      { key: 'Ruang', w: 220 },
-      { key: 'Keterangan', w: 120 },
+      { key: 'Hari', w: 130 },
+      { key: 'MataKuliah', w: 420 },
+      { key: 'DosenPengampuh', w: 360 },
+      { key: 'SKS', w: 72 },
+      { key: 'Jam', w: 190 },
+      { key: 'Ruang', w: 320 },
+      { key: 'Keterangan', w: 160 },
     ];
 
     let totalW = pad * 2;
