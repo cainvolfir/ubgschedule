@@ -28,7 +28,7 @@ function drawCell(
   w: number,
   h: number,
   text: string,
-  opts: { bg?: string; align?: CanvasTextAlign; font?: string; color?: string; padX?: number },
+  opts: { bg?: string; align?: CanvasTextAlign; font?: string; color?: string; padX?: number; lineH?: number },
 ) {
   ctx.save();
   ctx.beginPath();
@@ -39,13 +39,34 @@ function drawCell(
   ctx.fillRect(x, y, w, h);
 
   ctx.font = opts.font || '9px "Press Start 2P", monospace';
-  ctx.textBaseline = 'middle';
+  ctx.textBaseline = 'top';
   ctx.textAlign = opts.align || 'left';
   ctx.fillStyle = opts.color || '#27272a';
 
   const px = opts.padX ?? (opts.align === 'center' ? 0 : 6);
-  const tx = opts.align === 'center' ? x + w / 2 : x + px;
-  ctx.fillText(text, tx, y + h / 2);
+  const lh = opts.lineH || 14;
+  const maxW = w - px - 6;
+  const maxLines = Math.max(1, Math.floor((h - 6) / lh));
+  const words = text.split(' ');
+  let line = '';
+  let ly = y + 4;
+  let linesDrawn = 0;
+
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxW && line) {
+      if (linesDrawn >= maxLines) break;
+      ctx.fillText(line, opts.align === 'center' ? x + w / 2 : x + px, ly);
+      line = word;
+      ly += lh;
+      linesDrawn++;
+    } else {
+      line = test;
+    }
+  }
+  if (line && linesDrawn < maxLines) {
+    ctx.fillText(line, opts.align === 'center' ? x + w / 2 : x + px, ly);
+  }
 
   ctx.restore();
 
@@ -63,7 +84,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const totalRows = merged.length;
-    const rowHeight = 48;
+    const rowHeight = 52;
     const headerHeight = 56;
     const pad = 60;
     const cols = [
@@ -73,7 +94,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
       { key: 'SKS', w: 88 },
       { key: 'Jam', w: 220 },
       { key: 'Ruang', w: 400 },
-      { key: 'Keterangan', w: 200 },
+      { key: 'Keterangan', w: 360 },
     ];
 
     let totalW = pad * 2;
@@ -156,9 +177,9 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
         const row = group.rows[ri];
         const gi = globalIdx++;
         const collided = collisionMap.get(gi);
-        const keterangan = collided
-          ? `Bentrok dengan jam Mata Kuliah ${collided.join(', ')}`
-          : row.Keterangan;
+    const keterangan = collided
+      ? `${row.Keterangan} (Bentrok dengan jam Mata Kuliah ${collided.join(', ')})`
+      : row.Keterangan;
         const cellBg = collided ? '#fef2f2' : '#ffffff';
         const cellColor = collided ? '#991b1b' : '#27272a';
 

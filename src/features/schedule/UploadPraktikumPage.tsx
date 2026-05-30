@@ -185,7 +185,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
             KodeMK: '', MataKuliah: p.c.courseName, Kelas: p.c.kelas, SKS: '1',
             SMT: p.c.semester, DosenPengampuh: p.c.dosen, Hari: p.c.hari,
             Jam: p.c.jam, Ruang: p.c.ruang,
-            Keterangan: p.c.keterangan || '-',
+            Keterangan: p.c.keterangan || p.c.kelas || '-',
           });
         }
       }
