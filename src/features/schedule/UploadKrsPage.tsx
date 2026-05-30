@@ -101,7 +101,7 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
         <img
           src="/mainpage.png"
           alt="UBG"
-          className="mx-auto mb-3 h-auto w-40 max-w-[70%] sm:w-56 md:w-64"
+          className="mx-auto mb-3 h-auto w-40 max-w-[70%] sm:w-56 md:w-64 dark:invert"
         />
         <p className="pixel-font mx-auto mb-4 max-w-sm text-center text-[10px] leading-relaxed text-zinc-500 sm:text-[11px]">
           Upload your KRS, Jadwal Teori, and Jadwal Praktikum and get your Jadwal Perkuliahan
