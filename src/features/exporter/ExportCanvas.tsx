@@ -64,17 +64,17 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const totalRows = merged.length;
-    const rowHeight = 28;
-    const headerHeight = 32;
-    const pad = 12;
+    const rowHeight = 34;
+    const headerHeight = 38;
+    const pad = 24;
     const cols = [
-      { key: 'Hari', w: 80 },
-      { key: 'MataKuliah', w: 220 },
-      { key: 'DosenPengampuh', w: 190 },
-      { key: 'SKS', w: 44 },
-      { key: 'Jam', w: 120 },
-      { key: 'Ruang', w: 150 },
-      { key: 'Keterangan', w: 90 },
+      { key: 'Hari', w: 100 },
+      { key: 'MataKuliah', w: 300 },
+      { key: 'DosenPengampuh', w: 260 },
+      { key: 'SKS', w: 56 },
+      { key: 'Jam', w: 150 },
+      { key: 'Ruang', w: 220 },
+      { key: 'Keterangan', w: 120 },
     ];
 
     let totalW = pad * 2;
@@ -89,8 +89,8 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     let x = pad;
     let y = pad;
 
-    const hdrBase = { font: 'bold 10px "Press Start 2P", monospace', color: '#18181b' };
-    const cellBase = { font: '9px "Press Start 2P", monospace', color: '#27272a' };
+    const hdrBase = { font: '11px "Press Start 2P", monospace', color: '#18181b' };
+    const cellBase = { font: '10px "Press Start 2P", monospace', color: '#27272a' };
 
     const headers = ['Hari', 'Mata Kuliah', 'Dosen Pengampuh', 'SKS', 'Jam', 'Ruang', 'Keterangan'];
     let hx = x;
@@ -99,6 +99,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
         ...hdrBase,
         bg: '#f4f4f5',
         align: headers[i] === 'SKS' ? 'center' : 'left',
+        padX: headers[i] === 'SKS' ? 0 : 10,
       });
       hx += cols[i].w;
     }
@@ -111,9 +112,8 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
 
       drawCell(ctx, gx, gy, cols[0].w, group.rows.length * rowHeight, group.hari, {
         ...cellBase,
-        font: '10px "Press Start 2P", monospace',
         bg: '#f4f4f5',
-        padX: 6,
+        padX: 10,
       });
 
       for (let ri = 0; ri < group.rows.length; ri++) {
@@ -126,7 +126,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
           drawCell(ctx, cx, ry, cols[ci + 1].w, rowHeight, String(vals[ci] || ''), {
             ...cellBase,
             align: ci === 2 ? 'center' : 'left',
-            padX: ci === 2 ? 0 : 6,
+            padX: ci === 2 ? 0 : 10,
           });
           cx += cols[ci + 1].w;
         }
