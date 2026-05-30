@@ -5,6 +5,7 @@ import { UploadKrsPage } from './features/schedule/UploadKrsPage';
 import { UploadTeoriPage } from './features/schedule/UploadTeoriPage';
 import { UploadPraktikumPage } from './features/schedule/UploadPraktikumPage';
 import { ResultPage } from './features/schedule/ResultPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export type WizardStep = 'krs' | 'teori' | 'praktikum' | 'result';
 
@@ -53,12 +54,14 @@ export default function App() {
           <Route
             path="/*"
             element={
-              <WizardContent
-                step={step}
-                onNext={goNext}
-                onSkipToResult={() => setStep('result')}
-                onBack={goBack}
-              />
+              <ErrorBoundary>
+                <WizardContent
+                  step={step}
+                  onNext={goNext}
+                  onSkipToResult={() => setStep('result')}
+                  onBack={goBack}
+                />
+              </ErrorBoundary>
             }
           />
         </Route>

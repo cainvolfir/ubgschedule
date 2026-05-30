@@ -24,13 +24,13 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
 
   const merged = useMemo(() => {
     const all: FinalRow[] = (jadwalFinal as any[]).map((r: any) => ({
-      Hari: r.Hari,
-      MataKuliah: r.MataKuliah,
-      DosenPengampuh: r.DosenPengampuh,
-      SKS: r.SKS,
-      Jam: r.Jam,
-      Ruang: r.Ruang,
-      Keterangan: r.Keterangan || '-',
+      Hari: String(r?.Hari ?? ''),
+      MataKuliah: String(r?.MataKuliah ?? ''),
+      DosenPengampuh: String(r?.DosenPengampuh ?? ''),
+      SKS: String(r?.SKS ?? ''),
+      Jam: String(r?.Jam ?? ''),
+      Ruang: String(r?.Ruang ?? ''),
+      Keterangan: String(r?.Keterangan ?? '-'),
     }));
 
     all.sort((a, b) => {
@@ -59,6 +59,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
 
   const collisionMap = useMemo(() => {
     const parseJam = (jam: string) => {
+      if (!jam) return null;
       const m = jam.match(/^(\d{1,2})[:.](\d{2})\s*[-–]\s*(\d{1,2})[:.](\d{2})$/);
       if (!m) return null;
       return { start: parseInt(m[1]) * 60 + parseInt(m[2]), end: parseInt(m[3]) * 60 + parseInt(m[4]) };
