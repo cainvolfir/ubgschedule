@@ -152,7 +152,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                 const keterangan = collided
                   ? `Bentrok dengan jam Mata Kuliah ${collided.join(', ')}`
                   : row.Keterangan;
-                const rowCls = collided
+                const cellCls = collided
                   ? 'bg-red-50 dark:bg-red-950/30 shadow-[inset_0_0_6px_rgba(239,68,68,0.35)]'
                   : '';
                 const ketCls = collided
@@ -161,7 +161,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                 return (
                   <tr
                     key={`${group.hari}-${idx}`}
-                    className={`${rowCls} pixel-font border-b border-black text-[9px] lg:text-[10px] dark:border-zinc-700`}
+                    className="pixel-font border-b border-black text-[9px] lg:text-[10px] dark:border-zinc-700"
                   >
                     {idx === 0 && (
                       <td
@@ -171,22 +171,22 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                         {group.hari}
                       </td>
                     )}
-                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.MataKuliah}
                     </td>
-                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.DosenPengampuh}
                     </td>
-                    <td className="border-r border-black px-2 py-1.5 text-center lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                    <td className={`border-r border-black px-2 py-1.5 text-center lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.SKS}
                     </td>
-                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.Jam}
                     </td>
-                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                    <td className={`border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600 ${cellCls}`}>
                       {row.Ruang}
                     </td>
-                    <td className={`px-2 py-1.5 lg:px-4 lg:py-2.5 ${ketCls}`}>{keterangan}</td>
+                    <td className={`px-2 py-1.5 lg:px-4 lg:py-2.5 ${ketCls} ${cellCls}`}>{keterangan}</td>
                   </tr>
                 );
               }),
