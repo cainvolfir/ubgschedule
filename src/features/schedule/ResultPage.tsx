@@ -57,6 +57,38 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
     return groups;
   }, [merged]);
 
+  const collisionMap = useMemo(() => {
+    const parseJam = (jam: string) => {
+      const m = jam.match(/^(\d{1,2})[:.](\d{2})\s*[-–]\s*(\d{1,2})[:.](\d{2})$/);
+      if (!m) return null;
+      return { start: parseInt(m[1]) * 60 + parseInt(m[2]), end: parseInt(m[3]) * 60 + parseInt(m[4]) };
+    };
+    const map = new Map<number, string[]>();
+    const byDay = new Map<string, number[]>();
+    merged.forEach((row, idx) => {
+      if (!byDay.has(row.Hari)) byDay.set(row.Hari, []);
+      byDay.get(row.Hari)!.push(idx);
+    });
+    for (const [, indices] of byDay) {
+      for (let i = 0; i < indices.length; i++) {
+        const a = parseJam(merged[indices[i]].Jam);
+        if (!a) continue;
+        for (let j = i + 1; j < indices.length; j++) {
+          const b = parseJam(merged[indices[j]].Jam);
+          if (!b) continue;
+          if (a.start < b.end && b.start < a.end) {
+            const ai = indices[i], bi = indices[j];
+            if (!map.has(ai)) map.set(ai, []);
+            if (!map.has(bi)) map.set(bi, []);
+            map.get(ai)!.push(merged[bi].MataKuliah);
+            map.get(bi)!.push(merged[ai].MataKuliah);
+          }
+        }
+      }
+    }
+    return map;
+  }, [merged]);
+
   const goBack = onBack;
 
   if (merged.length === 0) {
@@ -113,77 +145,103 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
             </tr>
           </thead>
           <tbody>
-            {dayGroups.map((group) =>
-              group.rows.map((row, idx) => (
-                <tr
-                  key={`${group.hari}-${idx}`}
-                  className="pixel-font border-b border-black text-[9px] lg:text-[10px] dark:border-zinc-700"
-                >
-                  {idx === 0 && (
-                    <td
-                      className="border-r border-black px-2 py-1.5 align-top lg:px-4 lg:py-2.5 dark:border-zinc-600"
-                      rowSpan={group.rows.length}
-                    >
-                      {group.hari}
+            {(() => { let globalIdx = 0; return dayGroups.map((group) =>
+              group.rows.map((row, idx) => {
+                const gi = globalIdx++;
+                const collided = collisionMap.get(gi);
+                const keterangan = collided
+                  ? `Bentrok dengan jam Mata Kuliah ${collided.join(', ')}`
+                  : row.Keterangan;
+                const rowCls = collided
+                  ? 'bg-red-50 dark:bg-red-950/30 shadow-[inset_0_0_6px_rgba(239,68,68,0.35)]'
+                  : '';
+                const ketCls = collided
+                  ? 'text-red-600 dark:text-red-400 font-semibold'
+                  : '';
+                return (
+                  <tr
+                    key={`${group.hari}-${idx}`}
+                    className={`${rowCls} pixel-font border-b border-black text-[9px] lg:text-[10px] dark:border-zinc-700`}
+                  >
+                    {idx === 0 && (
+                      <td
+                        className="border-r border-black px-2 py-1.5 align-top lg:px-4 lg:py-2.5 dark:border-zinc-600"
+                        rowSpan={group.rows.length}
+                      >
+                        {group.hari}
+                      </td>
+                    )}
+                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                      {row.MataKuliah}
                     </td>
-                  )}
-                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
-                    {row.MataKuliah}
-                  </td>
-                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
-                    {row.DosenPengampuh}
-                  </td>
-                  <td className="border-r border-black px-2 py-1.5 text-center lg:px-4 lg:py-2.5 dark:border-zinc-600">
-                    {row.SKS}
-                  </td>
-                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
-                    {row.Jam}
-                  </td>
-                  <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
-                    {row.Ruang}
-                  </td>
-                  <td className="px-2 py-1.5 lg:px-4 lg:py-2.5">{row.Keterangan}</td>
-                </tr>
-              )),
-            )}
+                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                      {row.DosenPengampuh}
+                    </td>
+                    <td className="border-r border-black px-2 py-1.5 text-center lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                      {row.SKS}
+                    </td>
+                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                      {row.Jam}
+                    </td>
+                    <td className="border-r border-black px-2 py-1.5 lg:px-4 lg:py-2.5 dark:border-zinc-600">
+                      {row.Ruang}
+                    </td>
+                    <td className={`px-2 py-1.5 lg:px-4 lg:py-2.5 ${ketCls}`}>{keterangan}</td>
+                  </tr>
+                );
+              }),
+            ); })()}
           </tbody>
         </table>
       </div>
 
       {/* Mobile cards — visible only on small screens */}
       <div className="sm:hidden flex flex-col gap-3">
-        {dayGroups.map((group) => (
+        {(() => { let globalIdx = 0; return dayGroups.map((group) => (
           <div key={group.hari}>
             <h3 className="pixel-font mb-1.5 text-[10px] font-bold">{group.hari}</h3>
             <div className="flex flex-col gap-2">
-              {group.rows.map((row, idx) => (
-                <div
-                  key={idx}
-                  className="border-2 border-black bg-white px-3 py-2 dark:border-zinc-600 dark:bg-zinc-900"
-                >
-                  <div className="pixel-font mb-1 text-[9px] font-bold leading-tight">
-                    {row.MataKuliah}
+              {group.rows.map((row, idx) => {
+                const gi = globalIdx++;
+                const collided = collisionMap.get(gi);
+                const keterangan = collided
+                  ? `Bentrok dengan jam Mata Kuliah ${collided.join(', ')}`
+                  : row.Keterangan;
+                const cardCls = collided
+                  ? 'bg-red-50 dark:bg-red-950/30 shadow-[0_0_8px_rgba(239,68,68,0.35)] border-red-300 dark:border-red-700'
+                  : 'bg-white dark:bg-zinc-900';
+                const ketCls = collided
+                  ? 'border-red-400 bg-red-100 text-red-700 dark:border-red-500 dark:bg-red-900/50 dark:text-red-300'
+                  : 'border-black dark:border-zinc-500';
+                return (
+                  <div
+                    key={idx}
+                    className={`border-2 border-black px-3 py-2 dark:border-zinc-600 ${cardCls}`}
+                  >
+                    <div className="pixel-font mb-1 text-[9px] font-bold leading-tight">
+                      {row.MataKuliah}
+                    </div>
+                    <div className="pixel-font grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[8px] text-zinc-600 dark:text-zinc-400">
+                      <span>Dosen</span>
+                      <span>{row.DosenPengampuh}</span>
+                      <span>SKS</span>
+                      <span>{row.SKS}</span>
+                      <span>Jam</span>
+                      <span>{row.Jam}</span>
+                      <span>Ruang</span>
+                      <span>{row.Ruang}</span>
+                    </div>
+                    <div className="mt-1.5">
+                      <span className={`pixel-font inline-block border px-2 py-0.5 text-[8px] ${ketCls}`}>
+                        {keterangan}
+                      </span>
+                    </div>
                   </div>
-                  <div className="pixel-font grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[8px] text-zinc-600 dark:text-zinc-400">
-                    <span>Dosen</span>
-                    <span>{row.DosenPengampuh}</span>
-                    <span>SKS</span>
-                    <span>{row.SKS}</span>
-                    <span>Jam</span>
-                    <span>{row.Jam}</span>
-                    <span>Ruang</span>
-                    <span>{row.Ruang}</span>
-                  </div>
-                  <div className="mt-1.5">
-                    <span className="pixel-font inline-block border border-black px-2 py-0.5 text-[8px] dark:border-zinc-500">
-                      {row.Keterangan}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
-        ))}
+        )); })()}
       </div>
     </div>
   );

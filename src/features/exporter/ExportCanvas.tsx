@@ -111,7 +111,37 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     }
     y += headerHeight;
 
+    const parseJam = (jam: string) => {
+      const m = jam.match(/^(\d{1,2})[:.](\d{2})\s*[-–]\s*(\d{1,2})[:.](\d{2})$/);
+      if (!m) return null;
+      return { start: parseInt(m[1]) * 60 + parseInt(m[2]), end: parseInt(m[3]) * 60 + parseInt(m[4]) };
+    };
+    const collisionMap = new Map<number, string[]>();
+    const byDay = new Map<string, number[]>();
+    merged.forEach((row, idx) => {
+      if (!byDay.has(row.Hari)) byDay.set(row.Hari, []);
+      byDay.get(row.Hari)!.push(idx);
+    });
+    for (const [, indices] of byDay) {
+      for (let i = 0; i < indices.length; i++) {
+        const a = parseJam(merged[indices[i]].Jam);
+        if (!a) continue;
+        for (let j = i + 1; j < indices.length; j++) {
+          const b = parseJam(merged[indices[j]].Jam);
+          if (!b) continue;
+          if (a.start < b.end && b.start < a.end) {
+            const ai = indices[i], bi = indices[j];
+            if (!collisionMap.has(ai)) collisionMap.set(ai, []);
+            if (!collisionMap.has(bi)) collisionMap.set(bi, []);
+            collisionMap.get(ai)!.push(merged[bi].MataKuliah);
+            collisionMap.get(bi)!.push(merged[ai].MataKuliah);
+          }
+        }
+      }
+    }
+
     let hariRowIdx = 0;
+    let globalIdx = 0;
     for (const group of dayGroups) {
       const gx = x;
       const gy = y + hariRowIdx * rowHeight;
@@ -124,13 +154,23 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
 
       for (let ri = 0; ri < group.rows.length; ri++) {
         const row = group.rows[ri];
+        const gi = globalIdx++;
+        const collided = collisionMap.get(gi);
+        const keterangan = collided
+          ? `Bentrok dengan jam Mata Kuliah ${collided.join(', ')}`
+          : row.Keterangan;
+        const cellBg = collided ? '#fef2f2' : '#ffffff';
+        const cellColor = collided ? '#991b1b' : '#27272a';
+
         const ry = gy + ri * rowHeight;
         let cx = gx + cols[0].w;
 
-        const vals = [row.MataKuliah, row.DosenPengampuh, row.SKS, row.Jam, row.Ruang, row.Keterangan];
+        const vals = [row.MataKuliah, row.DosenPengampuh, row.SKS, row.Jam, row.Ruang, keterangan];
         for (let ci = 0; ci < vals.length; ci++) {
           drawCell(ctx, cx, ry, cols[ci + 1].w, rowHeight, String(vals[ci] || ''), {
-            ...cellBase,
+            font: '10px "Press Start 2P", monospace',
+            color: cellColor,
+            bg: cellBg,
             align: ci === 2 ? 'center' : 'left',
             padX: ci === 2 ? 0 : 10,
           });
