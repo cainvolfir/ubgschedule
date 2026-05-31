@@ -192,7 +192,7 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
   const hasTheoryResult = dropState === 'populated' && dataTeoriMentah.length > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full flex-col justify-center px-4 pt-4 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 pt-6 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={onBack}
@@ -246,7 +246,7 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
               onDrop={handleDrop}
               onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
               onDragLeave={() => setIsDragOver(false)}
-              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-5 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
+              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-6 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
             >
             {dropState === 'processing' ? (
               <div className="flex flex-col items-center gap-2">
@@ -348,7 +348,7 @@ export function UploadTeoriPage({ onNext, onSkipToResult, onBack }: { onNext: ()
             })}
           </div>
 
-          <div className="flex flex-col gap-2 pb-4 pt-2">
+          <div className="flex flex-col gap-2 pb-8 pt-2">
             <Button
               variant={allSelected ? 'default' : 'secondary'}
               disabled={!allSelected}
