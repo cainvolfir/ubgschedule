@@ -249,7 +249,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const hasChecked = selectedCandidateIds.size > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full flex-col justify-center px-4 pt-4 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 pt-6 lg:px-8">
       <div className="mb-4 flex items-center gap-2">
         <button
           onClick={onBack}
@@ -273,7 +273,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
               onDrop={handleDrop}
               onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
               onDragLeave={() => setIsDragOver(false)}
-              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-5 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
+              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-6 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
             >
               {dropState === 'processing' || isScanning ? (
                 <div className="flex flex-col items-center gap-2">
@@ -428,7 +428,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
         </CardContent>
       </Card>
 
-      <div className="mt-3 flex justify-center">
+      <div className="mt-4 flex justify-center">
         <button
           onClick={handleSkip}
           className="pixel-font cursor-pointer text-center text-[9px] text-zinc-400 underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
