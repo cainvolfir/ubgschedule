@@ -96,19 +96,19 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
   const dragClasses = isDragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' : '';
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-4xl flex-col px-4 lg:px-8">
-      <div className="pt-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full flex-col px-4 lg:px-8">
+      <div className="pt-4">
         <img
           src="/mainpage.png"
           alt="UBG"
-          className="mx-auto mb-3 h-auto w-40 max-w-[70%] sm:w-56 md:w-64 dark:invert"
+          className="mx-auto mb-2 h-auto w-36 max-w-[60%] sm:w-48 md:w-56 dark:invert"
         />
-        <p className="pixel-font mx-auto mb-4 max-w-sm text-center text-[10px] leading-relaxed text-zinc-500 sm:text-[11px]">
+        <p className="pixel-font mx-auto mb-3 max-w-sm text-center text-[10px] leading-relaxed text-zinc-500 sm:text-[11px]">
           Upload your KRS, Jadwal Teori, and Jadwal Praktikum and get your Jadwal Perkuliahan
         </p>
       </div>
-      <div className="flex w-full flex-col pt-10 pb-8">
-        <p className="pixel-font mb-4 text-center text-[10px] uppercase tracking-wider text-zinc-400">
+      <div className="flex w-full flex-col pt-4 pb-4">
+        <p className="pixel-font mb-3 text-center text-[10px] uppercase tracking-wider text-zinc-400">
           Upload KRS (Study Plan)
         </p>
 
@@ -122,7 +122,7 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
               onDrop={handleDrop}
               onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
               onDragLeave={() => setIsDragOver(false)}
-              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-6 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
+              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-5 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
             >
             {dropState === 'processing' ? (
               <div className="flex flex-col items-center gap-2">
@@ -140,7 +140,7 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
           </div>
 
           {dropState === 'populated' && dataKRS && (
-            <div className="border-2 border-t-0 border-cyan-400/40 px-3 py-3">
+            <div className="border-2 border-t-0 border-cyan-400/40 px-3 py-2">
               <div className="pixel-font mb-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[9px]">
                 <span className="text-zinc-400">Nama</span>
                 <span>{dataKRS.Nama}</span>
@@ -169,7 +169,7 @@ export function UploadKrsPage({ onNext }: { onNext: () => void }) {
               <Button
                 variant="default"
                 onClick={() => onNext()}
-                className="mt-3 w-full justify-center text-[9px]"
+                className="mt-2 w-full justify-center text-[9px]"
               >
                 Continue
               </Button>
