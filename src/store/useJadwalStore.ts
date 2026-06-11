@@ -1,12 +1,7 @@
 import { create } from 'zustand';
 
-export interface DataKRS {
-  Nama: string;
-  NIM: string;
-  Semester: string;
-}
-
 export interface DataTeoriMentah {
+  id: string;
   KodeMK: string;
   MataKuliah: string;
   Kelas: string;
@@ -32,10 +27,8 @@ export interface PraktikumCandidate {
 }
 
 interface JadwalState {
-  dataKRS: DataKRS | null;
-  kodeMKTerverifikasi: string[];
   dataTeoriMentah: DataTeoriMentah[];
-  kelasPilihanUser: Record<string, string>;
+  selectedTheoryRowIds: Set<string>;
   jadwalTeoriTerpilih: DataTeoriMentah[];
   dataPraktikum: unknown[];
   jadwalFinal: unknown[];
@@ -47,9 +40,9 @@ interface JadwalState {
   isScanning: boolean;
   isParsing: boolean;
 
-  setKRSResult: (krs: DataKRS, kodeMK: string[]) => void;
   setDataTeoriMentah: (data: DataTeoriMentah[]) => void;
-  setKelasPilihanUser: (pilihan: Record<string, string>) => void;
+  setSelectedTheoryRowIds: (ids: Set<string>) => void;
+  toggleTheoryRowId: (id: string) => void;
   setJadwalTeoriTerpilih: (data: DataTeoriMentah[]) => void;
   setDataPraktikum: (data: unknown[]) => void;
   setJadwalFinal: (data: unknown[]) => void;
@@ -64,10 +57,8 @@ interface JadwalState {
 }
 
 const initialState = {
-  dataKRS: null,
-  kodeMKTerverifikasi: [],
   dataTeoriMentah: [],
-  kelasPilihanUser: {},
+  selectedTheoryRowIds: new Set<string>(),
   jadwalTeoriTerpilih: [],
   dataPraktikum: [],
   jadwalFinal: [],
@@ -82,12 +73,17 @@ const initialState = {
 export const useJadwalStore = create<JadwalState>((set) => ({
   ...initialState,
 
-  setKRSResult: (krs, kodeMK) =>
-    set({ dataKRS: krs, kodeMKTerverifikasi: kodeMK }),
-
   setDataTeoriMentah: (data) => set({ dataTeoriMentah: data }),
 
-  setKelasPilihanUser: (pilihan) => set({ kelasPilihanUser: pilihan }),
+  setSelectedTheoryRowIds: (ids) => set({ selectedTheoryRowIds: ids }),
+
+  toggleTheoryRowId: (id) =>
+    set((state) => {
+      const next = new Set(state.selectedTheoryRowIds);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return { selectedTheoryRowIds: next };
+    }),
 
   setJadwalTeoriTerpilih: (data) => set({ jadwalTeoriTerpilih: data }),
 

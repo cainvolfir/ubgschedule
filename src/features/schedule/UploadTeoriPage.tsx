@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
 import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
@@ -179,7 +178,6 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
                     <PixelCat pose="idle" size={48} />
                   </div>
                   <div>
-                    <Upload size={20} className="mb-2 text-zinc-400 sm:hidden" />
                     <p className="pixel-font text-[9px] leading-relaxed text-zinc-500">
                       Tap to select your Theory PDF
                     </p>

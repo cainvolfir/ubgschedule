@@ -13,6 +13,7 @@ function sendError(step: string, data?: unknown) {
 }
 
 interface DataTeoriMentah {
+  id: string;
   KodeMK: string;
   MataKuliah: string;
   Kelas: string;
@@ -44,6 +45,10 @@ function isHari(s: string): boolean {
   return HARI_PATTERN.test(s.trim());
 }
 
+function isCourseCode(s: string): boolean {
+  return /^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/.test(s);
+}
+
 function prevNonSpace(tokens: string[], from: number): number {
   for (let k = from - 1; k >= 0; k--) {
     if (tokens[k].trim()) return k;
@@ -59,17 +64,16 @@ function nextNonSpace(tokens: string[], from: number): number {
 }
 
 self.onmessage = async (e: MessageEvent) => {
-  const { type, fileBuffer, kodeMKTerverifikasi } = e.data;
+  const { type, fileBuffer } = e.data;
   if (type !== 'PARSE_THEORY') return;
 
   log('INIT', 'Starting Theory parser worker');
-  log('KODE_MK_VERIFIED', kodeMKTerverifikasi);
 
   let pdfjsLib: typeof import('pdfjs-dist');
   try {
     pdfjsLib = await import('pdfjs-dist');
     log('INIT', 'pdfjs-dist loaded dynamically');
-  } catch (err) {
+  } catch {
     sendError('IMPORT', 'Failed to load pdfjs-dist');
     return;
   }
@@ -113,7 +117,7 @@ self.onmessage = async (e: MessageEvent) => {
       log('HARI_DETECTED', hariGlobal);
     }
 
-    if (!kodeMKTerverifikasi.includes(current)) continue;
+    if (!isCourseCode(current)) continue;
 
     const kode = current;
     log('KODE_MK_FOUND', { kode, index: i });
@@ -183,7 +187,7 @@ self.onmessage = async (e: MessageEvent) => {
     const mkStart = smtIdx >= 0 ? smtIdx : (dosenStartIdx >= 0 ? dosenStartIdx : sesiIdx);
     for (let k = mkStart - 1; k >= i; k--) {
       if (!tokens[k].trim()) continue;
-      if (kodeMKTerverifikasi.includes(tokens[k].trim())) break;
+      if (isCourseCode(tokens[k].trim())) break;
       mkTokens.push(tokens[k]);
     }
     const mataKuliah = mkTokens.reverse().join(' ').trim();
@@ -225,6 +229,7 @@ self.onmessage = async (e: MessageEvent) => {
     log('KETERANGAN_EXTRACTED', keterangan);
 
     dataTeoriMentah.push({
+      id: `theory-${dataTeoriMentah.length}`,
       KodeMK: kode,
       MataKuliah: mataKuliah,
       Kelas: kelas,

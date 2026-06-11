@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
 import { Card, CardContent } from '../../components/ui/pixelact-ui/card';
@@ -292,7 +292,6 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
                     <PixelCat pose="idle" size={48} />
                   </div>
                   <div>
-                    <Upload size={20} className="mb-2 text-zinc-400 sm:hidden" />
                     <p className="pixel-font text-[9px] leading-relaxed text-zinc-500">
                       Tap to select your Practical file
                     </p>
