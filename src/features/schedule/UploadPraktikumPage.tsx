@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from '../../components/ui/pixelact-ui/select';
 import { cn } from '../../lib/utils';
+import { CatState } from '../../components/CatState';
+import { PixelCat } from '../../components/PixelCat';
 
 function truncate(name: string, max = 28): string {
   return name.length > max ? name.slice(0, max) + '...' : name;
@@ -173,7 +175,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
       groups.get(key)!.push(c);
     }
 
-    const praktikumMerged: any[] = [];
+    const praktikumMerged: Record<string, unknown>[] = [];
     for (const items of groups.values()) {
       const parsed = items.map((c) => ({ c, jam: parseJam(c.jam) }));
       const valid = parsed.filter((p): p is { c: typeof checked[number]; jam: NonNullable<ReturnType<typeof parseJam>> } => p.jam !== null)
@@ -249,23 +251,30 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const hasChecked = selectedCandidateIds.size > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col justify-center px-4 pt-6 lg:px-8">
-      <div className="mb-4 flex items-center gap-2">
+    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl flex-col px-3 py-4 sm:justify-center sm:px-4 sm:py-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-3 flex items-center gap-2 sm:mb-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="flex h-9 w-9 items-center justify-center text-zinc-400 hover:text-zinc-600 sm:h-8 sm:w-8 dark:hover:text-zinc-300"
+          aria-label="Back"
         >
-          <ArrowLeft size={16} />
-          <span className="pixel-font text-[9px]">Back</span>
+          <ArrowLeft size={18} />
         </button>
-        <p className="pixel-font text-[10px] uppercase tracking-wider text-zinc-400">
-          Upload Practical Schedule
-        </p>
+        <div>
+          <p className="pixel-font text-[10px] uppercase tracking-wider text-zinc-400">
+            Upload Practical Schedule
+          </p>
+          <p className="pixel-font mt-0.5 text-[8px] text-zinc-400">
+            Upload your practical schedule XLSX
+          </p>
+        </div>
       </div>
 
-      <Card className={cn("w-full", dropState === 'populated' && 'shadow-none')}>
+      <Card className={cn('w-full', dropState === 'populated' && 'shadow-none')}>
         <CardContent className="p-0">
           <div className={dropState === 'populated' ? `${neonGlow} bg-white dark:bg-zinc-900` : ''}>
+            {/* Drop zone */}
             <div
               role="button"
               tabIndex={0}
@@ -273,23 +282,44 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
               onDrop={handleDrop}
               onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
               onDragLeave={() => setIsDragOver(false)}
-              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-6 text-center transition-all dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
+              className={`flex cursor-pointer flex-col items-center justify-center border-2 bg-white px-4 py-8 text-center transition-all sm:py-10 dark:bg-zinc-900 ${borderStyle} ${dropState === 'populated' ? 'border-b-0 border-cyan-400/40' : 'border-black dark:border-zinc-600'} ${dragClasses}`}
             >
               {dropState === 'processing' || isScanning ? (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-zinc-300 border-t-green-500" />
-                  <p className="pixel-font text-[9px] text-zinc-500">{truncate(fileName)}</p>
+                <CatState pose="loading" size={56} message={truncate(fileName)} />
+              ) : dropState === 'empty' ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="animate-cat-bob">
+                    <PixelCat pose="idle" size={48} />
+                  </div>
+                  <div>
+                    <Upload size={20} className="mb-2 text-zinc-400 sm:hidden" />
+                    <p className="pixel-font text-[9px] leading-relaxed text-zinc-500">
+                      Tap to select your Practical file
+                    </p>
+                    <p className="pixel-font mt-1 text-[8px] text-zinc-400">
+                      or drag & drop here
+                    </p>
+                  </div>
+                  <Button variant="secondary" size="sm" className="text-[8px] sm:hidden">
+                    Choose File
+                  </Button>
                 </div>
               ) : (
-                <>
-                  <Upload size={18} className="mb-1 text-zinc-400" />
-                  <p className="pixel-font text-[9px] leading-relaxed text-zinc-500">
-                    {dropState === 'populated' ? truncate(fileName) : 'Drag & drop your Practical file here or click to browse'}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-cat-tail-wag">
+                    <PixelCat pose="tail-wag" size={40} />
+                  </div>
+                  <p className="pixel-font text-[9px] text-green-600 dark:text-green-400">
+                    {truncate(fileName)}
                   </p>
-                </>
+                  <p className="pixel-font text-[8px] text-zinc-400">
+                    Tap to change file
+                  </p>
+                </div>
               )}
             </div>
 
+            {/* Room prefix selection */}
             {dropState === 'populated' && praktikumRoomPrefixes.length > 0 && (
               <div className="border-2 border-t-0 border-cyan-400/40 px-3 py-3">
                 <p className="pixel-font mb-2 text-[9px] text-zinc-500">Select Room Prefix</p>
@@ -308,20 +338,22 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
               </div>
             )}
 
+            {/* Parsing spinner */}
             {isParsing && (
               <div className="flex flex-col items-center gap-2 border-2 border-t-0 border-cyan-400/40 px-3 py-6">
-                <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-zinc-300 border-t-green-500" />
-                <p className="pixel-font text-[9px] text-zinc-500">Parsing schedule...</p>
+                <CatState pose="loading" size={48} message="Parsing schedule..." />
               </div>
             )}
 
+            {/* Candidates */}
             {hasCandidates && !isParsing && (
               <div className="border-2 border-t-0 border-cyan-400/40 px-3 py-3">
                 <p className="pixel-font mb-1 text-[9px] text-zinc-500">
                   {praktikumCandidates.length} jadwal ditemukan untuk {selectedRoomPrefix}
                 </p>
 
-                <div className="mb-2 flex gap-2">
+                {/* Filters */}
+                <div className="mb-2 flex flex-col gap-2 md:flex-row">
                   <div className="flex-1">
                     <p className="pixel-font mb-0.5 text-[8px] text-zinc-400">Kelas</p>
                     <Select value={filterKelas} onValueChange={setFilterKelas}>
@@ -361,14 +393,14 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
                 )}
 
                 {filteredCandidates.length > 0 ? (
-                  <div className="mb-3 grid max-h-[32rem] grid-cols-1 gap-2 overflow-y-auto md:grid-cols-2">
+                  <div className="mb-3 grid max-h-[50dvh] grid-cols-1 gap-2 overflow-y-auto md:grid-cols-2">
                     {filteredCandidates.map((cand) => {
                       const isChecked = selectedCandidateIds.has(cand.id);
                       return (
                         <label
                           key={cand.id}
                           className={cn(
-                            'flex cursor-pointer items-start gap-2 rounded px-2 py-2 transition-colors',
+                            'flex cursor-pointer items-start gap-2 rounded px-3 py-3 transition-colors',
                             isChecked
                               ? 'bg-cyan-400/10 ring-1 ring-cyan-400/30'
                               : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
@@ -378,7 +410,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => toggleCandidateId(cand.id)}
-                            className="mt-1 h-3.5 w-3.5 accent-cyan-500"
+                            className="mt-1 h-4 w-4 accent-cyan-500"
                           />
                           <div className="flex-1">
                             <p className="pixel-font text-[10px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
@@ -408,16 +440,14 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
                     })}
                   </div>
                 ) : (
-                  <p className="pixel-font py-3 text-center text-[9px] text-zinc-400">
-                    Tidak ada jadwal untuk filter ini.
-                  </p>
+                  <CatState pose="blink" size={48} message="Tidak ada jadwal untuk filter ini." />
                 )}
 
                 {hasChecked && (
                   <Button
                     variant="default"
                     onClick={handleContinue}
-                    className="mt-2 w-full justify-center text-[9px]"
+                    className="mt-2 w-full justify-center py-3 text-[9px]"
                   >
                     Continue ({selectedCandidateIds.size} selected)
                   </Button>
@@ -428,10 +458,11 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
         </CardContent>
       </Card>
 
+      {/* Skip button */}
       <div className="mt-4 flex justify-center">
         <button
           onClick={handleSkip}
-          className="pixel-font cursor-pointer text-center text-[9px] text-zinc-400 underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="pixel-font cursor-pointer px-4 py-3 text-center text-[9px] text-zinc-400 underline underline-offset-2 hover:text-zinc-600 dark:hover:text-zinc-300"
         >
           Skip → View Schedule
         </button>

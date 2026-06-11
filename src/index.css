@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --cat-body: #f5c27b;
+  --cat-dark: #d4944a;
+  --cat-nose: #ff9eb5;
+  --cat-eye: #1a1a2e;
+  --cat-white: #fff7e6;
+  --cat-ear-inner: #ffc4d6;
+}
+
+.dark {
+  --cat-body: #e8a87c;
+  --cat-dark: #c07838;
+  --cat-nose: #e88a9e;
+  --cat-eye: #f0f0ff;
+  --cat-white: #2a2a3e;
+  --cat-ear-inner: #d4a0b0;
+}

@@ -1,7 +1,9 @@
-import { lazy, Suspense, useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { lazy, Suspense, useMemo, useState } from 'react';
+import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
+import { CatState } from '../../components/CatState';
+import { PixelCat } from '../../components/PixelCat';
 
 const ExportCanvas = lazy(() => import('../../features/exporter/ExportCanvas'));
 
@@ -21,17 +23,21 @@ interface FinalRow {
 
 export function ResultPage({ onBack }: { onBack: () => void }) {
   const jadwalFinal = useJadwalStore((s) => s.jadwalFinal);
+  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(new Set());
 
   const merged = useMemo(() => {
-    const all: FinalRow[] = (jadwalFinal as any[]).map((r: any) => ({
-      Hari: String(r?.Hari ?? ''),
-      MataKuliah: String(r?.MataKuliah ?? ''),
-      DosenPengampuh: String(r?.DosenPengampuh ?? ''),
-      SKS: String(r?.SKS ?? ''),
-      Jam: String(r?.Jam ?? ''),
-      Ruang: String(r?.Ruang ?? ''),
-      Keterangan: String(r?.Keterangan ?? '-'),
-    }));
+    const all: FinalRow[] = (jadwalFinal as unknown[]).map((r) => {
+      const obj = r as Record<string, unknown>;
+      return {
+        Hari: String(obj?.Hari ?? ''),
+        MataKuliah: String(obj?.MataKuliah ?? ''),
+        DosenPengampuh: String(obj?.DosenPengampuh ?? ''),
+        SKS: String(obj?.SKS ?? ''),
+        Jam: String(obj?.Jam ?? ''),
+        Ruang: String(obj?.Ruang ?? ''),
+        Keterangan: String(obj?.Keterangan ?? '-'),
+      };
+    });
 
     all.sort((a, b) => {
       const ha = HARI_ORDER[a.Hari] ?? 99;
@@ -90,38 +96,52 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
     return map;
   }, [merged]);
 
+  const toggleDay = (hari: string) => {
+    setCollapsedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(hari)) next.delete(hari);
+      else next.add(hari);
+      return next;
+    });
+  };
+
   const goBack = onBack;
 
   if (merged.length === 0) {
     return (
-      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-4xl flex-col items-center justify-center px-4 pt-6 lg:px-8">
-        <p className="pixel-font text-center text-[10px] text-zinc-500">
-          No schedule data available.
-        </p>
-        <Button
-          variant="default"
-          className="pixel-font mt-4 text-[9px]"
-          onClick={goBack}
-        >
-          Back to Upload
-        </Button>
+      <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-4xl flex-col items-center justify-center px-4 py-6 sm:px-8">
+        <CatState pose="sleep" size={80} message="No schedule data available.">
+          <Button
+            variant="default"
+            className="pixel-font mt-2 text-[9px]"
+            onClick={goBack}
+          >
+            Back to Upload
+          </Button>
+        </CatState>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pt-4 pb-8 lg:px-8">
-      <div className="mb-4 flex items-center gap-2">
+    <div className="mx-auto w-full max-w-6xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-3 flex items-center gap-2 sm:mb-4">
         <button
           onClick={goBack}
-          className="flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="flex h-9 w-9 items-center justify-center text-zinc-400 hover:text-zinc-600 sm:h-8 sm:w-8 dark:hover:text-zinc-300"
+          aria-label="Back"
         >
-          <ArrowLeft size={16} />
-          <span className="pixel-font text-[9px]">Back</span>
+          <ArrowLeft size={18} />
         </button>
-        <p className="pixel-font mr-auto text-[10px] uppercase tracking-wider text-zinc-400">
-          Jadwal Perkuliahan
-        </p>
+        <div className="mr-auto">
+          <p className="pixel-font text-[10px] uppercase tracking-wider text-zinc-400">
+            Jadwal Perkuliahan
+          </p>
+          <p className="pixel-font mt-0.5 text-[8px] text-zinc-400">
+            {merged.length} classes across {dayGroups.length} days
+          </p>
+        </div>
         <Suspense
           fallback={
             <span className="pixel-font text-[8px] text-zinc-400">Loading...</span>
@@ -132,10 +152,10 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Desktop table */}
-      <div className="hidden sm:block overflow-x-auto">
+      <div className="hidden overflow-x-auto sm:block">
         <table className="w-full border-collapse border-2 border-black dark:border-zinc-600">
           <thead>
-            <tr className="pixel-font border-b-2 border-black text-[9px] lg:text-[10px] dark:border-zinc-600">
+            <tr className="pixel-font border-b-2 border-black text-[9px] dark:border-zinc-600">
               <th className="border-r border-black px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4 dark:border-zinc-600">Hari</th>
               <th className="border-r border-black px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4 dark:border-zinc-600">Mata Kuliah</th>
               <th className="border-r border-black px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4 dark:border-zinc-600">Dosen Pengampuh</th>
@@ -198,53 +218,77 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
         </table>
       </div>
 
-      {/* Mobile cards — visible only on small screens */}
-      <div className="sm:hidden flex flex-col gap-3">
-        {(() => { let globalIdx = 0; return dayGroups.map((group) => (
-          <div key={group.hari}>
-            <h3 className="pixel-font mb-1.5 text-[10px] font-bold">{group.hari}</h3>
-            <div className="flex flex-col gap-2">
-              {group.rows.map((row, idx) => {
-                const gi = globalIdx++;
-                const collided = collisionMap.get(gi);
-                const keterangan = collided
-                  ? 'Jadwal Bentrok'
-                  : row.Keterangan;
-                const cardCls = collided
-                  ? 'bg-red-50 dark:bg-red-950/30 shadow-[0_0_8px_rgba(239,68,68,0.35)] border-red-300 dark:border-red-700'
-                  : 'bg-white dark:bg-zinc-900';
-                const ketCls = collided
-                  ? 'border-red-400 bg-red-100 text-red-700 dark:border-red-500 dark:bg-red-900/50 dark:text-red-300'
-                  : 'border-black dark:border-zinc-500';
-                return (
-                  <div
-                    key={idx}
-                    className={`border-2 border-black px-3 py-2 dark:border-zinc-600 ${cardCls}`}
-                  >
-                    <div className="pixel-font mb-1 text-[9px] font-bold leading-tight">
-                      {row.MataKuliah}
-                    </div>
-                    <div className="pixel-font grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[8px] text-zinc-600 dark:text-zinc-400">
-                      <span>Dosen</span>
-                      <span>{row.DosenPengampuh}</span>
-                      <span>SKS</span>
-                      <span>{row.SKS}</span>
-                      <span>Jam</span>
-                      <span>{row.Jam}</span>
-                      <span>Ruang</span>
-                      <span>{row.Ruang}</span>
-                    </div>
-                    <div className="mt-1.5">
-                      <span className={`pixel-font inline-block border px-2 py-0.5 text-[8px] ${ketCls}`}>
-                        {keterangan}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+      {/* Mobile cards — collapsible day sections */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {(() => { let globalIdx = 0; return dayGroups.map((group) => {
+          const isCollapsed = collapsedDays.has(group.hari);
+          return (
+            <div key={group.hari}>
+              {/* Day header — collapsible */}
+              <button
+                onClick={() => toggleDay(group.hari)}
+                className="flex w-full items-center justify-between border-2 border-black bg-zinc-100 px-3 py-2.5 text-left dark:border-zinc-600 dark:bg-zinc-800"
+              >
+                <div className="flex items-center gap-2">
+                  <PixelCat pose="idle" size={16} />
+                  <span className="pixel-font text-[10px] font-bold">{group.hari}</span>
+                  <span className="pixel-font text-[8px] text-zinc-400">
+                    ({group.rows.length})
+                  </span>
+                </div>
+                {isCollapsed ? (
+                  <ChevronDown size={14} className="text-zinc-400" />
+                ) : (
+                  <ChevronUp size={14} className="text-zinc-400" />
+                )}
+              </button>
+
+              {/* Cards */}
+              {!isCollapsed && (
+                <div className="flex flex-col gap-2 border-2 border-t-0 border-black px-2 py-2 dark:border-zinc-600">
+                  {group.rows.map((row, idx) => {
+                    const gi = globalIdx++;
+                    const collided = collisionMap.get(gi);
+                    const keterangan = collided
+                      ? 'Jadwal Bentrok'
+                      : row.Keterangan;
+                    const cardCls = collided
+                      ? 'bg-red-50 dark:bg-red-950/30 shadow-[0_0_8px_rgba(239,68,68,0.35)] border-red-300 dark:border-red-700'
+                      : 'bg-white dark:bg-zinc-900';
+                    const ketCls = collided
+                      ? 'border-red-400 bg-red-100 text-red-700 dark:border-red-500 dark:bg-red-900/50 dark:text-red-300'
+                      : 'border-black dark:border-zinc-500';
+                    return (
+                      <div
+                        key={idx}
+                        className={`border-2 border-black px-3 py-2.5 dark:border-zinc-600 ${cardCls}`}
+                      >
+                        <div className="pixel-font mb-1.5 text-[10px] font-bold leading-tight">
+                          {row.MataKuliah}
+                        </div>
+                        <div className="pixel-font grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[8px] text-zinc-600 dark:text-zinc-400">
+                          <span>Dosen</span>
+                          <span>{row.DosenPengampuh}</span>
+                          <span>SKS</span>
+                          <span>{row.SKS}</span>
+                          <span>Jam</span>
+                          <span>{row.Jam}</span>
+                          <span>Ruang</span>
+                          <span>{row.Ruang}</span>
+                        </div>
+                        <div className="mt-1.5">
+                          <span className={`pixel-font inline-block border px-2 py-0.5 text-[8px] ${ketCls}`}>
+                            {keterangan}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        )); })()}
+          );
+        }); })()}
       </div>
     </div>
   );
