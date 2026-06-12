@@ -12,13 +12,21 @@ interface PixelCatProps {
  * Pixel art robot drawn as inline SVG on a 32x32 grid.
  * Each pose is a separate <g> group; only the active pose is rendered.
  */
+const poseAnimation: Record<RobotPose, string> = {
+  'idle': 'animate-[cat-idle_0.8s_steps(4)_infinite]',
+  'blink': 'animate-[cat-blink_3s_steps(2)_infinite]',
+  'tail-wag': 'animate-[cat-tail-wag_0.4s_steps(4)_infinite]',
+  'sleep': 'animate-[cat-sleep_2s_steps(2)_infinite]',
+  'loading': 'animate-[cat-loading_0.3s_steps(2)_infinite]',
+};
+
 export function PixelCat({ pose = 'idle', size = 48, className }: PixelCatProps) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 32 32"
-      className={cn('shrink-0', className)}
+      className={cn('shrink-0', poseAnimation[pose], className)}
       aria-label={`Pixel robot (${pose})`}
       role="img"
     >

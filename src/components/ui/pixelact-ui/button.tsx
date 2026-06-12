@@ -6,21 +6,21 @@ import "@/components/ui/pixelact-ui/styles/styles.css";
 import "./button.css";
 
 const pixelButtonVariants = cva(
-  "pixel__button pixel-font cursor-pointer rounded-none w-fit items-center justify-center whitespace-nowrap text-sm transition-colors transition-all duration-100",
+  "pixel__button pixel-font cursor-pointer w-fit items-center justify-center whitespace-nowrap text-sm font-medium flex gap-2",
   {
     variants: {
       variant: {
-        default: "pixel-default__button box-shadow-margin bg-white text-black",
-        secondary: "pixel-secondary__button box-shadow-margin",
-        warning: "pixel-warning__button box-shadow-margin",
-        success: "pixel-success__button box-shadow-margin",
-        destructive: "pixel-destructive__button box-shadow-margin",
-        link: "pixel-link__button bg-transparent text-link underline-offset-4 underline",
+        default: "pixel-default__button",
+        secondary: "pixel-secondary__button",
+        warning: "pixel-warning__button",
+        success: "pixel-success__button",
+        destructive: "pixel-destructive__button",
+        link: "pixel-link__button bg-transparent",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3 text-xs",
-        lg: "h-11 px-8 text-base",
+        default: "h-11 px-5 py-2",
+        sm: "h-9 px-4 text-xs",
+        lg: "h-12 px-8 text-base",
       },
     },
     defaultVariants: {

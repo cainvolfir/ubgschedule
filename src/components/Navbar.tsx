@@ -10,16 +10,18 @@ interface NavbarProps {
 
 export function Navbar({ currentStep }: NavbarProps) {
   return (
-    <nav className="border-b-2 border-black dark:border-zinc-700">
+    <nav className="sticky top-0 z-50 border-b-2 border-[var(--border)] bg-card-solid">
       <div className="mx-auto flex h-14 items-center justify-between px-3 sm:h-16 sm:px-4 lg:px-8">
         {/* Left: Cat + Title */}
-        <div className="flex items-center gap-2">
-          <div className="animate-cat-bob">
+        <div className="flex items-center gap-2.5">
+          <div className="animate-cat-bob" style={{ filter: 'drop-shadow(0 0 6px var(--robot-glow))' }}>
             <PixelCat pose="idle" size={28} />
           </div>
-          <h1 className="pixel-font text-[10px] leading-none tracking-wide sm:text-xs">
-            UBG Schedule
-          </h1>
+          <div>
+            <h1 className="pixel-font text-[10px] leading-none tracking-wide sm:text-xs text-foreground">
+              UBG Schedule
+            </h1>
+          </div>
         </div>
 
         {/* Center: Step indicator (desktop) */}
@@ -33,9 +35,9 @@ export function Navbar({ currentStep }: NavbarProps) {
         <ThemeSwitcher />
       </div>
 
-      {/* Mobile step indicator (below navbar) */}
+      {/* Mobile step indicator */}
       {currentStep !== undefined && (
-        <div className="flex items-center justify-center border-t border-zinc-200 px-3 py-1.5 dark:border-zinc-800 md:hidden">
+        <div className="flex items-center justify-center border-t-2 border-[var(--border)] px-3 py-1.5 md:hidden bg-card-solid">
           <StepIndicator steps={WIZARD_STEPS} currentStep={currentStep} />
         </div>
       )}

@@ -38,12 +38,12 @@ function drawCell(
   ctx.fillStyle = opts.bg || '#ffffff';
   ctx.fillRect(x, y, w, h);
 
-  ctx.font = opts.font || '9px "Press Start 2P", monospace';
+  ctx.font = opts.font || '9px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
   ctx.textAlign = opts.align || 'left';
   ctx.fillStyle = opts.color || '#27272a';
 
   const px = opts.padX ?? (opts.align === 'center' ? 0 : 6);
-  const lh = opts.lineH || 14;
+  const lh = opts.lineH || 13;
   const maxW = w - px - 6;
   const maxLines = Math.max(1, Math.floor((h - 6) / lh));
   const words = text.split(' ');
@@ -88,8 +88,8 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const totalRows = merged.length;
-    const rowHeight = 52;
-    const headerHeight = 56;
+    const rowHeight = 44;
+    const headerHeight = 48;
     const pad = 60;
     const cols = [
       { key: 'Hari', w: 100 },
@@ -120,8 +120,8 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     let x = pad;
     let y = pad;
 
-    const hdrBase = { font: '11px "Press Start 2P", monospace', color: '#18181b' };
-    const cellBase = { font: '10px "Press Start 2P", monospace', color: '#27272a' };
+    const hdrBase = { font: 'bold 11px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', color: '#18181b' };
+    const cellBase = { font: '10px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', color: '#27272a' };
 
     const headers = ['Hari', 'Mata Kuliah', 'Dosen Pengampuh', 'SKS', 'Jam', 'Ruang', 'Keterangan'];
     let hx = x;
@@ -193,7 +193,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
         const vals = [row.MataKuliah, row.DosenPengampuh, row.SKS, row.Jam, row.Ruang, keterangan];
         for (let ci = 0; ci < vals.length; ci++) {
           drawCell(ctx, cx, ry, cols[ci + 1].w, rowHeight, String(vals[ci] || ''), {
-            font: '10px "Press Start 2P", monospace',
+            font: '10px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             color: cellColor,
             bg: cellBg,
             align: 'center',

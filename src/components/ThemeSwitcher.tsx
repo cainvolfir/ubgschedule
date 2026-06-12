@@ -7,10 +7,19 @@ export function ThemeSwitcher() {
   return (
     <button
       onClick={toggleTheme}
-      className="flex h-8 w-8 items-center justify-center rounded-none border-2 border-black bg-white text-black shadow-[3px_3px_0_0_#000] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#000] dark:border-zinc-400 dark:bg-zinc-900 dark:text-zinc-200 dark:shadow-[3px_3px_0_0_#666] dark:hover:shadow-[2px_2px_0_0_#666]"
+      className="group relative flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[var(--border)] bg-card text-foreground shadow-sm transition-all duration-300 hover:border-[var(--primary)] hover:shadow-glow hover:scale-105 active:scale-95"
       aria-label="Toggle theme"
     >
-      {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+      {/* Glow ring on hover */}
+      <div className="absolute inset-0 rounded-xl bg-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <div className="relative transition-transform duration-500 group-hover:rotate-12">
+        {theme === 'dark' ? (
+          <Sun size={16} className="text-warning drop-shadow-[0_0_4px_var(--warning)]" />
+        ) : (
+          <Moon size={16} className="text-primary drop-shadow-[0_0_4px_var(--primary)]" />
+        )}
+      </div>
     </button>
   );
 }

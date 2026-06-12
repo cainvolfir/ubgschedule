@@ -1,151 +1,139 @@
+/* ===== Premium Button Styles ===== */
+
 .pixel__button {
   position: relative;
-  box-shadow: var(--pixel-box-shadow);
-
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &:active {
-    transform: translateY(3px);
-  }
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
 
+.pixel__button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+}
+
+.pixel__button:hover::before {
+  opacity: 1;
+}
+
+.pixel__button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.pixel__button:active {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: var(--shadow-sm);
+  transition-duration: 0.1s;
+}
+
+/* Default — gradient primary */
 .pixel-default__button {
-  &::after {
-    border-right: 4px solid
-      color-mix(in hsl, var(--default-inner-border-color) 70%, rgba(0, 0, 0));
-    border-bottom: 4px solid
-      color-mix(in hsl, var(--default-inner-border-color) 70%, rgba(0, 0, 0));
-  }
-  &:hover {
-    background-color: var(--default-inner-border-color);
-  }
-
-  &:active {
-    background-color: color-mix(
-      in hsl,
-      var(--default-inner-border-color) 70%,
-      rgb(0, 0, 0)
-    );
-  }
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md), 0 0 0 0 var(--primary-glow);
 }
 
+.pixel-default__button:hover {
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.pixel-default__button:active {
+  background: var(--primary-hover);
+}
+
+/* Secondary — glass style */
 .pixel-secondary__button {
-  background-color: var(--color-secondary);
-  color: var(--color-secondary-foreground);
-
-  &::after {
-    border-right: 4px solid
-      color-mix(in hsl, var(--color-secondary) 70%, rgb(0, 0, 0));
-    border-bottom: 4px solid
-      color-mix(in hsl, var(--color-secondary) 70%, rgb(0, 0, 0));
-  }
-
-  &:hover {
-    background-color: color-mix(
-      in hsl,
-      var(--color-secondary) 90%,
-      rgb(0, 0, 0)
-    );
-  }
-
-  &:active {
-    background-color: color-mix(
-      in hsl,
-      var(--color-secondary) 70%,
-      rgb(0, 0, 0)
-    );
-  }
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  color: var(--foreground);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
 }
 
+.pixel-secondary__button:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md), 0 0 15px var(--primary-glow);
+}
+
+.pixel-secondary__button:active {
+  background: var(--muted);
+}
+
+/* Success */
 .pixel-success__button {
-  background-color: var(--success);
+  background: linear-gradient(135deg, var(--success), #059669);
   color: var(--success-foreground);
-
-  &::after {
-    border-right: 4px solid color-mix(in hsl, var(--success) 70%, rgb(0, 0, 0));
-    border-bottom: 4px solid color-mix(in hsl, var(--success) 70%, rgb(0, 0, 0));
-  }
-
-  &:hover {
-    background-color: color-mix(in hsl, var(--success) 90%, rgb(0, 0, 0));
-  }
-
-  &:active {
-    background-color: color-mix(in hsl, var(--success) 70%, rgb(0, 0, 0));
-  }
+  border-color: var(--success);
+  box-shadow: var(--shadow-md);
 }
 
-.pixel-destructive__button {
-  background-color: var(--destructive);
-  color: var(--destructive-foreground);
-
-  &::after {
-    border-right: 4px solid
-      color-mix(in hsl, var(--destructive) 70%, rgb(77, 77, 77));
-    border-bottom: 4px solid
-      color-mix(in hsl, var(--destructive) 70%, rgb(77, 77, 77));
-  }
-
-  &:hover {
-    background-color: color-mix(
-      in hsl,
-      var(--destructive) 90%,
-      rgb(77, 77, 77)
-    );
-  }
-
-  &:active {
-    background-color: color-mix(
-      in hsl,
-      var(--destructive) 70%,
-      rgb(77, 77, 77)
-    );
-  }
+.pixel-success__button:hover {
+  box-shadow: var(--shadow-lg), 0 0 20px var(--success-glow);
 }
 
+.pixel-success__button:active {
+  background: #059669;
+}
+
+/* Warning */
 .pixel-warning__button {
-  background-color: var(--warning);
+  background: linear-gradient(135deg, var(--warning), #d97706);
   color: var(--warning-foreground);
-
-  &::after {
-    border-right: 4px solid
-      color-mix(in hsl, var(--warning) 70%, rgb(32, 32, 32));
-    border-bottom: 4px solid
-      color-mix(in hsl, var(--warning) 70%, rgb(32, 32, 32));
-  }
-
-  &:hover {
-    background-color: color-mix(in hsl, var(--warning) 90%, rgb(32, 32, 32));
-  }
-
-  &:active {
-    background-color: color-mix(in hsl, var(--warning) 70%, rgb(32, 32, 32));
-  }
+  border-color: var(--warning);
+  box-shadow: var(--shadow-md);
 }
 
+.pixel-warning__button:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.pixel-warning__button:active {
+  background: #d97706;
+}
+
+/* Destructive */
+.pixel-destructive__button {
+  background: linear-gradient(135deg, var(--destructive), #dc2626);
+  color: var(--destructive-foreground);
+  border-color: var(--destructive);
+  box-shadow: var(--shadow-md);
+}
+
+.pixel-destructive__button:hover {
+  box-shadow: var(--shadow-lg), 0 0 20px var(--destructive-glow);
+}
+
+.pixel-destructive__button:active {
+  background: #dc2626;
+}
+
+/* Link */
 .pixel-link__button {
   box-shadow: none;
-  color: var(--link);
-  margin: 0;
-  padding: 0;
+  border: none;
+  color: var(--primary);
+  background: transparent;
+  text-decoration: none;
+  border-radius: 0;
+}
 
-  &:hover {
-    background-color: transparent;
-    color: color-mix(in hsl, var(--link) 70%, rgb(0, 0, 0));
-  }
+.pixel-link__button:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transform: none;
+  box-shadow: none;
+}
 
-  &:active {
-    color: color-mix(in hsl, var(--link) 90%, rgb(0, 0, 0));
-  }
-
-  &:visited {
-    color: color-mix(in hsl, var(--link) 70%, rgb(0, 0, 0));
-  }
+.pixel-link__button:active {
+  color: var(--primary);
+  transform: none;
 }

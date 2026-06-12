@@ -1,20 +1,16 @@
 import { type VariantProps, cva } from "class-variance-authority";
-
 import { cn } from "@/lib/utils";
-
 import {
   Card as ShadcnCard,
-  CardAction as ShadcnCardAction,
   CardContent as ShadcnCardContent,
   CardDescription as ShadcnCardDescription,
   CardFooter as ShadcnCardFooter,
   CardHeader as ShadcnCardHeader,
   CardTitle as ShadcnCardTitle,
 } from "@/components/ui/card";
-
 import "@/components/ui/pixelact-ui/styles/styles.css";
 
-export const cardVariants = cva("", {
+export const cardVariants = cva("rounded-xl border", {
   variants: {
     font: {
       normal: "",
@@ -32,30 +28,23 @@ export interface CardProps
   asChild?: boolean;
 }
 
-function Card({ ...props }: CardProps) {
-  const { className, font } = props;
-
+function Card({ className, ...props }: CardProps) {
   return (
     <ShadcnCard
-      {...props}
       className={cn(
-        "rounded-none border-0 bg-oklch(1 0 0) shadow-(--pixel-box-shadow) box-shadow-margin dark:bg-oklch(0.21 0.006 285.885)",
-        cardVariants({ font }),
+        "rounded-xl border border-[var(--border)] bg-card backdrop-blur-xl shadow-md text-card-foreground transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)]",
         className
       )}
+      {...props}
     />
   );
 }
 
-function CardHeader({ ...props }: CardProps) {
-  const { className } = props;
-
+function CardHeader({ className, ...props }: CardProps) {
   return <ShadcnCardHeader className={cn("", className)} {...props} />;
 }
 
-function CardTitle({ ...props }: CardProps) {
-  const { className } = props;
-
+function CardTitle({ className, ...props }: CardProps) {
   return (
     <ShadcnCardTitle
       className={cn("font-normal text-lg", className)}
@@ -64,34 +53,16 @@ function CardTitle({ ...props }: CardProps) {
   );
 }
 
-function CardDescription({ ...props }: CardProps) {
-  const { className } = props;
-
+function CardDescription({ className, ...props }: CardProps) {
   return <ShadcnCardDescription className={cn(className)} {...props} />;
 }
 
-function CardAction({ ...props }: CardProps) {
-  const { className } = props;
-
-  return <ShadcnCardAction className={cn(className)} {...props} />;
-}
-
-function CardContent({ ...props }: CardProps) {
-  const { className } = props;
-
+function CardContent({ className, ...props }: CardProps) {
   return <ShadcnCardContent className={cn(className)} {...props} />;
 }
 
-function CardFooter({ ...props }: CardProps) {
-  const { className } = props;
-
-  return (
-    <ShadcnCardFooter
-      data-slot="card-footer"
-      className={cn(className)}
-      {...props}
-    />
-  );
+function CardFooter({ className, ...props }: CardProps) {
+  return <ShadcnCardFooter className={cn(className)} {...props} />;
 }
 
 export {
@@ -99,7 +70,6 @@ export {
   CardHeader,
   CardFooter,
   CardTitle,
-  CardAction,
   CardDescription,
   CardContent,
 };

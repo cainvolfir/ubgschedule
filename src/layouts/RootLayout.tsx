@@ -7,9 +7,13 @@ interface RootLayoutProps {
 
 export function RootLayout({ currentStep }: RootLayoutProps) {
   return (
-    <div className="min-h-dvh bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="min-h-dvh bg-background text-foreground relative overflow-hidden">
+      {/* Decorative background orbs */}
+      <div className="fixed top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-secondary/5 blur-[120px] pointer-events-none" />
+
       <Navbar currentStep={currentStep} />
-      <main className="px-0">
+      <main className="relative z-10 px-0">
         <Outlet />
       </main>
     </div>

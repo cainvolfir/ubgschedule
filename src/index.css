@@ -2,20 +2,128 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Design System (Light Mode) ===== */
 :root {
-  --robot-body: #8899aa;
-  --robot-dark: #556677;
-  --robot-face: #334455;
-  --robot-accent: #00e5cc;
-  --robot-glow: #00ffcc;
-  --robot-white: #e8f0f8;
+  --background: #f5f7fc;
+  --foreground: #1a1f2e;
+  --card: #ffffff;
+  --card-solid: #ffffff;
+  --card-foreground: #1a1f2e;
+
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgba(59, 130, 246, 0.25);
+  --primary-subtle: rgba(59, 130, 246, 0.08);
+
+  --secondary: #0d9488;
+  --secondary-hover: #0f766e;
+  --secondary-foreground: #ffffff;
+
+  --muted: #eef0f5;
+  --muted-foreground: #647089;
+  --accent: #e0f2fe;
+  --accent-foreground: #0c4a6e;
+  --border: rgba(100, 116, 139, 0.16);
+  --border-strong: rgba(100, 116, 139, 0.3);
+  --ring: #3b82f6;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #000000;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  /* Pixel robot mascot colors — blue theme */
+  --robot-body: #5b8abf;
+  --robot-dark: #3a6d9e;
+  --robot-face: #244a73;
+  --robot-accent: #38bdf8;
+  --robot-glow: #7dd3fc;
+  --robot-white: #dbeafe;
 }
 
+/* ===== Design System (Dark Mode) ===== */
 .dark {
-  --robot-body: #6b7d8e;
-  --robot-dark: #4a5a6a;
-  --robot-face: #2a3a4a;
-  --robot-accent: #00ccaa;
-  --robot-glow: #00ffcc;
-  --robot-white: #c8d8e8;
+  --background: #0a0f1a;
+  --foreground: #e2e8f0;
+  --card: #0f172a;
+  --card-solid: #0f172a;
+  --card-foreground: #e2e8f0;
+
+  --primary: #60a5fa;
+  --primary-hover: #3b82f6;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgba(96, 165, 250, 0.3);
+  --primary-subtle: rgba(96, 165, 250, 0.1);
+
+  --secondary: #2dd4bf;
+  --secondary-hover: #14b8a6;
+  --secondary-foreground: #ffffff;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #0c2d4a;
+  --accent-foreground: #7dd3fc;
+  --border: rgba(148, 163, 184, 0.12);
+  --border-strong: rgba(148, 163, 184, 0.25);
+  --ring: #60a5fa;
+
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --success: #34d399;
+  --success-foreground: #ffffff;
+  --warning: #fbbf24;
+  --warning-foreground: #000000;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+
+  /* Pixel robot mascot colors — blue theme (dark) */
+  --robot-body: #4a7fb5;
+  --robot-dark: #3568a0;
+  --robot-face: #1e4060;
+  --robot-accent: #38bdf8;
+  --robot-glow: #7dd3fc;
+  --robot-white: #bfdbfe;
+}
+
+/* ===== Base ===== */
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Selection */
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
