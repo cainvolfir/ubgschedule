@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Copy, Check, FileText, Table } from 'lucide-react';
+import { Check, FileText, Table } from 'lucide-react';
 import { Button } from '../../components/ui/pixelact-ui/button';
 import { useToast } from '../../components/Toast';
 

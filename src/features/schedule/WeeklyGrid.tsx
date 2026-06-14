@@ -40,13 +40,6 @@ function parseTimeToSlot(jam: string): { startSlot: number; endSlot: number } | 
   return { startSlot: Math.max(0, startSlot), endSlot: Math.max(startSlot + 1, endSlot) };
 }
 
-function slotToTime(slot: number): string {
-  const totalMin = START_HOUR * 60 + slot * 30;
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
-
 function getLuminance(hex: string): number {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;

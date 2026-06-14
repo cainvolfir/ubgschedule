@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
 import {
   ArrowLeft, ChevronDown, AlertTriangle, Pencil, Trash2, Plus, X, Check,
-  RotateCcw, Search, LayoutGrid, List, Printer, Download,
+  RotateCcw, Search, LayoutGrid, List, Printer,
 } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
@@ -10,7 +10,7 @@ import { UBGMascot } from '../../components/UBGMascot';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../components/Toast';
 import { WeeklyGrid } from './WeeklyGrid';
-import { CourseColorPicker, ColorDot } from './CourseColorPicker';
+import { CourseColorPicker } from './CourseColorPicker';
 
 const ExportCanvas = lazy(() => import('../../features/exporter/ExportCanvas'));
 const ExportICS = lazy(() => import('../../features/exporter/ExportICS'));
@@ -20,17 +20,17 @@ const HARI_ORDER: Record<string, number> = { Senin: 1, Selasa: 2, Rabu: 3, Kamis
 const HARI_LIST = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
 interface FinalRow {
-  Hari: string; MataKuliah: string; DosenPengampuh: string; SKS: string; Jam: string; Ruang: string; Keterangan: string;
+  KodeMK: string; Hari: string; MataKuliah: string; DosenPengampuh: string; SKS: string; Jam: string; Ruang: string; Keterangan: string;
 }
 
 const EMPTY_ROW: FinalRow = {
-  Hari: 'Senin', MataKuliah: '', DosenPengampuh: '', SKS: '2',
+  KodeMK: '', Hari: 'Senin', MataKuliah: '', DosenPengampuh: '', SKS: '2',
   Jam: '08.00-09.40', Ruang: '', Keterangan: '-',
 };
 
 function toFinalRow(r: Record<string, unknown>): FinalRow {
   return {
-    Hari: String(r?.Hari ?? ''), MataKuliah: String(r?.MataKuliah ?? ''),
+    KodeMK: String(r?.KodeMK ?? ''), Hari: String(r?.Hari ?? ''), MataKuliah: String(r?.MataKuliah ?? ''),
     DosenPengampuh: String(r?.DosenPengampuh ?? ''), SKS: String(r?.SKS ?? ''),
     Jam: String(r?.Jam ?? ''), Ruang: String(r?.Ruang ?? ''),
     Keterangan: String(r?.Keterangan ?? '-'),
@@ -172,7 +172,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
   };
 
   const handleAdd = () => {
-    const row: Record<string, unknown> = { KodeMK: '', ...addForm };
+    const row: Record<string, unknown> = { ...addForm };
     addJadwalRow(row);
     setShowAddForm(false);
     setAddForm({ ...EMPTY_ROW });

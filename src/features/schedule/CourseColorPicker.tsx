@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Palette, X } from 'lucide-react';
-import { Button } from '../../components/ui/pixelact-ui/button';
+
 import { cn } from '../../lib/utils';
 
 const PRESET_COLORS = [
