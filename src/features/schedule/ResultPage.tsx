@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronDown, AlertTriangle } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { Button } from '../../components/ui/pixelact-ui/button';
 import { CatState } from '../../components/CatState';
-import { PixelCat } from '../../components/PixelCat';
+import { UBGMascot } from '../../components/UBGMascot';
 
 const ExportCanvas = lazy(() => import('../../features/exporter/ExportCanvas'));
 
@@ -166,7 +166,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                 } shadow-sm`}
               >
                 <div className="flex items-center gap-2.5">
-                  <PixelCat pose={hasCollision ? "blink" : "idle"} size={18} />
+                  <UBGMascot pose={hasCollision ? "blink" : "idle"} size={18} />
                   <span className="pixel-font text-[10px] font-bold">{group.hari}</span>
                   <span className="rounded-full bg-card/80 px-2 py-0.5 text-[8px] pixel-font text-muted-foreground border border-[var(--border)]">
                     {group.rows.length}

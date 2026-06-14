@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { PixelCat } from './PixelCat';
+import { UBGMascot } from './UBGMascot';
 
 interface StepIndicatorProps {
   steps: string[];
@@ -27,7 +27,7 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
               )}
             >
               {isActive ? (
-                <PixelCat pose="tail-wag" size={20} />
+                <UBGMascot pose="tail-wag" size={20} />
               ) : isCompleted ? (
                 <svg width="14" height="14" viewBox="0 0 16 16" className="text-success-foreground">
                   <path d="M13.5 4.5L6.5 11.5L2.5 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />

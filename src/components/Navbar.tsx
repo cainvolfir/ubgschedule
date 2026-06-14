@@ -1,5 +1,5 @@
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { PixelCat } from './PixelCat';
+import { UBGMascot } from './UBGMascot';
 import { StepIndicator } from './StepIndicator';
 
 const WIZARD_STEPS = ['Upload Theory', 'Upload Practical', 'View Schedule'];
@@ -15,7 +15,7 @@ export function Navbar({ currentStep }: NavbarProps) {
         {/* Left: Cat + Title */}
         <div className="flex items-center gap-2.5">
           <div className="animate-cat-bob" style={{ filter: 'drop-shadow(0 0 6px var(--robot-glow))' }}>
-            <PixelCat pose="idle" size={28} />
+            <UBGMascot pose="idle" size={28} />
           </div>
           <div>
             <h1 className="pixel-font text-[10px] leading-none tracking-wide sm:text-xs text-foreground">

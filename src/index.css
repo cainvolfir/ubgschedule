@@ -38,13 +38,13 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
 
-  /* Pixel robot mascot colors — blue theme */
-  --robot-body: #5b8abf;
-  --robot-dark: #3a6d9e;
-  --robot-face: #244a73;
-  --robot-accent: #38bdf8;
+  /* Pixel UGO mascot colors — blue theme */
+  --robot-body: #3b9cff;
+  --robot-dark: #2f78c7;
+  --robot-face: #1e5a9d;
+  --robot-accent: #6ec6ff;
   --robot-glow: #7dd3fc;
-  --robot-white: #dbeafe;
+  --robot-white: #e0f2fe;
 }
 
 /* ===== Design System (Dark Mode) ===== */
@@ -83,13 +83,13 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
 
-  /* Pixel robot mascot colors — blue theme (dark) */
-  --robot-body: #4a7fb5;
-  --robot-dark: #3568a0;
-  --robot-face: #1e4060;
-  --robot-accent: #38bdf8;
+  /* Pixel UGO mascot colors — blue theme (dark) */
+  --robot-body: #3b9cff;
+  --robot-dark: #2f78c7;
+  --robot-face: #1e5a9d;
+  --robot-accent: #6ec6ff;
   --robot-glow: #7dd3fc;
-  --robot-white: #bfdbfe;
+  --robot-white: #dbeafe;
 }
 
 /* ===== Base ===== */

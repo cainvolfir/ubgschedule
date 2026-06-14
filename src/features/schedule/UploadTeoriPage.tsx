@@ -8,7 +8,7 @@ import {
 } from '../../components/ui/pixelact-ui/select';
 import { cn } from '../../lib/utils';
 import { CatState } from '../../components/CatState';
-import { PixelCat } from '../../components/PixelCat';
+import { UBGMascot } from '../../components/UBGMascot';
 
 function truncate(name: string, max = 28): string {
   return name.length > max ? name.slice(0, max) + '...' : name;
@@ -109,13 +109,13 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
   const hasChecked = selectedTheoryRowIds.size > 0;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl flex-col px-3 py-4 sm:justify-center sm:px-4 sm:py-6 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl flex-col px-4 py-8 sm:justify-center sm:px-6 sm:py-12 lg:px-8">
       {/* Header */}
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-8 sm:mb-10">
         <p className="pixel-font text-[10px] uppercase tracking-[0.2em] text-primary">
           Upload Theory Schedule
         </p>
-        <p className="mt-1.5 text-[13px] text-muted-foreground">
+        <p className="mt-3 text-[13px] text-muted-foreground leading-relaxed">
           Upload your theory schedule PDF to extract and organize your classes
         </p>
       </div>
@@ -131,48 +131,48 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
             onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
             onDragLeave={() => setIsDragOver(false)}
             className={cn(
-              'relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--border)] bg-card-solid px-4 py-10 text-center transition-all duration-200 sm:py-14',
+              'relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--border)] bg-card-solid px-5 py-5 text-center transition-all duration-200 sm:py-14',
               dragClasses,
               dropState === 'populated' && 'rounded-b-none border-b-0 border-solid border-[var(--primary)]/30 bg-primary/5',
             )}
           >
-            {/* Decorative corner accents */}
-            <div className="absolute top-3 left-3 h-6 w-6 rounded-tl-lg border-t-2 border-l-2 border-[var(--border)] opacity-30" />
-            <div className="absolute top-3 right-3 h-6 w-6 rounded-tr-lg border-t-2 border-r-2 border-[var(--border)] opacity-30" />
-            <div className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-[var(--border)] opacity-30" />
-            <div className="absolute bottom-3 right-3 h-6 w-6 rounded-br-lg border-b-2 border-r-2 border-[var(--border)] opacity-30" />
+            {/* Decorative corner accents — hidden on small screens */}
+            <div className="absolute top-3 left-3 h-6 w-6 rounded-tl-lg border-t-2 border-l-2 border-[var(--border)] opacity-30 hidden sm:block" />
+            <div className="absolute top-3 right-3 h-6 w-6 rounded-tr-lg border-t-2 border-r-2 border-[var(--border)] opacity-30 hidden sm:block" />
+            <div className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-[var(--border)] opacity-30 hidden sm:block" />
+            <div className="absolute bottom-3 right-3 h-6 w-6 rounded-br-lg border-b-2 border-r-2 border-[var(--border)] opacity-30 hidden sm:block" />
 
             {dropState === 'processing' ? (
               <div className="flex flex-col items-center gap-3">
-                <CatState pose="loading" size={64} message={truncate(fileName)} />
+                <CatState pose="loading" size={56} message={truncate(fileName)} />
                 <div className="flex items-center gap-2 text-[9px] pixel-font text-primary">
                   <Sparkles size={12} className="animate-pulse" />
                   Parsing PDF...
                 </div>
               </div>
             ) : dropState === 'empty' ? (
-              <div className="flex flex-col items-center gap-4">
-                <PixelCat pose="idle" size={52} />
-                <div>
+              <div className="flex flex-col items-center gap-3">
+                <UBGMascot pose="idle" size={36} />
+                <div className="text-center">
                   <p className="text-[12px] font-semibold text-foreground">
                     Drop your PDF here
                   </p>
-                  <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  <p className="mt-1 text-[11px] text-muted-foreground">
                     or <span className="text-primary font-medium underline underline-offset-2">browse files</span> from your device
                   </p>
                 </div>
-                <div className="flex items-center gap-2 rounded-full bg-muted px-4 py-1.5 text-[9px] pixel-font text-muted-foreground border border-[var(--border)]">
+                <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-[9px] pixel-font text-muted-foreground border border-[var(--border)]">
                   <FileText size={12} />
                   Supports PDF files
                 </div>
-                <Button variant="secondary" size="sm" className="mt-1 sm:hidden text-[9px]">
+                <Button variant="secondary" size="sm" className="mt-0.5 sm:hidden text-[9px]">
                   <Upload size={12} />
                   Choose File
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-3">
-                <PixelCat pose="tail-wag" size={44} />
+              <div className="flex flex-col items-center gap-2.5">
+                <UBGMascot pose="tail-wag" size={36} />
                 <p className="text-[11px] font-semibold text-success flex items-center gap-1.5">
                   <Sparkles size={12} />
                   {truncate(fileName)}
@@ -185,8 +185,8 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
           {/* Results */}
           {hasRows && (
             <div className="overflow-hidden">
-              <div className="rounded-b-xl border-2 border-t-0 border-[var(--border)] bg-card-solid px-3 py-3">
-                <div className="flex items-center justify-between mb-2">
+              <div className="rounded-b-xl border-2 border-t-0 border-[var(--border)] bg-card-solid px-4 py-4">
+                <div className="flex items-center justify-between mb-3">
                   <p className="text-[12px] font-medium text-muted-foreground">
                     {dataTeoriMentah.length} classes detected
                   </p>
@@ -196,13 +196,13 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
                 </div>
 
                 {/* Filters */}
-                <div className="mb-3 flex flex-col gap-2 md:flex-row">
+                <div className="mb-5 flex flex-col gap-3.5 sm:flex-row sm:gap-3">
                   {[{ label: 'Kelas', value: filterKelas, setter: setFilterKelas, items: uniqueKelas, allLabel: 'All Classes' },
                     { label: 'Semester', value: filterSemester, setter: setFilterSemester, items: uniqueSemesters, allLabel: 'All SMT' },
                     { label: 'Hari', value: filterHari, setter: setFilterHari, items: uniqueHari, allLabel: 'All Days' },
                   ].map((f) => (
                     <div key={f.label} className="flex-1">
-                      <p className="mb-1 text-[11px] font-medium text-muted-foreground">{f.label}</p>
+                      <p className="mb-1.5 text-[11px] font-medium text-muted-foreground">{f.label}</p>
                       <Select value={f.value} onValueChange={f.setter}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder={`[ ${f.allLabel} ]`} />
@@ -217,13 +217,13 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
                 </div>
 
                 {(filterKelas !== '__all__' || filterSemester !== '__all__' || filterHari !== '__all__') && (
-                  <p className="mb-2 text-[11px] text-muted-foreground">
+                  <p className="mb-3 text-[11px] text-muted-foreground">
                     Showing {filteredRows.length} of {dataTeoriMentah.length} classes
                   </p>
                 )}
 
                 {filteredRows.length > 0 ? (
-                  <div className="mb-3 grid max-h-[50dvh] grid-cols-1 gap-2 overflow-y-auto pr-1 md:grid-cols-2">
+                  <div className="mb-5 grid max-h-[45dvh] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:gap-3 md:grid-cols-2">
                     {filteredRows.map((row) => {
                       const isChecked = selectedTheoryRowIds.has(row.id);
                       return (
@@ -278,7 +278,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
                   <Button
                     variant="default"
                     onClick={handleContinue}
-                    className="mt-2 w-full justify-center py-3.5 text-[10px] font-semibold gap-2"
+                    className="mt-3 w-full justify-center py-3.5 text-[10px] font-semibold gap-2"
                   >
                     Continue with {selectedTheoryRowIds.size} classes
                     <Sparkles size={12} />

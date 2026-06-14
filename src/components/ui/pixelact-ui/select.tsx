@@ -88,10 +88,14 @@ function SelectItem({
   return (
     <ShadcnSelectItem
       className={cn(
-        "rounded-lg px-2.5 py-1.5 mx-0.5 text-card-foreground cursor-pointer transition-colors duration-100 hover:bg-muted data-[highlighted]:bg-primary data-[highlighted]:text-primary-foreground !pl-2.5",
+        "rounded-lg px-2.5 py-1.5 mx-0.5 cursor-pointer transition-colors duration-100",
+        "bg-card-solid text-card-foreground",
+        "hover:bg-muted hover:text-card-foreground",
+        "data-[highlighted]:!bg-primary data-[highlighted]:!text-card-foreground",
+        "active:!bg-primary active:!text-card-foreground",
+        "!pl-2.5",
         className
       )}
-      style={{ backgroundColor: 'var(--card-solid)' }}
       {...props}
     >
       {children}

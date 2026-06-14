@@ -24,3 +24,42 @@
 .glow-hover:hover {
   box-shadow: var(--shadow-glow);
 }
+
+/* ============================================
+   UGO Mascot Animations
+   Applied to the <svg> element via className.
+   Each pose gets a subtle transform animation.
+   ============================================ */
+
+/* IDLE — gentle up/down bob */
+@keyframes ugo-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* BLINK — quick squish (simulates eye blink) */
+@keyframes ugo-blink {
+  0%, 45%, 55%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.92); }
+}
+
+/* TAIL-WAG — happy wiggle left/right */
+@keyframes ugo-tail-wag {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(2deg); }
+  75% { transform: rotate(-2deg); }
+}
+
+/* SLEEP — slow gentle sway + dim */
+@keyframes ugo-sleep {
+  0%, 100% { transform: rotate(0deg); opacity: 0.7; }
+  50% { transform: rotate(1.5deg); opacity: 0.55; }
+}
+
+/* LOADING — fast energetic bounce */
+@keyframes ugo-loading {
+  0%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-3px) scale(1.02); }
+  50% { transform: translateY(0) scale(1); }
+  75% { transform: translateY(-1px) scale(0.99); }
+}
