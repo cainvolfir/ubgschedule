@@ -38,14 +38,14 @@ function drawCell(
   ctx.fillStyle = opts.bg || '#ffffff';
   ctx.fillRect(x, y, w, h);
 
-  ctx.font = opts.font || '9px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  ctx.font = opts.font || '18px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
   ctx.textAlign = opts.align || 'left';
   ctx.fillStyle = opts.color || '#27272a';
 
-  const px = opts.padX ?? (opts.align === 'center' ? 0 : 6);
-  const lh = opts.lineH || 13;
-  const maxW = w - px - 6;
-  const maxLines = Math.max(1, Math.floor((h - 6) / lh));
+  const px = opts.padX ?? (opts.align === 'center' ? 0 : 12);
+  const lh = opts.lineH || 26;
+  const maxW = w - px - 12;
+  const maxLines = Math.max(1, Math.floor((h - 12) / lh));
   const words = text.split(' ');
 
   // build wrapped lines
@@ -75,7 +75,7 @@ function drawCell(
   ctx.restore();
 
   ctx.strokeStyle = '#18181b';
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 2;
   ctx.strokeRect(x, y, w, h);
 }
 
@@ -87,41 +87,44 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     if (!canvas || merged.length === 0) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // High-resolution scale factor — 4x for crisp text when zoomed
+    const SCALE = 4;
+
     const totalRows = merged.length;
-    const rowHeight = 44;
-    const headerHeight = 48;
-    const pad = 60;
+    const rowHeight = 88;       // 44 * 2
+    const headerHeight = 96;    // 48 * 2
+    const pad = 120;            // 60 * 2
     const cols = [
-      { key: 'Hari', w: 100 },
-      { key: 'MataKuliah', w: 200 },
-      { key: 'DosenPengampuh', w: 160 },
-      { key: 'SKS', w: 60 },
-      { key: 'Jam', w: 140 },
-      { key: 'Ruang', w: 130 },
-      { key: 'Keterangan', w: 180 },
+      { key: 'Hari', w: 200 },       // 100 * 2
+      { key: 'MataKuliah', w: 440 }, // 220 * 2
+      { key: 'DosenPengampuh', w: 360 }, // 180 * 2
+      { key: 'SKS', w: 120 },        // 60 * 2
+      { key: 'Jam', w: 280 },        // 140 * 2
+      { key: 'Ruang', w: 260 },      // 130 * 2
+      { key: 'Keterangan', w: 360 }, // 180 * 2
     ];
 
     let totalW = pad * 2;
     for (const c of cols) totalW += c.w;
     const totalH = pad * 2 + headerHeight + totalRows * rowHeight;
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = totalW * dpr;
-    canvas.height = totalH * dpr;
-    ctx.scale(dpr, dpr);
+    canvas.width = totalW * SCALE;
+    canvas.height = totalH * SCALE;
+    ctx.scale(SCALE, SCALE);
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, totalW, totalH);
 
     ctx.strokeStyle = '#a1a1aa';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(6, 6, totalW - 12, totalH - 12);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(12, 12, totalW - 24, totalH - 24);
 
     let x = pad;
     let y = pad;
 
-    const hdrBase = { font: 'bold 11px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', color: '#18181b' };
-    const cellBase = { font: '10px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', color: '#27272a' };
+    const hdrBase = { font: 'bold 22px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', color: '#18181b' };
+    const cellBase = { font: '20px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', color: '#27272a' };
 
     const headers = ['Hari', 'Mata Kuliah', 'Dosen Pengampuh', 'SKS', 'Jam', 'Ruang', 'Keterangan'];
     let hx = x;
@@ -131,6 +134,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
         bg: '#f4f4f5',
         align: 'center',
         padX: 0,
+        lineH: 28,
       });
       hx += cols[i].w;
     }
@@ -174,16 +178,17 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
       drawCell(ctx, gx, gy, cols[0].w, group.rows.length * rowHeight, group.hari, {
         ...cellBase,
         bg: '#f4f4f5',
-        padX: 10,
+        padX: 20,
+        lineH: 26,
       });
 
       for (let ri = 0; ri < group.rows.length; ri++) {
         const row = group.rows[ri];
         const gi = globalIdx++;
         const collided = collisionMap.get(gi);
-    const keterangan = collided
-      ? 'Jadwal Bentrok'
-      : row.Keterangan;
+        const keterangan = collided
+          ? 'Jadwal Bentrok'
+          : row.Keterangan;
         const cellBg = collided ? '#fef2f2' : '#ffffff';
         const cellColor = collided ? '#991b1b' : '#27272a';
 
@@ -193,11 +198,12 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
         const vals = [row.MataKuliah, row.DosenPengampuh, row.SKS, row.Jam, row.Ruang, keterangan];
         for (let ci = 0; ci < vals.length; ci++) {
           drawCell(ctx, cx, ry, cols[ci + 1].w, rowHeight, String(vals[ci] || ''), {
-            font: '10px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            font: '20px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             color: cellColor,
             bg: cellBg,
             align: 'center',
             padX: 0,
+            lineH: 26,
           });
           cx += cols[ci + 1].w;
         }

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface DataTeoriMentah {
   id: string;
@@ -26,22 +27,27 @@ export interface PraktikumCandidate {
   ruang: string;
 }
 
+interface CourseColor {
+  [courseName: string]: string; // hex color
+}
+
 interface JadwalState {
   dataTeoriMentah: DataTeoriMentah[];
-  selectedTheoryRowIds: Set<string>;
+  selectedTheoryRowIds: string[];
   jadwalTeoriTerpilih: DataTeoriMentah[];
   dataPraktikum: unknown[];
   jadwalFinal: unknown[];
+  courseColors: CourseColor;
 
   praktikumRoomPrefixes: string[];
   selectedRoomPrefix: string;
   praktikumCandidates: PraktikumCandidate[];
-  selectedCandidateIds: Set<string>;
+  selectedCandidateIds: string[];
   isScanning: boolean;
   isParsing: boolean;
 
   setDataTeoriMentah: (data: DataTeoriMentah[]) => void;
-  setSelectedTheoryRowIds: (ids: Set<string>) => void;
+  setSelectedTheoryRowIds: (ids: string[]) => void;
   toggleTheoryRowId: (id: string) => void;
   setJadwalTeoriTerpilih: (data: DataTeoriMentah[]) => void;
   setDataPraktikum: (data: unknown[]) => void;
@@ -49,67 +55,111 @@ interface JadwalState {
   setPraktikumRoomPrefixes: (prefixes: string[]) => void;
   setSelectedRoomPrefix: (prefix: string) => void;
   setPraktikumCandidates: (candidates: PraktikumCandidate[]) => void;
-  setSelectedCandidateIds: (ids: Set<string>) => void;
+  setSelectedCandidateIds: (ids: string[]) => void;
   toggleCandidateId: (id: string) => void;
   setIsScanning: (v: boolean) => void;
   setIsParsing: (v: boolean) => void;
+  addJadwalRow: (row: Record<string, unknown>) => void;
+  updateJadwalRow: (index: number, row: Record<string, unknown>) => void;
+  removeJadwalRow: (index: number) => void;
+  setCourseColor: (courseName: string, color: string) => void;
   reset: () => void;
 }
 
 const initialState = {
   dataTeoriMentah: [],
-  selectedTheoryRowIds: new Set<string>(),
+  selectedTheoryRowIds: [],
   jadwalTeoriTerpilih: [],
   dataPraktikum: [],
   jadwalFinal: [],
+  courseColors: {},
   praktikumRoomPrefixes: [],
   selectedRoomPrefix: '',
   praktikumCandidates: [],
-  selectedCandidateIds: new Set<string>(),
+  selectedCandidateIds: [],
   isScanning: false,
   isParsing: false,
 };
 
-export const useJadwalStore = create<JadwalState>((set) => ({
-  ...initialState,
+export const useJadwalStore = create<JadwalState>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  setDataTeoriMentah: (data) => set({ dataTeoriMentah: data }),
+      setDataTeoriMentah: (data) => set({ dataTeoriMentah: data }),
 
-  setSelectedTheoryRowIds: (ids) => set({ selectedTheoryRowIds: ids }),
+      setSelectedTheoryRowIds: (ids) => set({ selectedTheoryRowIds: ids }),
 
-  toggleTheoryRowId: (id) =>
-    set((state) => {
-      const next = new Set(state.selectedTheoryRowIds);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return { selectedTheoryRowIds: next };
+      toggleTheoryRowId: (id) =>
+        set((state) => {
+          const next = state.selectedTheoryRowIds.includes(id)
+            ? state.selectedTheoryRowIds.filter((x) => x !== id)
+            : [...state.selectedTheoryRowIds, id];
+          return { selectedTheoryRowIds: next };
+        }),
+
+      setJadwalTeoriTerpilih: (data) => set({ jadwalTeoriTerpilih: data }),
+
+      setDataPraktikum: (data) => set({ dataPraktikum: data }),
+
+      setJadwalFinal: (data) => set({ jadwalFinal: data }),
+
+      setPraktikumRoomPrefixes: (prefixes) => set({ praktikumRoomPrefixes: prefixes }),
+
+      setSelectedRoomPrefix: (prefix) => set({ selectedRoomPrefix: prefix }),
+
+      setPraktikumCandidates: (candidates) => set({ praktikumCandidates: candidates }),
+
+      setSelectedCandidateIds: (ids) => set({ selectedCandidateIds: ids }),
+
+      toggleCandidateId: (id) =>
+        set((state) => {
+          const next = state.selectedCandidateIds.includes(id)
+            ? state.selectedCandidateIds.filter((x) => x !== id)
+            : [...state.selectedCandidateIds, id];
+          return { selectedCandidateIds: next };
+        }),
+
+      setIsScanning: (v) => set({ isScanning: v }),
+
+      setIsParsing: (v) => set({ isParsing: v }),
+
+      addJadwalRow: (row) =>
+        set((state) => ({ jadwalFinal: [...state.jadwalFinal, row] })),
+
+      updateJadwalRow: (index, row) =>
+        set((state) => {
+          const next = [...state.jadwalFinal];
+          next[index] = row;
+          return { jadwalFinal: next };
+        }),
+
+      removeJadwalRow: (index) =>
+        set((state) => ({
+          jadwalFinal: state.jadwalFinal.filter((_, i) => i !== index),
+        })),
+
+      setCourseColor: (courseName, color) =>
+        set((state) => ({
+          courseColors: { ...state.courseColors, [courseName]: color },
+        })),
+
+      reset: () => set({ ...initialState }),
     }),
-
-  setJadwalTeoriTerpilih: (data) => set({ jadwalTeoriTerpilih: data }),
-
-  setDataPraktikum: (data) => set({ dataPraktikum: data }),
-
-  setJadwalFinal: (data) => set({ jadwalFinal: data }),
-
-  setPraktikumRoomPrefixes: (prefixes) => set({ praktikumRoomPrefixes: prefixes }),
-
-  setSelectedRoomPrefix: (prefix) => set({ selectedRoomPrefix: prefix }),
-
-  setPraktikumCandidates: (candidates) => set({ praktikumCandidates: candidates }),
-
-  setSelectedCandidateIds: (ids) => set({ selectedCandidateIds: ids }),
-
-  toggleCandidateId: (id) =>
-    set((state) => {
-      const next = new Set(state.selectedCandidateIds);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return { selectedCandidateIds: next };
-    }),
-
-  setIsScanning: (v) => set({ isScanning: v }),
-
-  setIsParsing: (v) => set({ isParsing: v }),
-
-  reset: () => set({ ...initialState }),
-}));
+    {
+      name: 'ubg-schedule-storage',
+      version: 1,
+      partialize: (state) => ({
+        dataTeoriMentah: state.dataTeoriMentah,
+        selectedTheoryRowIds: state.selectedTheoryRowIds,
+        jadwalTeoriTerpilih: state.jadwalTeoriTerpilih,
+        jadwalFinal: state.jadwalFinal,
+        courseColors: state.courseColors,
+        praktikumRoomPrefixes: state.praktikumRoomPrefixes,
+        selectedRoomPrefix: state.selectedRoomPrefix,
+        praktikumCandidates: state.praktikumCandidates,
+        selectedCandidateIds: state.selectedCandidateIds,
+      }),
+    },
+  ),
+);

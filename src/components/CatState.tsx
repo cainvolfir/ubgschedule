@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { UBGMascot } from './UBGMascot';
+import { UGOMascotArt } from './UGOMascotArt';
 
 type UgoPose = 'idle' | 'blink' | 'tail-wag' | 'sleep' | 'loading';
 
@@ -19,7 +19,7 @@ export function CatState({ pose, size = 64, message, children, className }: CatS
   return (
     <div className={cn('flex flex-col items-center justify-center gap-3 py-6', className)}>
       <div>
-        <UBGMascot pose={pose} size={size} />
+        <UGOMascotArt size={size} alt={`UGO mascot ${pose}`} />
       </div>
       {message && (
         <p className="pixel-font text-center text-[9px] leading-relaxed text-zinc-500 dark:text-zinc-400">
