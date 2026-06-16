@@ -77,7 +77,12 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0">
+    <div
+      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+    >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
@@ -110,10 +115,12 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
   return (
     <div
       className={cn(
-        'pointer-events-auto flex items-start gap-3 rounded-xl border-2 bg-card-solid px-4 py-3 shadow-lg transition-all duration-200',
+        'pointer-events-auto flex items-start gap-3 rounded-xl border-2 bg-card-solid/95 backdrop-blur-xl px-4 py-3 shadow-lg transition-all duration-300',
         borderColors[toast.type],
-        isExiting ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0',
+        isExiting ? 'opacity-0 translate-x-8 scale-95' : 'opacity-100 translate-x-0 scale-100 animate-fade-in-up',
       )}
+      role="alert"
+      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
     >
       <div className="mt-0.5">{icons[toast.type]}</div>
       <div className="flex-1 min-w-0">
@@ -124,11 +131,10 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
           </p>
         )}
       </div>
-      {/* All toast types including loading get a dismiss button */}
       <button
         onClick={handleClose}
-        className="mt-0.5 shrink-0 rounded-md p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="Dismiss"
+        className="mt-0.5 shrink-0 rounded-md p-0.5 text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-1 focus-visible:ring-[var(--ring)]"
+        aria-label="Dismiss notification"
       >
         <X size={14} />
       </button>

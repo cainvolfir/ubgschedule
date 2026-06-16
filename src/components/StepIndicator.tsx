@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { UBGMascot } from './UBGMascot';
+import { Check } from 'lucide-react';
 
 interface StepIndicatorProps {
   steps: string[];
@@ -9,29 +10,28 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ steps, currentStep, className }: StepIndicatorProps) {
   return (
-    <div className={cn('flex items-center gap-1.5', className)}>
+    <ol className={cn('flex items-center gap-1.5', className)} aria-label="Progress">
       {steps.map((label, idx) => {
         const isCompleted = idx < currentStep;
         const isActive = idx === currentStep;
         const isFuture = idx > currentStep;
 
         return (
-          <div key={label} className="flex items-center gap-1.5">
+          <li key={label} className="flex items-center gap-1.5" aria-current={isActive ? 'step' : undefined}>
             {/* Step dot */}
             <div
               className={cn(
                 'relative flex h-8 w-8 items-center justify-center rounded-lg border-2 transition-all duration-300',
-                isActive && 'border-[var(--primary)] bg-primary/20 shadow-glow scale-110',
-                isCompleted && 'border-[var(--success)] bg-success shadow-sm',
-                isFuture && 'border-[var(--border)] bg-muted',
+                isActive && 'border-[var(--primary)] bg-primary/10 shadow-glow scale-110',
+                isCompleted && 'border-[var(--success)] bg-success/10 shadow-sm',
+                isFuture && 'border-[var(--border)] bg-muted/50',
               )}
+              aria-label={`${label}${isActive ? ' (current)' : isCompleted ? ' (completed)' : ''}`}
             >
               {isActive ? (
                 <UBGMascot pose="tail-wag" size={20} />
               ) : isCompleted ? (
-                <svg width="14" height="14" viewBox="0 0 16 16" className="text-success-foreground">
-                  <path d="M13.5 4.5L6.5 11.5L2.5 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                </svg>
+                <Check size={14} className="text-success" strokeWidth={3} />
               ) : (
                 <span className="text-[8px] pixel-font text-muted-foreground font-bold">{idx + 1}</span>
               )}
@@ -42,9 +42,17 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
               )}
             </div>
 
+            {/* Step label (visible on wider screens) */}
+            <span className={cn(
+              'hidden lg:inline pixel-font text-[7px] transition-colors duration-300',
+              isActive ? 'text-primary font-bold' : isCompleted ? 'text-success' : 'text-muted-foreground',
+            )}>
+              {label}
+            </span>
+
             {/* Connector */}
             {idx < steps.length - 1 && (
-              <div className="relative h-0.5 w-6 overflow-hidden rounded-full bg-muted">
+              <div className="relative h-0.5 w-6 overflow-hidden rounded-full bg-muted" aria-hidden="true">
                 <div
                   className={cn(
                     'absolute inset-0 rounded-full bg-gradient-to-r from-success to-success transition-all duration-500',
@@ -53,7 +61,7 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
                 />
               </div>
             )}
-          </div>
+          </li>
         );
       })}
 
@@ -61,8 +69,6 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
       <span className="pixel-font ml-2 hidden text-[8px] text-muted-foreground sm:inline">
         Step {currentStep + 1}/{steps.length}
       </span>
-    </div>
+    </ol>
   );
 }
-
-export default StepIndicator;

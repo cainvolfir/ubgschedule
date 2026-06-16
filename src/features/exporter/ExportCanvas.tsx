@@ -120,7 +120,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     ctx.lineWidth = 4;
     ctx.strokeRect(12, 12, totalW - 24, totalH - 24);
 
-    let x = pad;
+    const x = pad;
     let y = pad;
 
     const hdrBase = { font: 'bold 22px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', color: '#18181b' };

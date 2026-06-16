@@ -202,7 +202,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
+    <div className="mx-auto w-full max-w-6xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8 animate-fade-in-up">
       {/* Print-only header */}
       <div className="print-only hidden">
         <div className="print-header">
@@ -217,25 +217,34 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
           <div className="flex items-center gap-3">
             <button
               onClick={goBack}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[var(--border)] bg-card text-foreground shadow-sm transition-all hover:border-[var(--primary)] hover:shadow-md hover:scale-105 active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[var(--border)] bg-card text-foreground shadow-sm transition-all hover:border-[var(--primary)] hover:shadow-md hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2"
+              aria-label="Go back to upload"
             >
               <ArrowLeft size={16} />
             </button>
             <div>
               <p className="pixel-font text-[10px] uppercase tracking-[0.2em] text-primary">Your Schedule</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
+              <h2 className="mt-0.5 text-[15px] sm:text-[18px] font-bold text-foreground">
                 {filteredMerged.length !== merged.length
                   ? `${filteredMerged.length} of ${merged.length} classes`
                   : `${merged.length} classes across ${dayGroups.length} days`}
-              </p>
+              </h2>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {totalCollisions > 0 && (
-              <div className="flex items-center gap-1.5 rounded-full bg-destructive/10 border border-destructive/20 px-3 py-1.5 text-[9px] pixel-font text-destructive">
+              <button
+                onClick={() => {
+                  const firstCollision = [...collisionMap.keys()][0];
+                  const el = document.querySelector(`[data-row-idx="${firstCollision}"]`);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-destructive/10 border border-destructive/20 px-3 py-1.5 text-[9px] pixel-font text-destructive hover:bg-destructive/20 transition-colors"
+                aria-label={`View ${totalCollisions} schedule collision${totalCollisions > 1 ? 's' : ''}`}
+              >
                 <AlertTriangle size={12} className="animate-pulse" />
                 {totalCollisions} collision{totalCollisions > 1 ? 's' : ''}
-              </div>
+              </button>
             )}
           </div>
         </div>
@@ -243,19 +252,22 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
         {/* Toolbar row */}
         <div className="mt-3 flex items-center gap-2 flex-wrap">
           {/* Search */}
-          <div className="relative flex-1 min-w-[180px] max-w-xs">
+          <div className="relative flex-1 min-w-[140px] max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <label htmlFor="schedule-search" className="sr-only">Search courses, lecturers, rooms</label>
             <input
+              id="schedule-search"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search course, lecturer, room..."
-              className="w-full rounded-xl border-2 border-[var(--border)] bg-card py-2 pl-9 pr-8 text-[11px] outline-none transition-colors focus:border-[var(--primary)]"
+              className="w-full rounded-xl border-2 border-[var(--border)] bg-card py-2 pl-9 pr-8 text-[11px] outline-none transition-colors focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
               >
                 <X size={12} />
               </button>
@@ -263,14 +275,16 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
           </div>
 
           {/* View toggle */}
-          <div className="flex items-center rounded-xl border-2 border-[var(--border)] bg-card overflow-hidden">
+          <div className="flex items-center rounded-xl border-2 border-[var(--border)] bg-card overflow-hidden" role="radiogroup" aria-label="View mode">
             <button
               onClick={() => setViewMode('table')}
               className={cn(
                 'flex h-9 w-9 items-center justify-center transition-colors',
                 viewMode === 'table' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
               )}
-              title="Table view"
+              role="radio"
+              aria-checked={viewMode === 'table'}
+              aria-label="Table view"
             >
               <List size={14} />
             </button>
@@ -280,13 +294,15 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                 'flex h-9 w-9 items-center justify-center transition-colors',
                 viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
               )}
-              title="Grid view"
+              role="radio"
+              aria-checked={viewMode === 'grid'}
+              aria-label="Grid view"
             >
               <LayoutGrid size={14} />
             </button>
           </div>
 
-          <Button variant="warning" onClick={() => { setShowAddForm(true); setEditingIdx(null); setShowCollisionDetail(null); }} className="pixel-font text-[9px] gap-1.5">
+          <Button variant="warning" onClick={() => { setShowAddForm(true); setEditingIdx(null); setShowCollisionDetail(null); }} className="pixel-font text-[9px] gap-1.5" aria-label="Add new class">
             <Plus size={12} /> Add
           </Button>
 
@@ -294,11 +310,11 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
           <Suspense fallback={null}><ExportCanvas dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
           <Suspense fallback={null}><ExportICS dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} courseColors={courseColors} /></Suspense>
 
-          <Button variant="secondary" onClick={handlePrint} className="pixel-font text-[9px] gap-1.5" title="Print schedule">
+          <Button variant="secondary" onClick={handlePrint} className="pixel-font text-[9px] gap-1.5" title="Print schedule" aria-label="Print schedule">
             <Printer size={12} /> Print
           </Button>
 
-          <Button variant="destructive" onClick={resetAll} className="pixel-font text-[9px] gap-1.5" title="Reset all data">
+          <Button variant="destructive" onClick={resetAll} className="pixel-font text-[9px] gap-1.5" title="Reset all data" aria-label="Reset all schedule data">
             <RotateCcw size={11} /> Reset
           </Button>
         </div>
@@ -319,21 +335,21 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
 
       {/* Add Class Form */}
       {showAddForm && (
-        <div className="mb-4 rounded-xl border-2 border-[var(--primary)] bg-primary/5 p-4 no-print">
+        <div className="mb-4 rounded-xl border-2 border-[var(--primary)] bg-primary/5 p-3 sm:p-4 no-print animate-fade-in-up" role="dialog" aria-label="Add new class form">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[12px] font-semibold text-foreground flex items-center gap-2">
               <Plus size={14} className="text-primary" /> Add New Class
             </p>
-            <button onClick={() => setShowAddForm(false)} className="rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={() => setShowAddForm(false)} className="rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-1 focus-visible:ring-[var(--ring)]" aria-label="Close form">
               <X size={14} />
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 sm:gap-3">
             <FieldInput label="Mata Kuliah" value={addForm.MataKuliah} onChange={(v) => setAddForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" />
             <FieldInput label="Dosen" value={addForm.DosenPengampuh} onChange={(v) => setAddForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi, S.Kom" />
             <div>
-              <label className="mb-1 block text-[10px] font-medium text-muted-foreground">Hari</label>
-              <select value={addForm.Hari} onChange={(e) => setAddForm((f) => ({ ...f, Hari: e.target.value }))} className="w-full rounded-lg border-2 border-[var(--border)] bg-card px-2 py-1.5 text-[11px] outline-none focus:border-[var(--primary)]">
+              <label className="mb-1 block text-[10px] font-medium text-muted-foreground" id="add-hari-label">Hari</label>
+              <select value={addForm.Hari} onChange={(e) => setAddForm((f) => ({ ...f, Hari: e.target.value }))} className="w-full rounded-lg border-2 border-[var(--border)] bg-card px-2 py-1.5 text-[11px] outline-none focus:border-[var(--primary)] focus-visible:ring-1 focus-visible:ring-[var(--ring)]" aria-labelledby="add-hari-label">
                 {HARI_LIST.map((h) => <option key={h} value={h}>{h}</option>)}
               </select>
             </div>

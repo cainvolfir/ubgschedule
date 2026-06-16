@@ -19,6 +19,7 @@
   --secondary: #0d9488;
   --secondary-hover: #0f766e;
   --secondary-foreground: #ffffff;
+  --secondary-glow: rgba(13, 148, 136, 0.25);
 
   --muted: #eef0f5;
   --muted-foreground: #647089;
@@ -30,13 +31,32 @@
 
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
+  --destructive-glow: rgba(239, 68, 68, 0.25);
   --success: #10b981;
   --success-foreground: #ffffff;
+  --success-glow: rgba(16, 185, 129, 0.25);
   --warning: #f59e0b;
   --warning-foreground: #000000;
 
+  --shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px var(--primary-glow);
+  --shadow-glow-lg: 0 0 40px var(--primary-glow);
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Pixel UGO mascot colors — blue theme */
   --robot-body: #3b9cff;
@@ -64,6 +84,7 @@
   --secondary: #2dd4bf;
   --secondary-hover: #5eead4;
   --secondary-foreground: #ffffff;
+  --secondary-glow: rgba(45, 212, 191, 0.25);
 
   --muted: #141e30;
   --muted-foreground: #8899b0;
@@ -75,13 +96,22 @@
 
   --destructive: #fb7185;
   --destructive-foreground: #ffffff;
+  --destructive-glow: rgba(251, 113, 133, 0.25);
   --success: #4ade80;
   --success-foreground: #ffffff;
+  --success-glow: rgba(74, 222, 128, 0.25);
   --warning: #fbbf24;
   --warning-foreground: #000000;
 
+  --shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.2);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--primary-glow);
+  --shadow-glow-lg: 0 0 40px var(--primary-glow);
+  --glass-bg: rgba(13, 20, 36, 0.6);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 
   /* Pixel UGO mascot colors — blue theme (dark) */
   --robot-body: #3b9cff;
@@ -105,12 +135,15 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Smooth theme transitions on themed elements */
@@ -119,12 +152,25 @@ input,
 select,
 textarea,
 button {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), box-shadow var(--transition-base);
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove default focus outline when mouse is used */
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -143,15 +189,92 @@ button {
   color: var(--primary-foreground);
 }
 
-/* ===== Progress Bar Animation ===== */
+/* ===== Animations ===== */
+
+/* Progress bar animation */
 @keyframes progress-bar {
   0% { width: 0%; margin-left: 0%; }
   50% { width: 60%; margin-left: 20%; }
   100% { width: 0%; margin-left: 100%; }
 }
-
 .animate-progress-bar {
   animation: progress-bar 1.8s ease-in-out infinite;
+}
+
+/* Fade in up — used for page transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stagger children */
+.stagger-children > * {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 450ms; }
+
+/* Shimmer loading effect for skeletons */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, var(--border) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Gentle pulse for attention */
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-gentle-pulse {
+  animation: gentle-pulse 2s ease-in-out infinite;
+}
+
+/* Smooth height expand/expand */
+@keyframes expand-down {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 2000px;
+  }
+}
+@keyframes collapse-up {
+  from {
+    opacity: 1;
+    max-height: 2000px;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+  }
+}
+.animate-expand {
+  animation: expand-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
 }
 
 /* ===== Print Styles ===== */

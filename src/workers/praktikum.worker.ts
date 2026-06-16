@@ -13,7 +13,7 @@ const ROMAN_MAP: Record<string, string> = {
 };
 
 function normalizeCell(raw: string): string {
-  return raw.replace(/[\[\]|]/g, ' ').replace(/\s+/g, ' ').trim();
+  return raw.replace(/[[\]|]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function stripRomanNumerals(text: string): string {

@@ -64,21 +64,22 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
         case 'WARN':
           console.warn(`[Praktikum Worker] ${step}:`, data);
           break;
-        case 'ERROR':
+        case 'ERROR': {
           console.error(`[Praktikum Worker] ${step}:`, data);
           setIsScanning(false);
           setIsParsing(false);
           setDropState('error');
           setProgressStage('');
-          const msg = PRAKTIKUM_ERRORS[step] || PRAKTIKUM_ERRORS.default;
-          setErrorDetail(msg);
+          const errMsg = PRAKTIKUM_ERRORS[step] || PRAKTIKUM_ERRORS.default;
+          setErrorDetail(errMsg);
           addToast({
             type: 'error',
             title: 'Failed to parse spreadsheet',
-            message: msg,
+            message: errMsg,
             duration: 8000,
           });
           break;
+        }
         case 'SCAN_RESULT':
           setPraktikumRoomPrefixes(data.prefixes || []);
           setIsScanning(false);
@@ -265,13 +266,14 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
   const isProcessing = dropState === 'processing' || isScanning || isParsing;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl flex-col px-4 py-8 sm:justify-center sm:px-6 sm:py-12 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl flex-col px-3 py-6 sm:justify-center sm:px-6 sm:py-12 lg:px-8 animate-fade-in-up">
       {/* Header */}
-      <div className="mb-8 sm:mb-10">
+      <div className="mb-6 sm:mb-10">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[var(--border)] bg-card text-foreground shadow-sm transition-all hover:border-[var(--primary)] hover:shadow-md hover:scale-105 active:scale-95"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[var(--border)] bg-card text-foreground shadow-sm transition-all hover:border-[var(--primary)] hover:shadow-md hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2"
+            aria-label="Go back to theory upload"
           >
             <ArrowLeft size={16} />
           </button>
@@ -279,8 +281,11 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
             <p className="pixel-font text-[10px] uppercase tracking-[0.2em] text-secondary">
               Upload Practical Schedule
             </p>
-            <p className="mt-3 text-[13px] text-muted-foreground leading-relaxed">
-              Upload your practical schedule XLSX file
+            <h2 className="mt-2 text-[18px] sm:text-[22px] font-bold text-foreground leading-tight">
+              Upload your practical schedule
+            </h2>
+            <p className="mt-2 text-[13px] text-muted-foreground leading-relaxed max-w-lg">
+              Upload your practical schedule XLSX file to extract lab classes.
             </p>
           </div>
         </div>

@@ -247,14 +247,17 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
   const isProcessing = dropState === 'processing';
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl flex-col px-4 py-8 sm:justify-center sm:px-6 sm:py-12 lg:px-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl flex-col px-3 py-6 sm:justify-center sm:px-6 sm:py-12 lg:px-8 animate-fade-in-up">
       {/* Header */}
-      <div className="mb-8 sm:mb-10">
+      <div className="mb-6 sm:mb-10">
         <p className="pixel-font text-[10px] uppercase tracking-[0.2em] text-primary">
           Upload Theory Schedule
         </p>
-        <p className="mt-3 text-[13px] text-muted-foreground leading-relaxed">
-          Upload your theory schedule PDF to extract and organize your classes
+        <h2 className="mt-2 text-[18px] sm:text-[22px] font-bold text-foreground leading-tight">
+          Upload your theory schedule
+        </h2>
+        <p className="mt-2 text-[13px] text-muted-foreground leading-relaxed max-w-lg">
+          Upload your theory schedule PDF to extract and organize your classes automatically.
         </p>
       </div>
 
@@ -265,21 +268,24 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
             role="button"
             tabIndex={0}
             onClick={dropState === 'error' ? handleRetry : handleClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); (dropState === 'error' ? handleRetry : handleClick)(); } }}
             onDrop={handleDrop}
             onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
             onDragLeave={() => setIsDragOver(false)}
             className={cn(
-              'relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--border)] bg-card-solid px-5 py-5 text-center transition-all duration-200 sm:py-14',
+              'relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--border)] bg-card-solid px-4 py-8 text-center transition-all duration-200 sm:px-5 sm:py-14',
               dragClasses,
               dropState === 'populated' && 'rounded-b-none border-b-0 border-solid border-[var(--primary)]/30 bg-primary/5',
               dropState === 'error' && 'border-destructive/50 bg-destructive/5',
+              isDragOver && 'scale-[1.01]',
             )}
+            aria-label={dropState === 'empty' ? 'Drop zone for PDF upload. Click or press Enter to browse files.' : dropState === 'error' ? 'Upload failed. Click or press Enter to retry.' : 'File uploaded. Click to replace.'}
           >
             {/* Decorative corner accents — hidden on small screens */}
-            <div className="absolute top-3 left-3 h-6 w-6 rounded-tl-lg border-t-2 border-l-2 border-[var(--border)] opacity-30 hidden sm:block" />
-            <div className="absolute top-3 right-3 h-6 w-6 rounded-tr-lg border-t-2 border-r-2 border-[var(--border)] opacity-30 hidden sm:block" />
-            <div className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-[var(--border)] opacity-30 hidden sm:block" />
-            <div className="absolute bottom-3 right-3 h-6 w-6 rounded-br-lg border-b-2 border-r-2 border-[var(--border)] opacity-30 hidden sm:block" />
+            <div className="absolute top-3 left-3 h-6 w-6 rounded-tl-lg border-t-2 border-l-2 border-[var(--border)] opacity-30 hidden sm:block" aria-hidden="true" />
+            <div className="absolute top-3 right-3 h-6 w-6 rounded-tr-lg border-t-2 border-r-2 border-[var(--border)] opacity-30 hidden sm:block" aria-hidden="true" />
+            <div className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-[var(--border)] opacity-30 hidden sm:block" aria-hidden="true" />
+            <div className="absolute bottom-3 right-3 h-6 w-6 rounded-br-lg border-b-2 border-r-2 border-[var(--border)] opacity-30 hidden sm:block" aria-hidden="true" />
 
             {isProcessing ? (
               <div className="flex flex-col items-center gap-3">
@@ -302,18 +308,18 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
               <div className="flex flex-col items-center gap-3">
                 <UGOMascotArt size={56} alt="UGO mascot pixel art" />
                 <div className="text-center">
-                  <p className="text-[12px] font-semibold text-foreground">
+                  <p className="text-[13px] font-semibold text-foreground">
                     Drop your PDF here
                   </p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className="mt-1.5 text-[12px] text-muted-foreground">
                     or <span className="text-primary font-medium underline underline-offset-2">browse files</span> from your device
                   </p>
                 </div>
                 <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-[9px] pixel-font text-muted-foreground border border-[var(--border)]">
                   <FileText size={12} />
-                  Supports PDF files
+                  Supports PDF files up to 50MB
                 </div>
-                <Button variant="secondary" size="sm" className="mt-0.5 sm:hidden text-[9px]">
+                <Button variant="secondary" size="sm" className="mt-1 sm:hidden text-[9px]">
                   <Upload size={12} />
                   Choose File
                 </Button>
@@ -353,9 +359,9 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
 
           {/* Results */}
           {hasRows && (
-            <div className="overflow-hidden">
-              <div className="rounded-b-xl border-2 border-t-0 border-[var(--border)] bg-card-solid px-4 py-4">
-                <div className="flex items-center justify-between mb-3">
+            <div className="overflow-hidden animate-expand">
+              <div className="rounded-b-xl border-2 border-t-0 border-[var(--border)] bg-card-solid px-3 py-4 sm:px-4">
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                   <p className="text-[12px] font-medium text-muted-foreground">
                     {dataTeoriMentah.length} classes detected
                   </p>
@@ -400,7 +406,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
                 )}
 
                 {filteredRows.length > 0 ? (
-                  <div className="mb-5 grid max-h-[45dvh] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:gap-3 md:grid-cols-2">
+                  <div className="mb-5 grid max-h-[50dvh] grid-cols-1 gap-2.5 overflow-y-auto pr-1 sm:gap-3 md:grid-cols-2 stagger-children">
                     {filteredRows.map((row) => {
                       const isChecked = selectedTheoryRowIds.includes(row.id);
                       return (

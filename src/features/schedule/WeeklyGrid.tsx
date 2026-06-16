@@ -75,30 +75,31 @@ export function WeeklyGrid({ merged, collisionMap, courseColors, onEdit, onDelet
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border-2 border-[var(--border)] shadow-lg">
-      <div className="min-w-[700px]">
+    <div className="overflow-x-auto rounded-xl border-2 border-[var(--border)] shadow-lg" role="grid" aria-label="Weekly schedule grid">
+      <div className="min-w-[600px] sm:min-w-[700px]">
         {/* Header row */}
-        <div className="grid border-b-2 border-[var(--border)] bg-primary text-primary-foreground" style={{ gridTemplateColumns: '60px repeat(6, 1fr)' }}>
-          <div className="pixel-font text-[7px] px-2 py-3 text-center font-semibold border-r border-primary-foreground/20">
+        <div className="grid border-b-2 border-[var(--border)] bg-primary text-primary-foreground" style={{ gridTemplateColumns: '50px repeat(6, 1fr)' }} role="row">
+          <div className="pixel-font text-[7px] px-1 sm:px-2 py-3 text-center font-semibold border-r border-primary-foreground/20" role="columnheader">
             Waktu
           </div>
           {HARI_LIST.map((hari) => (
-            <div key={hari} className="pixel-font text-[7px] px-2 py-3 text-center font-semibold border-r border-primary-foreground/20 last:border-r-0">
+            <div key={hari} className="pixel-font text-[7px] px-1 sm:px-2 py-3 text-center font-semibold border-r border-primary-foreground/20 last:border-r-0" role="columnheader">
               {hari}
             </div>
           ))}
         </div>
 
         {/* Grid body */}
-        <div className="relative" style={{ height: `${totalSlots * 32}px` }}>
+        <div className="relative" style={{ height: `${totalSlots * 28}px` }} role="row">
           {/* Horizontal grid lines */}
           {timeLabels.map((tl) => (
             <div
               key={tl.slot}
               className="absolute left-0 right-0 border-b border-[var(--border)] flex items-start"
-              style={{ top: `${tl.slot * 32}px`, height: '32px' }}
+              style={{ top: `${tl.slot * 28}px`, height: '28px' }}
+              aria-hidden="true"
             >
-              <div className="pixel-font text-[7px] text-muted-foreground w-[60px] px-2 pt-1 shrink-0 -translate-y-1/2">
+              <div className="pixel-font text-[6px] sm:text-[7px] text-muted-foreground w-[50px] sm:w-[60px] px-1 sm:px-2 pt-1 shrink-0 -translate-y-1/2">
                 {tl.label}
               </div>
             </div>
@@ -110,17 +111,20 @@ export function WeeklyGrid({ merged, collisionMap, courseColors, onEdit, onDelet
               key={hari}
               className="absolute top-0 bottom-0"
               style={{
-                left: `calc(60px + ${(dayIdx / 6) * 100}%)`,
+                left: `calc(50px + ${(dayIdx / 6) * 100}%)`,
                 width: `${100 / 6}%`,
                 borderRight: dayIdx < 5 ? '1px solid var(--border)' : 'none',
               }}
+              role="gridcell"
+              aria-label={hari}
             >
               {/* Half-hour grid lines */}
               {Array.from({ length: totalSlots / 2 - 1 }, (_, i) => (
                 <div
                   key={i}
                   className="absolute left-0 right-0 border-b border-[var(--border)]/40"
-                  style={{ top: `${(i + 1) * 64}px` }}
+                  style={{ top: `${(i + 1) * 56}px` }}
+                  aria-hidden="true"
                 />
               ))}
 
@@ -134,28 +138,32 @@ export function WeeklyGrid({ merged, collisionMap, courseColors, onEdit, onDelet
                   <div
                     key={`${item.globalIdx}`}
                     className={cn(
-                      'absolute left-1 right-1 rounded-lg px-2 py-1 overflow-hidden cursor-pointer transition-all hover:shadow-md hover:scale-[1.02] group/card',
+                      'absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 sm:px-2 sm:py-1 overflow-hidden cursor-pointer transition-all hover:shadow-md hover:scale-[1.03] hover:z-10 group/card',
                       isCollided && 'ring-2 ring-destructive/50',
                     )}
                     style={{
-                      top: `${item.startSlot * 32}px`,
-                      height: `${item.span * 32}px`,
+                      top: `${item.startSlot * 28}px`,
+                      height: `${item.span * 28}px`,
                       backgroundColor: bgColor || 'var(--card)',
                       border: `2px solid ${bgColor || 'var(--border)'}`,
                     }}
                     onClick={() => onEdit(item.globalIdx)}
                     title={`${item.row.MataKuliah}\n${item.row.Jam} • ${item.row.Ruang || '-'}\n${item.row.DosenPengampuh || '-'}`}
+                    role="button"
+                    aria-label={`${item.row.MataKuliah}, ${item.row.Jam}, ${item.row.Ruang || 'no room'}, ${item.row.DosenPengampuh || 'no lecturer'}`}
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEdit(item.globalIdx); } }}
                   >
-                    <div className={cn('text-[10px] font-bold leading-tight truncate', isDark ? 'text-white' : 'text-card-foreground')}>
+                    <div className={cn('text-[8px] sm:text-[10px] font-bold leading-tight truncate', isDark ? 'text-white' : 'text-card-foreground')}>
                       {item.row.MataKuliah}
                     </div>
                     {item.span >= 2 && (
-                      <div className={cn('text-[8px] mt-0.5', isDark ? 'text-white/80' : 'text-muted-foreground')}>
+                      <div className={cn('text-[7px] sm:text-[8px] mt-0.5', isDark ? 'text-white/80' : 'text-muted-foreground')}>
                         {item.row.Jam}
                       </div>
                     )}
                     {item.span >= 3 && (
-                      <div className={cn('text-[8px]', isDark ? 'text-white/70' : 'text-muted-foreground')}>
+                      <div className={cn('text-[7px] sm:text-[8px]', isDark ? 'text-white/70' : 'text-muted-foreground')}>
                         {item.row.Ruang || ''}
                       </div>
                     )}
@@ -167,6 +175,7 @@ export function WeeklyGrid({ merged, collisionMap, courseColors, onEdit, onDelet
                       <button
                         onClick={(e) => { e.stopPropagation(); onDelete(item.globalIdx); }}
                         className="flex h-5 w-5 items-center justify-center rounded bg-black/40 text-white/90 hover:text-destructive transition-colors"
+                        aria-label={`Delete ${item.row.MataKuliah}`}
                       >
                         ×
                       </button>
