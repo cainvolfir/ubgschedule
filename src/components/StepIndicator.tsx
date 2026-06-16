@@ -21,7 +21,7 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
             {/* Step dot */}
             <div
               className={cn(
-                'relative flex h-8 w-8 items-center justify-center rounded-lg border-2 transition-all duration-300',
+                'relative flex h-8 w-8 items-center justify-center rounded-lg border-2 transition-all duration-300 overflow-hidden',
                 isActive && 'border-[var(--primary)] bg-primary/10 shadow-glow scale-110',
                 isCompleted && 'border-[var(--success)] bg-success/10 shadow-sm',
                 isFuture && 'border-[var(--border)] bg-muted/50',
@@ -29,7 +29,10 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
               aria-label={`${label}${isActive ? ' (current)' : isCompleted ? ' (completed)' : ''}`}
             >
               {isActive ? (
-                <UBGMascot pose="tail-wag" size={20} />
+                <>
+                  <div className="absolute inset-0 rounded-lg bg-primary/15 animate-pulse" />
+                  <UBGMascot pose="tail-wag" size={24} />
+                </>
               ) : isCompleted ? (
                 <Check size={14} className="text-success" strokeWidth={3} />
               ) : (
@@ -65,10 +68,6 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
         );
       })}
 
-      {/* Step label */}
-      <span className="pixel-font ml-2 hidden text-[8px] text-muted-foreground sm:inline">
-        Step {currentStep + 1}/{steps.length}
-      </span>
     </ol>
   );
 }

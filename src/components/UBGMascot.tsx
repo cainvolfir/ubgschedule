@@ -3,11 +3,11 @@ import { cn } from '@/lib/utils';
 type UgoPose = 'idle' | 'blink' | 'tail-wag' | 'sleep' | 'loading';
 
 const poseAnimation: Record<UgoPose, string> = {
-  'idle': 'animate-[ugo-idle_0.8s_steps(4)_infinite]',
-  'blink': 'animate-[ugo-blink_3s_steps(2)_infinite]',
-  'tail-wag': 'animate-[ugo-tail-wag_0.4s_steps(4)_infinite]',
-  'sleep': 'animate-[ugo-sleep_2s_steps(2)_infinite]',
-  'loading': 'animate-[ugo-loading_0.3s_steps(2)_infinite]',
+  'idle': 'animate-[ugo-idle_2s_ease-in-out_infinite]',
+  'blink': 'animate-[ugo-blink_3s_ease-in-out_infinite]',
+  'tail-wag': 'animate-[ugo-tail-wag_0.6s_ease-in-out_infinite]',
+  'sleep': 'animate-[ugo-sleep_3s_ease-in-out_infinite]',
+  'loading': 'animate-[ugo-loading_0.5s_ease-in-out_infinite]',
 };
 
 interface UBGMascotProps {
@@ -35,11 +35,13 @@ export function UBGMascot({ pose = 'idle', size = 48, className }: UBGMascotProp
       style={{ imageRendering: 'pixelated' }}
       shapeRendering="crispEdges"
     >
-      {pose === 'idle' && <IdleMascot />}
-      {pose === 'blink' && <BlinkMascot />}
-      {pose === 'tail-wag' && <TailWagMascot />}
-      {pose === 'sleep' && <SleepMascot />}
-      {pose === 'loading' && <LoadingMascot />}
+      <g transform="translate(10, 2)">
+        {pose === 'idle' && <IdleMascot />}
+        {pose === 'blink' && <BlinkMascot />}
+        {pose === 'tail-wag' && <TailWagMascot />}
+        {pose === 'sleep' && <SleepMascot />}
+        {pose === 'loading' && <LoadingMascot />}
+      </g>
     </svg>
   );
 }
