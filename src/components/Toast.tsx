@@ -78,7 +78,7 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+      className="fixed bottom-4 right-4 z-[var(--z-toast)] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"
       role="region"
       aria-label="Notifications"
       aria-live="polite"
@@ -115,9 +115,9 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
   return (
     <div
       className={cn(
-        'pointer-events-auto flex items-start gap-3 rounded-xl border-2 bg-card-solid/95 backdrop-blur-xl px-4 py-3 shadow-lg transition-all duration-300',
+        'pointer-events-auto flex items-start gap-3 rounded-xl border bg-card-solid px-4 py-3 shadow-md transition-all duration-200',
         borderColors[toast.type],
-        isExiting ? 'opacity-0 translate-x-8 scale-95' : 'opacity-100 translate-x-0 scale-100 animate-fade-in-up',
+        isExiting ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0 animate-fade-in-up',
       )}
       role="alert"
       aria-live={toast.type === 'error' ? 'assertive' : 'polite'}

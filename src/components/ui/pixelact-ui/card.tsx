@@ -1,4 +1,4 @@
-import { type VariantProps, cva } from "class-variance-authority";
+import * as React from "react";
 import { cn } from "@/lib/utils";
 import {
   Card as ShadcnCard,
@@ -10,21 +10,7 @@ import {
 } from "@/components/ui/card";
 import "@/components/ui/pixelact-ui/styles/styles.css";
 
-export const cardVariants = cva("rounded-xl border", {
-  variants: {
-    font: {
-      normal: "",
-      pixel: "pixel-font",
-    },
-  },
-  defaultVariants: {
-    font: "pixel",
-  },
-});
-
-export interface CardProps
-  extends React.ComponentProps<"div">,
-    VariantProps<typeof cardVariants> {
+interface CardProps extends React.ComponentProps<"div"> {
   asChild?: boolean;
 }
 
@@ -32,7 +18,7 @@ function Card({ className, ...props }: CardProps) {
   return (
     <ShadcnCard
       className={cn(
-        "rounded-xl border border-[var(--border)] bg-card backdrop-blur-xl shadow-md text-card-foreground transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)]",
+        "rounded-xl border border-[var(--border)] bg-card text-card-foreground shadow-sm",
         className
       )}
       {...props}
@@ -41,20 +27,20 @@ function Card({ className, ...props }: CardProps) {
 }
 
 function CardHeader({ className, ...props }: CardProps) {
-  return <ShadcnCardHeader className={cn("", className)} {...props} />;
+  return <ShadcnCardHeader className={cn("flex flex-col", className)} {...props} />;
 }
 
 function CardTitle({ className, ...props }: CardProps) {
   return (
     <ShadcnCardTitle
-      className={cn("font-normal text-lg", className)}
+      className={cn("font-semibold text-base", className)}
       {...props}
     />
   );
 }
 
 function CardDescription({ className, ...props }: CardProps) {
-  return <ShadcnCardDescription className={cn(className)} {...props} />;
+  return <ShadcnCardDescription className={cn("text-sm", className)} {...props} />;
 }
 
 function CardContent({ className, ...props }: CardProps) {
@@ -62,7 +48,7 @@ function CardContent({ className, ...props }: CardProps) {
 }
 
 function CardFooter({ className, ...props }: CardProps) {
-  return <ShadcnCardFooter className={cn(className)} {...props} />;
+  return <ShadcnCardFooter className={cn("flex items-center", className)} {...props} />;
 }
 
 export {

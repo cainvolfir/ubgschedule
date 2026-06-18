@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Button } from '../../components/ui/pixelact-ui/button';
+import { Image } from 'lucide-react';
 
 interface FinalRow {
   Hari: string;
@@ -222,13 +222,10 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
   return (
     <>
       <canvas ref={canvasRef} className="hidden" />
-      <Button
-        variant="default"
-        onClick={handleExport}
-        className="pixel-font text-[9px]"
-      >
-        Export PNG
-      </Button>
+      <button onClick={handleExport} className="terminal-btn-sm" title="Export as PNG image">
+        <Image size={9} />
+        <span>PNG</span>
+      </button>
     </>
   );
 }

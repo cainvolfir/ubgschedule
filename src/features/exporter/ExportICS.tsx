@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { CalendarDays } from 'lucide-react';
-import { Button } from '../../components/ui/pixelact-ui/button';
 
 interface FinalRow {
   Hari: string;
@@ -197,14 +196,10 @@ export function ExportICS({ dayGroups, merged, courseColors }: ExportICSProps) {
   if (merged.length === 0) return null;
 
   return (
-    <Button
-      variant="secondary"
-      onClick={handleExport}
-      className="pixel-font text-[9px]"
-    >
-      <CalendarDays size={13} />
-      Export ICS
-    </Button>
+    <button onClick={handleExport} className="terminal-btn-sm" title="Export as ICS calendar">
+      <CalendarDays size={9} />
+      <span>ICS</span>
+    </button>
   );
 }
 

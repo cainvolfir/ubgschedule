@@ -1,52 +1,48 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Button as ShadcnButton } from "@/components/ui/button";
 import "@/components/ui/pixelact-ui/styles/styles.css";
 import "./button.css";
 
-const pixelButtonVariants = cva(
-  "pixel__button pixel-font cursor-pointer w-fit items-center justify-center whitespace-nowrap text-sm font-medium flex gap-2",
-  {
-    variants: {
-      variant: {
-        default: "pixel-default__button",
-        secondary: "pixel-secondary__button",
-        warning: "pixel-warning__button",
-        success: "pixel-success__button",
-        destructive: "pixel-destructive__button",
-        link: "pixel-link__button bg-transparent",
-      },
-      size: {
-        default: "h-11 px-5 py-2",
-        sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-8 text-base",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-);
-
 export interface PixelButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof pixelButtonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "default" | "secondary" | "warning" | "success" | "destructive" | "link";
+  size?: "sm" | "default" | "lg";
   asChild?: boolean;
 }
 
-const Button = React.forwardRef<
-  React.ComponentRef<typeof ShadcnButton>,
-  PixelButtonProps
->(({ className, variant, size, ...props }, ref) => {
-  return (
-    <ShadcnButton
-      {...props}
-      className={cn(pixelButtonVariants({ variant, size }), className)}
-      ref={ref}
-    />
-  );
-});
+const variantClass: Record<string, string> = {
+  default: "pixel-default__button",
+  secondary: "pixel-secondary__button",
+  warning: "pixel-warning__button",
+  success: "pixel-success__button",
+  destructive: "pixel-destructive__button",
+  link: "pixel-link__button",
+};
+
+const sizeClass: Record<string, string> = {
+  sm: "h-9 px-3 text-xs",
+  default: "h-10 px-4 text-sm",
+  lg: "h-11 px-6 text-base",
+};
+
+const Button = React.forwardRef<HTMLButtonElement, PixelButtonProps>(
+  ({ className, variant = "default", size = "default", ...props }, ref) => {
+    return (
+      <ShadcnButton
+        ref={ref}
+        className={cn(
+          "pixel__button cursor-pointer items-center justify-center gap-2 whitespace-nowrap",
+          variantClass[variant],
+          sizeClass[size],
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+
+Button.displayName = "Button";
 
 export { Button };

@@ -18,7 +18,6 @@ export function UGOMascotArt({ size = 96, alt = 'UGO mascot pixel art', classNam
       style={{
         width: size,
         height: size,
-        filter: 'drop-shadow(0 8px 10px rgba(59, 156, 255, 0.22))',
       }}
     >
       <rect x="20" y="84" width="120" height="4" fill="#0f172a" opacity="0.16" />

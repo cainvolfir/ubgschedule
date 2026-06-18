@@ -32,15 +32,17 @@ function SelectValue({ font, ...props }: React.ComponentProps<typeof SelectPrimi
 
 function SelectTrigger({
   children, className, font, size = "default", ...props
-}: React.ComponentProps<typeof SelectPrimitive.Trigger> & { size?: "sm" | "default"; font?: "normal" | "pixel" }) {
+}: React.ComponentProps<typeof SelectPrimitive.Trigger> & { size?: "xs" | "sm" | "default"; font?: "normal" | "pixel" }) {
   return (
     <div className={cn("relative", inputVariants({ font }), className)}>
       <SelectPrimitive.Trigger
         data-slot="select-trigger"
         data-size={size}
-        style={{ backgroundColor: 'var(--card-solid)' }}
         className={cn(
-          "rounded-lg border-2 border-[var(--border)] ring-0 w-full data-[placeholder]:text-muted-foreground flex items-center justify-between gap-2 px-3 py-2 text-sm whitespace-nowrap transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:border-[var(--primary)] hover:border-[var(--border-strong)] data-[size=default]:h-10 data-[size=sm]:h-9 text-card-foreground shadow-sm hover:shadow-md",
+          "rounded border border-[var(--border)] ring-0 w-full bg-[var(--surface)] data-[placeholder]:text-[var(--text-faint)] flex items-center justify-between gap-1 whitespace-nowrap transition-colors duration-200 outline-none focus-visible:ring-1 focus-visible:ring-[var(--ring)] focus-visible:border-[var(--primary)] hover:border-[var(--border-strong)] text-[var(--text)] shadow-none",
+          "data-[size=default]:h-10 data-[size=sm]:h-7 data-[size=xs]:h-5",
+          "data-[size=default]:px-3 data-[size=sm]:px-2 data-[size=xs]:px-1.5",
+          "data-[size=default]:text-sm data-[size=sm]:text-xs data-[size=xs]:text-[9px]",
           className
         )}
         {...props}
@@ -63,11 +65,10 @@ function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          "relative z-50 max-h-60 min-w-[8rem] rounded-xl border-2 border-[var(--border)] shadow-xl overflow-hidden text-card-foreground",
+          "relative z-50 max-h-40 min-w-[4rem] rounded border border-[var(--border)] shadow-lg overflow-hidden text-[var(--text)] bg-[var(--surface)]",
           inputVariants({ font }),
           className
         )}
-        style={{ backgroundColor: 'var(--card-solid)' }}
         {...props}
       >
         <SelectPrimitive.Viewport className="p-1">
@@ -88,12 +89,11 @@ function SelectItem({
   return (
     <ShadcnSelectItem
       className={cn(
-        "rounded-lg px-2.5 py-1.5 mx-0.5 cursor-pointer transition-colors duration-100",
-        "bg-card-solid text-card-foreground",
-        "hover:bg-muted hover:text-card-foreground",
-        "data-[highlighted]:!bg-primary data-[highlighted]:!text-card-foreground",
-        "active:!bg-primary active:!text-card-foreground",
-        "!pl-2.5",
+        "rounded px-2 py-1 mx-0.5 cursor-pointer transition-colors duration-100 text-[9px]",
+        "bg-[var(--surface)] text-[var(--text)]",
+        "hover:bg-[var(--surface-2)] hover:text-[var(--text)]",
+        "data-[highlighted]:bg-[var(--blue)] data-[highlighted]:text-white",
+        "active:bg-[var(--blue)] active:text-white",
         className
       )}
       {...props}

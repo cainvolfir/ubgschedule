@@ -21,44 +21,36 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
             {/* Step dot */}
             <div
               className={cn(
-                'relative flex h-8 w-8 items-center justify-center rounded-lg border-2 transition-all duration-300 overflow-hidden',
-                isActive && 'border-[var(--primary)] bg-primary/10 shadow-glow scale-110',
-                isCompleted && 'border-[var(--success)] bg-success/10 shadow-sm',
-                isFuture && 'border-[var(--border)] bg-muted/50',
+                'relative flex h-8 w-8 items-center justify-center rounded-lg border transition-colors duration-200 overflow-hidden',
+                isActive && 'border-[var(--primary)] bg-[var(--primary-subtle)]',
+                isCompleted && 'border-[var(--success)] bg-[var(--success)]/10',
+                isFuture && 'border-[var(--border)] bg-[var(--muted)]',
               )}
               aria-label={`${label}${isActive ? ' (current)' : isCompleted ? ' (completed)' : ''}`}
             >
               {isActive ? (
-                <>
-                  <div className="absolute inset-0 rounded-lg bg-primary/15 animate-pulse" />
-                  <UBGMascot pose="tail-wag" size={24} />
-                </>
+                <UBGMascot pose="tail-wag" size={24} />
               ) : isCompleted ? (
                 <Check size={14} className="text-success" strokeWidth={3} />
               ) : (
-                <span className="text-[8px] pixel-font text-muted-foreground font-bold">{idx + 1}</span>
-              )}
-
-              {/* Pulse ring for active */}
-              {isActive && (
-                <div className="absolute inset-0 rounded-lg border-2 border-[var(--primary)] animate-ping opacity-20" />
+                <span className="text-[10px] font-semibold text-muted-foreground">{idx + 1}</span>
               )}
             </div>
 
             {/* Step label (visible on wider screens) */}
             <span className={cn(
-              'hidden lg:inline pixel-font text-[7px] transition-colors duration-300',
-              isActive ? 'text-primary font-bold' : isCompleted ? 'text-success' : 'text-muted-foreground',
+              'hidden lg:inline text-[10px] font-medium transition-colors duration-200',
+              isActive ? 'text-primary' : isCompleted ? 'text-success' : 'text-muted-foreground',
             )}>
               {label}
             </span>
 
             {/* Connector */}
             {idx < steps.length - 1 && (
-              <div className="relative h-0.5 w-6 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+              <div className="relative h-0.5 w-6 overflow-hidden rounded-full bg-[var(--muted)]" aria-hidden="true">
                 <div
                   className={cn(
-                    'absolute inset-0 rounded-full bg-gradient-to-r from-success to-success transition-all duration-500',
+                    'absolute inset-0 rounded-full bg-[var(--success)] transition-all duration-300',
                     isCompleted ? 'w-full' : 'w-0',
                   )}
                 />
@@ -67,7 +59,6 @@ export function StepIndicator({ steps, currentStep, className }: StepIndicatorPr
           </li>
         );
       })}
-
     </ol>
   );
 }

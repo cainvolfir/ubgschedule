@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { Check, FileText, Table } from 'lucide-react';
-import { Button } from '../../components/ui/pixelact-ui/button';
 import { useToast } from '../../components/Toast';
 
 interface FinalRow {
@@ -111,25 +110,23 @@ export function ExportCopy({ dayGroups }: ExportCopyProps) {
   if (dayGroups.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Button
-        variant="secondary"
+    <div className="flex items-center gap-1">
+      <button
         onClick={() => handleCopy('text')}
-        className="pixel-font text-[9px] gap-1.5"
+        className="terminal-btn-sm"
         title="Copy as plain text"
       >
-        {copied ? <Check size={12} /> : <FileText size={12} />}
-        Copy Text
-      </Button>
-      <Button
-        variant="secondary"
+        {copied ? <Check size={9} /> : <FileText size={9} />}
+        <span>TXT</span>
+      </button>
+      <button
         onClick={() => handleCopy('markdown')}
-        className="pixel-font text-[9px] gap-1.5"
+        className="terminal-btn-sm"
         title="Copy as markdown table"
       >
-        {copied ? <Check size={12} /> : <Table size={12} />}
-        Copy MD
-      </Button>
+        {copied ? <Check size={9} /> : <Table size={9} />}
+        <span>MD</span>
+      </button>
     </div>
   );
 }

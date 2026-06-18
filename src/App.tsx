@@ -8,6 +8,12 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 export type WizardStep = 'teori' | 'praktikum' | 'result';
 
+const STEP_LABELS: Record<WizardStep, string> = {
+  teori: 'upload theory schedule',
+  praktikum: 'upload practical schedule',
+  result: 'view generated schedule',
+};
+
 function WizardContent({
   step,
   onNext,
@@ -47,7 +53,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<RootLayout currentStep={stepIndex} />}>
+        <Route element={
+          <RootLayout
+            currentStep={stepIndex}
+            statusText={STEP_LABELS[step]}
+          />
+        }>
           <Route
             path="/*"
             element={

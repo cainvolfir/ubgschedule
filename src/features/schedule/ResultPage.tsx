@@ -1,15 +1,13 @@
 import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
 import {
-  ArrowLeft, ChevronDown, AlertTriangle, Pencil, Trash2, Plus, X, Check,
-  RotateCcw, Search, LayoutGrid, List, Printer,
+  ChevronDown, AlertTriangle, Pencil, Trash2, Plus, X, Check,
 } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
-import { Button } from '../../components/ui/pixelact-ui/button';
 import { CatState } from '../../components/CatState';
+import { TypingMessage } from '../../components/TypingMessage';
 import { UBGMascot } from '../../components/UBGMascot';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../components/Toast';
-import { WeeklyGrid } from './WeeklyGrid';
 import { CourseColorPicker } from './CourseColorPicker';
 
 const ExportCanvas = lazy(() => import('../../features/exporter/ExportCanvas'));
@@ -37,8 +35,6 @@ function toFinalRow(r: Record<string, unknown>): FinalRow {
   };
 }
 
-type ViewMode = 'table' | 'grid';
-
 export function ResultPage({ onBack }: { onBack: () => void }) {
   const jadwalFinal = useJadwalStore((s) => s.jadwalFinal);
   const addJadwalRow = useJadwalStore((s) => s.addJadwalRow);
@@ -55,7 +51,6 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
   const [addForm, setAddForm] = useState<FinalRow>({ ...EMPTY_ROW });
   const [showCollisionDetail, setShowCollisionDetail] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
   const merged = useMemo(() => {
     const all: FinalRow[] = (jadwalFinal as unknown[]).map((r) => toFinalRow(r as Record<string, unknown>));
@@ -195,41 +190,49 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
     return (
       <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-4xl flex-col items-center justify-center px-4 py-6 sm:px-8">
         <CatState pose="sleep" size={80} message="No schedule data available.">
-          <Button variant="default" className="pixel-font mt-2 text-[9px]" onClick={goBack}>Back to Upload</Button>
+          <button className="terminal-btn text-xs mt-2" onClick={goBack}>Back to Upload</button>
         </CatState>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8 animate-fade-in-up">
+    <div className="w-full max-w-full animate-fade-in-up">
       {/* Print-only header */}
       <div className="print-only hidden">
         <div className="print-header">
-          <h1>📅 Jadwal Perkuliahan — UBG Schedule</h1>
+          <h1>Jadwal Perkuliahan — UBG Schedule</h1>
           <span className="print-date">Dicetak: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
       </div>
 
       {/* Header */}
-      <div className="mb-4 sm:mb-6 no-print">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={goBack}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[var(--border)] bg-card text-foreground shadow-sm transition-all hover:border-[var(--primary)] hover:shadow-md hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2"
-              aria-label="Go back to upload"
-            >
-              <ArrowLeft size={16} />
+      <div className="mb-4 no-print">
+        <div className="flex items-center gap-2 mb-3">
+          <TypingMessage
+            messages={[
+              `❯ schedule generated: ${merged.length} classes, ${dayGroups.length} days.`,
+              '❯ use the toolbar to search, edit, or export.',
+              '❯ click any cell to edit. add new classes with +.',
+            ]}
+            typingSpeed={30}
+            pauseDuration={6000}
+          />
+        </div>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <button onClick={goBack} className="terminal-btn-sm" aria-label="Go back">
+              [ back ]
             </button>
-            <div>
-              <p className="pixel-font text-[10px] uppercase tracking-[0.2em] text-primary">Your Schedule</p>
-              <h2 className="mt-0.5 text-[15px] sm:text-[18px] font-bold text-foreground">
-                {filteredMerged.length !== merged.length
-                  ? `${filteredMerged.length} of ${merged.length} classes`
-                  : `${merged.length} classes across ${dayGroups.length} days`}
-              </h2>
-            </div>
+            <h2 className="font-mono text-sm font-bold">
+              <span className="text-[var(--blue)]">❯</span>{' '}
+              ~/schedule{' '}
+              <span className="text-[var(--text-muted)] font-normal">
+                — {filteredMerged.length !== merged.length
+                  ? `${filteredMerged.length}/${merged.length} classes`
+                  : `${merged.length} classes, ${dayGroups.length} days`}
+              </span>
+            </h2>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {totalCollisions > 0 && (
@@ -242,94 +245,68 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                 className="flex items-center gap-1.5 rounded-full bg-destructive/10 border border-destructive/20 px-3 py-1.5 text-[9px] pixel-font text-destructive hover:bg-destructive/20 transition-colors"
                 aria-label={`View ${totalCollisions} schedule collision${totalCollisions > 1 ? 's' : ''}`}
               >
-                <AlertTriangle size={12} className="animate-pulse" />
+                <AlertTriangle size={12} className="text-destructive" />
                 {totalCollisions} collision{totalCollisions > 1 ? 's' : ''}
               </button>
             )}
           </div>
         </div>
 
-        {/* Toolbar row */}
-        <div className="mt-3 flex items-center gap-2 flex-wrap">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[140px] max-w-xs">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <label htmlFor="schedule-search" className="sr-only">Search courses, lecturers, rooms</label>
+        {/* Search bar — full width */}
+        <div className="mt-3">
+          <div className="relative">
+            <label htmlFor="schedule-search" className="sr-only">Search</label>
             <input
               id="schedule-search"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search course, lecturer, room..."
-              className="w-full rounded-xl border-2 border-[var(--border)] bg-card py-2 pl-9 pr-8 text-[11px] outline-none transition-colors focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              placeholder="❯ search courses, lecturers, rooms..."
+              className="terminal-input pr-5 py-1 text-[10px] w-full"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[var(--text-faint)] hover:text-[var(--text)] transition-colors"
                 aria-label="Clear search"
               >
-                <X size={12} />
+                <X size={10} />
               </button>
             )}
           </div>
+        </div>
 
-          {/* View toggle */}
-          <div className="flex items-center rounded-xl border-2 border-[var(--border)] bg-card overflow-hidden" role="radiogroup" aria-label="View mode">
-            <button
-              onClick={() => setViewMode('table')}
-              className={cn(
-                'flex h-9 w-9 items-center justify-center transition-colors',
-                viewMode === 'table' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-              )}
-              role="radio"
-              aria-checked={viewMode === 'table'}
-              aria-label="Table view"
-            >
-              <List size={14} />
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={cn(
-                'flex h-9 w-9 items-center justify-center transition-colors',
-                viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-              )}
-              role="radio"
-              aria-checked={viewMode === 'grid'}
-              aria-label="Grid view"
-            >
-              <LayoutGrid size={14} />
-            </button>
-          </div>
-
-          <Button variant="warning" onClick={() => { setShowAddForm(true); setEditingIdx(null); setShowCollisionDetail(null); }} className="pixel-font text-[9px] gap-1.5" aria-label="Add new class">
-            <Plus size={12} /> Add
-          </Button>
-
+        {/* Action buttons — single row */}
+        <div className="mt-2 flex items-center gap-1">
           <Suspense fallback={null}><ExportCopy dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
           <Suspense fallback={null}><ExportCanvas dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
           <Suspense fallback={null}><ExportICS dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} courseColors={courseColors} /></Suspense>
 
-          <Button variant="secondary" onClick={handlePrint} className="pixel-font text-[9px] gap-1.5" title="Print schedule" aria-label="Print schedule">
-            <Printer size={12} /> Print
-          </Button>
+          <button className="terminal-btn-sm" onClick={handlePrint} title="Print schedule" aria-label="Print schedule">
+            [ PRINT ]
+          </button>
 
-          <Button variant="destructive" onClick={resetAll} className="pixel-font text-[9px] gap-1.5" title="Reset all data" aria-label="Reset all schedule data">
-            <RotateCcw size={11} /> Reset
-          </Button>
+          <button
+            className="terminal-btn-sm !bg-[var(--red)] !border-[var(--red)] !text-white hover:!bg-[var(--red)]/80"
+            onClick={resetAll}
+            title="Reset all data"
+            aria-label="Reset all schedule data"
+          >
+            [ RESET ]
+          </button>
         </div>
       </div>
 
       {/* Search active indicator */}
       {isSearching && (
-        <div className="mb-3 flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-3 py-2 no-print">
-          <Search size={12} className="text-primary" />
-          <p className="text-[11px] text-muted-foreground">
+        <div className="mb-2 flex items-center gap-2 font-mono text-[10px] text-[var(--text-muted)]">
+          <span className="text-[var(--blue)]">❯</span>
+          <span>
             {filteredMerged.length > 0
-              ? `Showing ${filteredMerged.length} result${filteredMerged.length > 1 ? 's' : ''} for "${searchQuery}"`
-              : `No results for "${searchQuery}"`}
-          </p>
-          <button onClick={() => setSearchQuery('')} className="ml-auto text-[10px] text-primary hover:underline">Clear</button>
+              ? `showing ${filteredMerged.length} result${filteredMerged.length > 1 ? 's' : ''} for "${searchQuery}"`
+              : `no results for "${searchQuery}"`}
+          </span>
+          <button onClick={() => setSearchQuery('')} className="ml-auto text-[var(--blue)] hover:underline">clear</button>
         </div>
       )}
 
@@ -345,60 +322,36 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 sm:gap-3">
-            <FieldInput label="Mata Kuliah" value={addForm.MataKuliah} onChange={(v) => setAddForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" />
-            <FieldInput label="Dosen" value={addForm.DosenPengampuh} onChange={(v) => setAddForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi, S.Kom" />
+            <FieldInput label="mata kuliah" value={addForm.MataKuliah} onChange={(v) => setAddForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" />
+            <FieldInput label="dosen" value={addForm.DosenPengampuh} onChange={(v) => setAddForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" />
             <div>
-              <label className="mb-1 block text-[10px] font-medium text-muted-foreground" id="add-hari-label">Hari</label>
-              <select value={addForm.Hari} onChange={(e) => setAddForm((f) => ({ ...f, Hari: e.target.value }))} className="w-full rounded-lg border-2 border-[var(--border)] bg-card px-2 py-1.5 text-[11px] outline-none focus:border-[var(--primary)] focus-visible:ring-1 focus-visible:ring-[var(--ring)]" aria-labelledby="add-hari-label">
+              <label className="mb-1 block font-mono text-[10px] text-[var(--text-faint)]" id="add-hari-label">hari</label>
+              <select value={addForm.Hari} onChange={(e) => setAddForm((f) => ({ ...f, Hari: e.target.value }))} className="terminal-input text-xs py-1" aria-labelledby="add-hari-label">
                 {HARI_LIST.map((h) => <option key={h} value={h}>{h}</option>)}
               </select>
             </div>
-            <FieldInput label="Jam" value={addForm.Jam} onChange={(v) => setAddForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" />
-            <FieldInput label="Ruang" value={addForm.Ruang} onChange={(v) => setAddForm((f) => ({ ...f, Ruang: v }))} placeholder="e.g. LAB 101" />
-            <FieldInput label="SKS" value={addForm.SKS} onChange={(v) => setAddForm((f) => ({ ...f, SKS: v }))} placeholder="2" />
-            <FieldInput label="Keterangan" value={addForm.Keterangan} onChange={(v) => setAddForm((f) => ({ ...f, Keterangan: v }))} placeholder="-" />
+            <FieldInput label="jam" value={addForm.Jam} onChange={(v) => setAddForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" />
+            <FieldInput label="ruang" value={addForm.Ruang} onChange={(v) => setAddForm((f) => ({ ...f, Ruang: v }))} placeholder="e.g. LAB 101" />
+            <FieldInput label="sks" value={addForm.SKS} onChange={(v) => setAddForm((f) => ({ ...f, SKS: v }))} placeholder="2" />
+            <FieldInput label="ket" value={addForm.Keterangan} onChange={(v) => setAddForm((f) => ({ ...f, Keterangan: v }))} placeholder="-" />
           </div>
-          <div className="mt-3 flex gap-2">
-            <Button variant="default" onClick={handleAdd} className="text-[9px] gap-1.5"><Check size={11} /> Save</Button>
-            <Button variant="secondary" onClick={() => setShowAddForm(false)} className="text-[9px]">Cancel</Button>
-          </div>
-        </div>
-      )}
-
-      {/* ===== WEEKLY GRID VIEW ===== */}
-      {viewMode === 'grid' && (
-        <div className="mb-6">
-          <WeeklyGrid
-            merged={merged}
-            collisionMap={collisionMap}
-            courseColors={courseColors}
-            onEdit={startEdit}
-            onDelete={handleDelete}
-          />
-          {/* Color legend */}
-          <div className="mt-3 flex flex-wrap gap-2 no-print">
-            {Object.entries(courseColors).filter(([, c]) => c).map(([name, color]) => (
-              <div key={name} className="flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-card px-2.5 py-1">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                <span className="text-[9px] text-muted-foreground max-w-[120px] truncate">{name}</span>
-                <CourseColorPicker courseName={name} currentColor={color} onSetColor={handleSetColor} />
-              </div>
-            ))}
+          <div className="mt-2 flex gap-2">
+            <button className="terminal-btn text-xs" onClick={handleAdd}>save</button>
+            <button className="terminal-btn text-xs" onClick={() => setShowAddForm(false)}>cancel</button>
           </div>
         </div>
       )}
 
       {/* ===== TABLE VIEW ===== */}
-      {viewMode === 'table' && (
-        <>
-          {/* Desktop table */}
-          <div className="hidden overflow-x-auto sm:block">
-            <div className="rounded-xl border-2 border-[var(--border)] shadow-lg overflow-hidden">
-              <table className="w-full border-collapse">
+      <>
+        {/* Desktop table */}
+        <div className="hidden overflow-x-auto sm:block">
+          <div className="rounded-lg border border-[var(--color-rule)] overflow-hidden">
+            <table className="w-full border-collapse">
                 <thead>
-                  <tr className="pixel-font text-[9px] bg-primary text-primary-foreground">
-                    {['', 'Hari', 'Mata Kuliah', 'Dosen Pengampuh', 'SKS', 'Jam', 'Ruang', 'Keterangan', ''].map((h, i, arr) => (
-                      <th key={h || i} className={`px-2 py-3.5 text-center align-middle leading-none lg:px-4 lg:py-4 font-semibold ${i < arr.length - 1 ? 'border-r border-primary-foreground/20' : ''}`}>
+                  <tr className="font-mono text-[9px] bg-[var(--surface-2)] text-[var(--blue)] uppercase tracking-wider border-b border-[var(--border)]">
+                    {['hari', 'mata kuliah', 'dosen', 'sks', 'jam', 'ruang', 'ket', ''].map((h, i, arr) => (
+                      <th key={h || i} className={`px-1 py-1.5 text-left align-middle font-semibold font-mono ${i < arr.length - 1 ? 'border-r border-[var(--border)]' : ''}`}>
                         {h}
                       </th>
                     ))}
@@ -415,9 +368,8 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                         const collided = collisionMap.get(gi) || [];
                         const isEditing = editingIdx === gi;
                         const keterangan = collided.length > 0 ? 'Jadwal Bentrok' : row.Keterangan;
-                        const cellCls = collided.length > 0 ? 'bg-destructive/5' : '';
-                        const ketCls = collided.length > 0 ? 'text-destructive font-semibold' : '';
-                        const rowColor = courseColors[row.MataKuliah];
+                        const cellCls = collided.length > 0 ? 'bg-[var(--red)]/5' : '';
+                        const ketCls = collided.length > 0 ? 'text-[var(--red)] font-semibold' : '';
 
                         if (isEditing) {
                           return (
@@ -448,48 +400,40 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                         }
 
                         return (
-                          <tr key={`${group.hari}-${idx}`} className={cn('text-[12px] bg-card border-b border-[var(--border)] last:border-b-0 transition-colors hover:bg-primary/5', collided.length > 0 && 'hover:bg-destructive/10')}>
-                            {/* Color dot column */}
-                            <td className={cn('border-r border-[var(--border)] px-1 py-3 text-center align-middle', cellCls)}>
-                              <div className="flex items-center justify-center">
-                                <CourseColorPicker courseName={row.MataKuliah} currentColor={rowColor} onSetColor={handleSetColor} />
-                              </div>
-                            </td>
+                          <tr key={`${group.hari}-${idx}`} className={cn('text-[10px] border-b border-[var(--border)] last:border-b-0 transition-colors hover:bg-[var(--surface-2)]', collided.length > 0 && 'hover:bg-[var(--red)]/10')}>
                             {idx === 0 && (
-                              <td className="border-r border-[var(--border)] bg-muted/50 px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4" rowSpan={group.rows.length}>
-                                <span className="flex w-full items-center justify-center font-bold text-sm">{group.hari}</span>
+                              <td className="border-r border-[var(--border)] bg-[var(--surface-2)] px-1 py-1 align-middle" rowSpan={group.rows.length}>
+                                <span className="font-mono text-[9px] font-bold text-[var(--blue)]">{group.hari}</span>
                               </td>
                             )}
-                            <td className={cn('border-r border-[var(--border)] px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4', cellCls)}>
-                              <span className="flex w-full items-center justify-center font-medium">{highlightMatch(row.MataKuliah)}</span>
+                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
+                              <span className="text-[var(--text)]">{highlightMatch(row.MataKuliah)}</span>
                             </td>
-                            <td className={cn('border-r border-[var(--border)] px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4', cellCls)}>
-                              <span className="flex w-full items-center justify-center">{highlightMatch(row.DosenPengampuh)}</span>
+                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
+                              <span className="text-[var(--text)]">{highlightMatch(row.DosenPengampuh)}</span>
                             </td>
-                            <td className={cn('border-r border-[var(--border)] px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4', cellCls)}>
-                              <span className="flex w-full items-center justify-center">{row.SKS}</span>
+                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px] text-center', cellCls)}>
+                              {row.SKS}
                             </td>
-                            <td className={cn('border-r border-[var(--border)] px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4', cellCls)}>
-                              <span className="flex w-full items-center justify-center font-medium">{highlightMatch(row.Jam)}</span>
+                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
+                              {highlightMatch(row.Jam)}
                             </td>
-                            <td className={cn('border-r border-[var(--border)] px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4', cellCls)}>
-                              <span className="flex w-full items-center justify-center">{highlightMatch(row.Ruang)}</span>
+                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
+                              {highlightMatch(row.Ruang)}
                             </td>
-                            <td className={cn('px-2 py-3 text-center align-middle leading-none lg:px-4 lg:py-4', ketCls, cellCls)}>
-                              <span className="flex w-full items-center justify-center">
-                                <span
-                                  className={cn('cursor-pointer inline-flex items-center gap-1 text-[11px]', collided.length > 0 && 'hover:underline')}
-                                  onClick={() => collided.length > 0 && setShowCollisionDetail(showCollisionDetail === gi ? null : gi)}
-                                >
-                                  {collided.length > 0 && <AlertTriangle size={10} className="animate-pulse" />}
-                                  {keterangan}
-                                </span>
+                            <td className={cn('px-1 py-1 align-middle font-mono text-[9px]', ketCls, cellCls)}>
+                              <span
+                                className={cn('cursor-pointer inline-flex items-center gap-1', collided.length > 0 && 'hover:underline')}
+                                onClick={() => collided.length > 0 && setShowCollisionDetail(showCollisionDetail === gi ? null : gi)}
+                              >
+                                {collided.length > 0 && <AlertTriangle size={9} className="text-[var(--red)]" />}
+                                {keterangan}
                               </span>
                             </td>
-                            <td className="px-2 py-3 text-center align-middle no-print">
+                            <td className="px-1.5 py-1.5 align-middle no-print">
                               <div className="flex items-center justify-center gap-1">
-                                <button onClick={() => startEdit(gi)} className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors" title="Edit"><Pencil size={12} /></button>
-                                <button onClick={() => handleDelete(gi)} className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors" title="Delete"><Trash2 size={12} /></button>
+                                <button onClick={() => startEdit(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--blue)]/10 hover:text-[var(--blue)] transition-colors" title="Edit"><Pencil size={10} /></button>
+                                <button onClick={() => handleDelete(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--red)]/10 hover:text-[var(--red)] transition-colors" title="Delete"><Trash2 size={10} /></button>
                               </div>
                             </td>
                           </tr>
@@ -522,7 +466,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                       <span className="rounded-full bg-card/80 px-2 py-0.5 text-[8px] pixel-font text-muted-foreground border border-[var(--border)]">
                         {group.rows.length}
                       </span>
-                      {hasCollision && <AlertTriangle size={12} className="text-destructive animate-pulse" />}
+                      {hasCollision && <AlertTriangle size={12} className="text-destructive" />}
                     </div>
                     <ChevronDown size={14} className={cn('text-muted-foreground transition-transform', !isCollapsed && 'rotate-180')} />
                   </button>
@@ -554,7 +498,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                                 </div>
                                 <div className="mt-2 flex items-center gap-1.5">
                                   <span className={cn('inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-medium', ketCls)}>
-                                    {collided.length > 0 && <AlertTriangle size={10} className="animate-pulse" />}
+                                    {collided.length > 0 && <AlertTriangle size={10} className="text-destructive" />}
                                     {keterangan}
                                   </span>
                                 </div>
@@ -574,7 +518,6 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
             }); })()}
           </div>
         </>
-      )}
 
       {/* Collision detail overlay */}
       {showCollisionDetail !== null && (

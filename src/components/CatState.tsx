@@ -18,16 +18,14 @@ interface CatStateProps {
 export function CatState({ pose, size = 64, message, children, className }: CatStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center gap-3 py-6', className)}>
-      <div className="animate-fade-in-up">
-        <UGOMascotArt size={size} alt={`UGO mascot ${pose}`} />
-      </div>
+      <UGOMascotArt size={size} alt={`UGO mascot ${pose}`} />
       {message && (
-        <p className="pixel-font text-center text-[9px] leading-relaxed text-muted-foreground max-w-[280px] animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        <p className="text-center text-[12px] leading-relaxed text-muted-foreground max-w-[280px]">
           {message}
         </p>
       )}
       {children && (
-        <div className="mt-2 flex flex-col items-center gap-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+        <div className="mt-2 flex flex-col items-center gap-2">
           {children}
         </div>
       )}

@@ -17,51 +17,40 @@
   margin: 0;
 }
 
-/* Glow effect on hover */
-.glow-hover {
-  transition: box-shadow 0.3s ease;
-}
-.glow-hover:hover {
-  box-shadow: var(--shadow-glow);
-}
-
 /* ============================================
    UGO Mascot Animations
    Applied to the <svg> element via className.
    Each pose gets a subtle transform animation.
    ============================================ */
 
-/* IDLE — gentle breathe + float */
+/* IDLE — gentle breathe */
 @keyframes ugo-idle {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-2px) scale(1.02); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
 }
 
 /* BLINK — quick squish (simulates eye blink) */
 @keyframes ugo-blink {
   0%, 45%, 55%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.88); }
+  50% { transform: scaleY(0.92); }
 }
 
-/* TAIL-WAG — happy bounce + wiggle */
+/* TAIL-WAG — happy bounce */
 @keyframes ugo-tail-wag {
-  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-  15% { transform: translateY(-4px) rotate(6deg) scale(1.06); }
-  35% { transform: translateY(0) rotate(-4deg) scale(1); }
-  55% { transform: translateY(-3px) rotate(4deg) scale(1.04); }
-  75% { transform: translateY(0) rotate(-2deg) scale(1); }
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-2px); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(-1px); }
 }
 
-/* SLEEP — slow gentle sway + dim */
+/* SLEEP — slow gentle sway */
 @keyframes ugo-sleep {
-  0%, 100% { transform: rotate(0deg); opacity: 0.7; }
-  50% { transform: rotate(1.5deg); opacity: 0.55; }
+  0%, 100% { transform: translateY(0); opacity: 0.85; }
+  50% { transform: translateY(1px); opacity: 0.75; }
 }
 
-/* LOADING — fast energetic bounce */
+/* LOADING — gentle bounce */
 @keyframes ugo-loading {
-  0%, 100% { transform: translateY(0) scale(1); }
-  25% { transform: translateY(-4px) scale(1.04); }
-  50% { transform: translateY(0) scale(1); }
-  75% { transform: translateY(-2px) scale(0.98); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
