@@ -19,7 +19,7 @@ export function MatrixRain() {
     let fontSize = 13;
     let columns = 0;
     let lastTime = 0;
-    const fps = 8; // Very slow — 8 frames per second
+    const fps = 15; // Moderate speed
     const interval = 1000 / fps;
 
     const init = () => {
@@ -71,7 +71,7 @@ export function MatrixRain() {
         if (y > canvas.height + 6 * fontSize && Math.random() > 0.99) {
           drops[i] = 0;
         } else {
-          drops[i] += 0.3; // Very slow — 0.3px per frame at 8fps = 2.4px/second
+          drops[i] += 0.5; // Moderate speed — 0.5px per frame at 15fps = 7.5px/second
         }
       }
     };
