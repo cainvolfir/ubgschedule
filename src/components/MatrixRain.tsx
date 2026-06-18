@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 /**
  * Matrix-style binary rain background.
- * Fills the entire screen with falling 0s and 1s.
+ * Very slow, subtle, safe for photosensitive users.
  */
 export function MatrixRain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -16,22 +16,32 @@ export function MatrixRain() {
 
     let animationId: number;
     let drops: number[] = [];
-    let fontSize = 14;
+    let fontSize = 13;
     let columns = 0;
+    let lastTime = 0;
+    const fps = 8; // Very slow — 8 frames per second
+    const interval = 1000 / fps;
 
     const init = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       fontSize = 13;
       columns = Math.ceil(canvas.width / fontSize);
-      // Initialize drops at random Y positions above the screen
-      drops = new Array(columns).fill(0).map(() => Math.random() * -100);
+      if (drops.length === 0) {
+        drops = new Array(columns).fill(0).map(() => Math.random() * -100);
+      }
     };
 
     init();
     window.addEventListener('resize', init);
 
-    const draw = () => {
+    const draw = (timestamp: number) => {
+      animationId = requestAnimationFrame(draw);
+
+      const delta = timestamp - lastTime;
+      if (delta < interval) return;
+      lastTime = timestamp - (delta % interval);
+
       // Fully clear the canvas each frame
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -46,26 +56,24 @@ export function MatrixRain() {
         const y = drops[i] * fontSize;
 
         // Draw a trail of fading characters above the head
-        for (let j = 0; j < 8; j++) {
+        for (let j = 0; j < 6; j++) {
           const trailY = y - j * fontSize;
           if (trailY < 0) break;
 
           const char = Math.random() > 0.5 ? '1' : '0';
-          // Fade from bright head to dim tail — more visible on mobile
-          const alpha = j === 0 ? 0.18 : Math.max(0.02, 0.06 - j * 0.005);
+          // Fade from bright head to dim tail
+          const alpha = j === 0 ? 0.15 : Math.max(0.015, 0.05 - j * 0.006);
           ctx.fillStyle = `rgba(100, 150, 255, ${alpha})`;
           ctx.fillText(char, x, trailY);
         }
 
-        // Reset drop to top when it goes off screen
-        if (y > canvas.height + 8 * fontSize && Math.random() > 0.98) {
+        // Very slow movement — only move every few frames
+        if (y > canvas.height + 6 * fontSize && Math.random() > 0.99) {
           drops[i] = 0;
         } else {
-          drops[i]++;
+          drops[i] += 0.3; // Very slow — 0.3px per frame at 8fps = 2.4px/second
         }
       }
-
-      animationId = requestAnimationFrame(draw);
     };
 
     animationId = requestAnimationFrame(draw);
