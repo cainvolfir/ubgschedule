@@ -1,14 +1,12 @@
 import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
 import {
-  ChevronDown, AlertTriangle, Pencil, Trash2, Plus, X, Check,
+  AlertTriangle, Pencil, Trash2, Plus, X, Check,
 } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import { CatState } from '../../components/CatState';
 import { TypingMessage } from '../../components/TypingMessage';
-import { UBGMascot } from '../../components/UBGMascot';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../components/Toast';
-import { CourseColorPicker } from './CourseColorPicker';
 
 const ExportCanvas = lazy(() => import('../../features/exporter/ExportCanvas'));
 const ExportICS = lazy(() => import('../../features/exporter/ExportICS'));
@@ -41,10 +39,8 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
   const updateJadwalRow = useJadwalStore((s) => s.updateJadwalRow);
   const removeJadwalRow = useJadwalStore((s) => s.removeJadwalRow);
   const courseColors = useJadwalStore((s) => s.courseColors);
-  const setCourseColor = useJadwalStore((s) => s.setCourseColor);
   const { addToast } = useToast();
 
-  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(new Set());
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<FinalRow>({ ...EMPTY_ROW });
   const [showAddForm, setShowAddForm] = useState(false);
@@ -62,7 +58,6 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
     return all;
   }, [jadwalFinal]);
 
-  // Search filter
   const filteredMerged = useMemo(() => {
     if (!searchQuery.trim()) return merged;
     const q = searchQuery.toLowerCase();
@@ -75,7 +70,6 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
     );
   }, [merged, searchQuery]);
 
-  // Highlight matching text
   const highlightMatch = useCallback((text: string) => {
     if (!searchQuery.trim()) return text;
     const q = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -90,14 +84,10 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
 
   const dayGroups = useMemo(() => {
     const groups: { hari: string; rows: FinalRow[]; indices: number[] }[] = [];
-    // Build groups from filtered data — need to map back to original indices
-    // We'll use the original merged array for collision detection
-    // and filteredMerged for display
     const filteredWithOriginalIdx = filteredMerged.map((row) => ({
       row,
       originalIdx: merged.indexOf(row),
     }));
-
     for (let i = 0; i < filteredWithOriginalIdx.length; i++) {
       const { row, originalIdx } = filteredWithOriginalIdx[i];
       const last = groups[groups.length - 1];
@@ -140,10 +130,6 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
     return map;
   }, [merged]);
 
-  const toggleDay = (hari: string) => {
-    setCollapsedDays((prev) => { const next = new Set(prev); if (next.has(hari)) next.delete(hari); else next.add(hari); return next; });
-  };
-
   const startEdit = (globalIdx: number) => {
     setEditingIdx(globalIdx);
     setEditForm({ ...merged[globalIdx] });
@@ -175,20 +161,14 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
   };
 
   const resetAll = () => { useJadwalStore.getState().reset(); };
-
   const handlePrint = () => { window.print(); };
-
-  const handleSetColor = useCallback((courseName: string, color: string) => {
-    setCourseColor(courseName, color);
-  }, [setCourseColor]);
-
   const goBack = onBack;
   const totalCollisions = new Set([...collisionMap.keys()]).size;
   const isSearching = searchQuery.trim().length > 0;
 
   if (merged.length === 0) {
     return (
-      <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-4xl flex-col items-center justify-center px-4 py-6 sm:px-8">
+      <div className="flex min-h-[calc(100dvh-3rem)] flex-col items-center justify-center px-4 py-6">
         <CatState pose="sleep" size={80} message="No schedule data available.">
           <button className="terminal-btn text-xs mt-2" onClick={goBack}>Back to Upload</button>
         </CatState>
@@ -221,9 +201,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
         </div>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <button onClick={goBack} className="terminal-btn-sm" aria-label="Go back">
-              [ back ]
-            </button>
+            <button onClick={goBack} className="terminal-btn-sm" aria-label="Go back">[ back ]</button>
             <h2 className="font-mono text-sm font-bold">
               <span className="text-[var(--blue)]">❯</span>{' '}
               ~/schedule{' '}
@@ -281,19 +259,8 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
           <Suspense fallback={null}><ExportCopy dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
           <Suspense fallback={null}><ExportCanvas dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
           <Suspense fallback={null}><ExportICS dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} courseColors={courseColors} /></Suspense>
-
-          <button className="terminal-btn-sm" onClick={handlePrint} title="Print schedule" aria-label="Print schedule">
-            [ PRINT ]
-          </button>
-
-          <button
-            className="terminal-btn-sm !bg-[var(--red)] !border-[var(--red)] !text-white hover:!bg-[var(--red)]/80"
-            onClick={resetAll}
-            title="Reset all data"
-            aria-label="Reset all schedule data"
-          >
-            [ RESET ]
-          </button>
+          <button className="terminal-btn-sm" onClick={handlePrint} title="Print schedule" aria-label="Print schedule">[ PRINT ]</button>
+          <button className="terminal-btn-sm !bg-[var(--red)] !border-[var(--red)] !text-white hover:!bg-[var(--red)]/80" onClick={resetAll} title="Reset all data" aria-label="Reset all schedule data">[ RESET ]</button>
         </div>
       </div>
 
@@ -312,16 +279,14 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
 
       {/* Add Class Form */}
       {showAddForm && (
-        <div className="mb-4 rounded-xl border-2 border-[var(--primary)] bg-primary/5 p-3 sm:p-4 no-print animate-fade-in-up" role="dialog" aria-label="Add new class form">
+        <div className="mb-4 rounded-xl border-2 border-[var(--primary)] bg-primary/5 p-3 no-print animate-fade-in-up" role="dialog" aria-label="Add new class form">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[12px] font-semibold text-foreground flex items-center gap-2">
               <Plus size={14} className="text-primary" /> Add New Class
             </p>
-            <button onClick={() => setShowAddForm(false)} className="rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-1 focus-visible:ring-[var(--ring)]" aria-label="Close form">
-              <X size={14} />
-            </button>
+            <button onClick={() => setShowAddForm(false)} className="rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-1 focus-visible:ring-[var(--ring)]" aria-label="Close form"><X size={14} /></button>
           </div>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <FieldInput label="mata kuliah" value={addForm.MataKuliah} onChange={(v) => setAddForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" />
             <FieldInput label="dosen" value={addForm.DosenPengampuh} onChange={(v) => setAddForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" />
             <div>
@@ -342,182 +307,96 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      {/* ===== TABLE VIEW ===== */}
-      <>
-        {/* Desktop table */}
-        <div className="hidden overflow-x-auto sm:block">
-          <div className="rounded-lg border border-[var(--color-rule)] overflow-hidden">
-            <table className="w-full border-collapse">
-                <thead>
-                  <tr className="font-mono text-[9px] bg-[var(--surface-2)] text-[var(--blue)] uppercase tracking-wider border-b border-[var(--border)]">
-                    {['hari', 'mata kuliah', 'dosen', 'sks', 'jam', 'ruang', 'ket', ''].map((h, i, arr) => (
-                      <th key={h || i} className={`px-1 py-1.5 text-left align-middle font-semibold font-mono ${i < arr.length - 1 ? 'border-r border-[var(--border)]' : ''}`}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(() => {
-                    let displayIdx = 0;
-                    return dayGroups.map((group) =>
-                      group.rows.map((row, idx) => {
-                        const originalIdx = group.indices[displayIdx];
-                        const gi = originalIdx;
-                        displayIdx++;
-                        const collided = collisionMap.get(gi) || [];
-                        const isEditing = editingIdx === gi;
-                        const keterangan = collided.length > 0 ? 'Jadwal Bentrok' : row.Keterangan;
-                        const cellCls = collided.length > 0 ? 'bg-[var(--red)]/5' : '';
-                        const ketCls = collided.length > 0 ? 'text-[var(--red)] font-semibold' : '';
+      {/* Table */}
+      <div className="overflow-x-auto -mx-4 px-4">
+        <div className="rounded-lg border border-[var(--color-rule)] overflow-hidden min-w-[500px]">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="font-mono text-[9px] bg-[var(--surface-2)] text-[var(--blue)] uppercase tracking-wider border-b border-[var(--border)]">
+                {['hari', 'mata kuliah', 'dosen', 'sks', 'jam', 'ruang', 'ket', ''].map((h, i, arr) => (
+                  <th key={h || i} className={`px-1 py-1.5 text-left align-middle font-semibold font-mono ${i < arr.length - 1 ? 'border-r border-[var(--border)]' : ''}`}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                let displayIdx = 0;
+                return dayGroups.map((group) =>
+                  group.rows.map((row, idx) => {
+                    const originalIdx = group.indices[displayIdx];
+                    const gi = originalIdx;
+                    displayIdx++;
+                    const collided = collisionMap.get(gi) || [];
+                    const isEditing = editingIdx === gi;
+                    const keterangan = collided.length > 0 ? 'Jadwal Bentrok' : row.Keterangan;
+                    const cellCls = collided.length > 0 ? 'bg-[var(--red)]/5' : '';
+                    const ketCls = collided.length > 0 ? 'text-[var(--red)] font-semibold' : '';
 
-                        if (isEditing) {
-                          return (
-                            <tr key={`edit-${gi}`} className="text-[12px] bg-primary/5 border-b border-[var(--border)]">
-                              <td className="border-r border-[var(--border)] px-2 py-2 align-middle" colSpan={8}>
-                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-                                  <FieldInput label="Mata Kuliah" value={editForm.MataKuliah} onChange={(v) => setEditForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" small />
-                                  <FieldInput label="Dosen" value={editForm.DosenPengampuh} onChange={(v) => setEditForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" small />
-                                  <div>
-                                    <label className="mb-0.5 block text-[9px] font-medium text-muted-foreground">Hari</label>
-                                    <select value={editForm.Hari} onChange={(e) => setEditForm((f) => ({ ...f, Hari: e.target.value }))} className="w-full rounded-md border-2 border-[var(--border)] bg-card px-1.5 py-1 text-[11px] outline-none focus:border-[var(--primary)]">
-                                      {HARI_LIST.map((h) => <option key={h} value={h}>{h}</option>)}
-                                    </select>
-                                  </div>
-                                  <FieldInput label="Jam" value={editForm.Jam} onChange={(v) => setEditForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" small />
-                                  <FieldInput label="Ruang" value={editForm.Ruang} onChange={(v) => setEditForm((f) => ({ ...f, Ruang: v }))} placeholder="LAB 101" small />
-                                  <FieldInput label="SKS" value={editForm.SKS} onChange={(v) => setEditForm((f) => ({ ...f, SKS: v }))} placeholder="2" small />
-                                </div>
-                              </td>
-                              <td className="px-2 py-2 align-middle text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                  <button onClick={saveEdit} className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors" title="Save"><Check size={13} /></button>
-                                  <button onClick={cancelEdit} className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Cancel"><X size={13} /></button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        }
-
-                        return (
-                          <tr key={`${group.hari}-${idx}`} className={cn('text-[10px] border-b border-[var(--border)] last:border-b-0 transition-colors hover:bg-[var(--surface-2)]', collided.length > 0 && 'hover:bg-[var(--red)]/10')}>
-                            {idx === 0 && (
-                              <td className="border-r border-[var(--border)] bg-[var(--surface-2)] px-1 py-1 align-middle" rowSpan={group.rows.length}>
-                                <span className="font-mono text-[9px] font-bold text-[var(--blue)]">{group.hari}</span>
-                              </td>
-                            )}
-                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
-                              <span className="text-[var(--text)]">{highlightMatch(row.MataKuliah)}</span>
-                            </td>
-                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
-                              <span className="text-[var(--text)]">{highlightMatch(row.DosenPengampuh)}</span>
-                            </td>
-                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px] text-center', cellCls)}>
-                              {row.SKS}
-                            </td>
-                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
-                              {highlightMatch(row.Jam)}
-                            </td>
-                            <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
-                              {highlightMatch(row.Ruang)}
-                            </td>
-                            <td className={cn('px-1 py-1 align-middle font-mono text-[9px]', ketCls, cellCls)}>
-                              <span
-                                className={cn('cursor-pointer inline-flex items-center gap-1', collided.length > 0 && 'hover:underline')}
-                                onClick={() => collided.length > 0 && setShowCollisionDetail(showCollisionDetail === gi ? null : gi)}
-                              >
-                                {collided.length > 0 && <AlertTriangle size={9} className="text-[var(--red)]" />}
-                                {keterangan}
-                              </span>
-                            </td>
-                            <td className="px-1.5 py-1.5 align-middle no-print">
-                              <div className="flex items-center justify-center gap-1">
-                                <button onClick={() => startEdit(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--blue)]/10 hover:text-[var(--blue)] transition-colors" title="Edit"><Pencil size={10} /></button>
-                                <button onClick={() => handleDelete(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--red)]/10 hover:text-[var(--red)] transition-colors" title="Delete"><Trash2 size={10} /></button>
+                    if (isEditing) {
+                      return (
+                        <tr key={`edit-${gi}`} className="text-[12px] bg-primary/5 border-b border-[var(--border)]">
+                          <td className="border-r border-[var(--border)] px-2 py-2 align-middle" colSpan={8}>
+                            <div className="grid grid-cols-2 gap-2">
+                              <FieldInput label="Mata Kuliah" value={editForm.MataKuliah} onChange={(v) => setEditForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" small />
+                              <FieldInput label="Dosen" value={editForm.DosenPengampuh} onChange={(v) => setEditForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" small />
+                              <div>
+                                <label className="mb-0.5 block text-[9px] font-medium text-muted-foreground">Hari</label>
+                                <select value={editForm.Hari} onChange={(e) => setEditForm((f) => ({ ...f, Hari: e.target.value }))} className="w-full rounded-md border-2 border-[var(--border)] bg-card px-1.5 py-1 text-[11px] outline-none focus:border-[var(--primary)]">
+                                  {HARI_LIST.map((h) => <option key={h} value={h}>{h}</option>)}
+                                </select>
                               </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    );
-                  })()}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="flex flex-col gap-3 sm:hidden">
-            {(() => { let globalIdx = 0; return dayGroups.map((group) => {
-              const isCollapsed = collapsedDays.has(group.hari);
-              const hasCollision = group.rows.some((_, idx) => (collisionMap.get(group.indices[globalIdx + idx]) || []).length > 0);
-              return (
-                <div key={group.hari}>
-                  <button
-                    onClick={() => toggleDay(group.hari)}
-                    className={cn(
-                      'flex w-full items-center justify-between rounded-xl border-2 px-3 py-3 text-left transition-all shadow-sm',
-                      hasCollision ? 'border-destructive/30 bg-destructive/5' : 'border-[var(--border)] bg-muted',
-                    )}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <UBGMascot pose={hasCollision ? 'blink' : 'idle'} size={18} />
-                      <span className="pixel-font text-[10px] font-bold">{group.hari}</span>
-                      <span className="rounded-full bg-card/80 px-2 py-0.5 text-[8px] pixel-font text-muted-foreground border border-[var(--border)]">
-                        {group.rows.length}
-                      </span>
-                      {hasCollision && <AlertTriangle size={12} className="text-destructive" />}
-                    </div>
-                    <ChevronDown size={14} className={cn('text-muted-foreground transition-transform', !isCollapsed && 'rotate-180')} />
-                  </button>
-
-                  {!isCollapsed && (
-                    <div className="border-2 border-t-0 border-[var(--border)] rounded-b-xl px-2 py-2 bg-card-solid/50">
-                      {group.rows.map((row, idx) => {
-                        const rowIdx = group.indices[globalIdx++];
-                        const collided = collisionMap.get(rowIdx) || [];
-                        const keterangan = collided.length > 0 ? 'Jadwal Bentrok' : row.Keterangan;
-                        const cardCls = collided.length > 0 ? 'bg-destructive/5 border-destructive/30' : 'bg-card hover:bg-primary/5';
-                        const ketCls = collided.length > 0
-                          ? 'border-destructive/40 bg-destructive/10 text-destructive'
-                          : 'border-[var(--border)] bg-muted/50 text-muted-foreground';
-                        const rowColor = courseColors[row.MataKuliah];
-                        return (
-                          <div key={idx} className={cn('rounded-xl border-2 px-3 py-2.5 shadow-sm transition-all mb-2 last:mb-0', cardCls)}>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <CourseColorPicker courseName={row.MataKuliah} currentColor={rowColor} onSetColor={handleSetColor} />
-                                  <div className="text-[13px] font-bold leading-tight">{highlightMatch(row.MataKuliah)}</div>
-                                </div>
-                                <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-                                  <span>Dosen</span><span className="text-foreground font-medium">{highlightMatch(row.DosenPengampuh)}</span>
-                                  <span>SKS</span><span className="text-foreground font-medium">{row.SKS}</span>
-                                  <span>Jam</span><span className="text-foreground font-medium">{highlightMatch(row.Jam)}</span>
-                                  <span>Ruang</span><span className="text-foreground font-medium">{highlightMatch(row.Ruang)}</span>
-                                </div>
-                                <div className="mt-2 flex items-center gap-1.5">
-                                  <span className={cn('inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-medium', ketCls)}>
-                                    {collided.length > 0 && <AlertTriangle size={10} className="text-destructive" />}
-                                    {keterangan}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex flex-col gap-1 shrink-0 no-print">
-                                <button onClick={() => startEdit(rowIdx)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border)] text-muted-foreground hover:text-primary hover:border-[var(--primary)] transition-colors"><Pencil size={11} /></button>
-                                <button onClick={() => handleDelete(rowIdx)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border)] text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"><Trash2 size={11} /></button>
-                              </div>
+                              <FieldInput label="Jam" value={editForm.Jam} onChange={(v) => setEditForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" small />
+                              <FieldInput label="Ruang" value={editForm.Ruang} onChange={(v) => setEditForm((f) => ({ ...f, Ruang: v }))} placeholder="LAB 101" small />
+                              <FieldInput label="SKS" value={editForm.SKS} onChange={(v) => setEditForm((f) => ({ ...f, SKS: v }))} placeholder="2" small />
                             </div>
+                          </td>
+                          <td className="px-2 py-2 align-middle text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <button onClick={saveEdit} className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors" title="Save"><Check size={13} /></button>
+                              <button onClick={cancelEdit} className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Cancel"><X size={13} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    return (
+                      <tr key={`${group.hari}-${idx}`} className={cn('text-[10px] border-b border-[var(--border)] last:border-b-0 transition-colors hover:bg-[var(--surface-2)]', collided.length > 0 && 'hover:bg-[var(--red)]/10')}>
+                        {idx === 0 && (
+                          <td className="border-r border-[var(--border)] bg-[var(--surface-2)] px-1 py-1 align-middle" rowSpan={group.rows.length}>
+                            <span className="font-mono text-[9px] font-bold text-[var(--blue)]">{group.hari}</span>
+                          </td>
+                        )}
+                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
+                          <span className="text-[var(--text)]">{highlightMatch(row.MataKuliah)}</span>
+                        </td>
+                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
+                          <span className="text-[var(--text)]">{highlightMatch(row.DosenPengampuh)}</span>
+                        </td>
+                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px] text-center', cellCls)}>{row.SKS}</td>
+                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>{highlightMatch(row.Jam)}</td>
+                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>{highlightMatch(row.Ruang)}</td>
+                        <td className={cn('px-1 py-1 align-middle font-mono text-[9px]', ketCls, cellCls)}>
+                          <span className={cn('cursor-pointer inline-flex items-center gap-1', collided.length > 0 && 'hover:underline')} onClick={() => collided.length > 0 && setShowCollisionDetail(showCollisionDetail === gi ? null : gi)}>
+                            {collided.length > 0 && <AlertTriangle size={9} className="text-[var(--red)]" />}
+                            {keterangan}
+                          </span>
+                        </td>
+                        <td className="px-1.5 py-1.5 align-middle no-print">
+                          <div className="flex items-center justify-center gap-1">
+                            <button onClick={() => startEdit(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--blue)]/10 hover:text-[var(--blue)] transition-colors" title="Edit"><Pencil size={10} /></button>
+                            <button onClick={() => handleDelete(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--red)]/10 hover:text-[var(--red)] transition-colors" title="Delete"><Trash2 size={10} /></button>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            }); })()}
-          </div>
-        </>
+                        </td>
+                      </tr>
+                    );
+                  })
+                );
+              })()}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* Collision detail overlay */}
       {showCollisionDetail !== null && (
@@ -551,7 +430,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
       )}
 
       {/* Summary stats */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 print-stats">
+      <div className="mt-4 grid grid-cols-4 gap-1.5 print-stats">
         {[
           { label: 'Total Classes', value: merged.length, color: '' },
           { label: 'Days', value: dayGroups.length, color: '' },
@@ -559,11 +438,11 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
           { label: 'Total SKS', value: merged.reduce((s, r) => s + (parseInt(r.SKS) || 0), 0), color: '' },
         ].map((stat) => (
           <div key={stat.label} className={cn(
-            'rounded-xl border-2 border-[var(--border)] bg-card-solid p-3 text-center shadow-sm',
+            'rounded-lg border border-[var(--border)] bg-card-solid p-2 text-center',
             stat.color && 'border-destructive/30 bg-destructive/5',
           )}>
-            <p className={cn('text-[20px] font-bold text-foreground', stat.color)}>{stat.value}</p>
-            <p className="pixel-font mt-0.5 text-[6px] uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+            <p className={cn('text-lg font-bold text-foreground', stat.color)}>{stat.value}</p>
+            <p className="text-[7px] uppercase tracking-wider text-[var(--text-muted)] mt-0.5">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -587,3 +466,5 @@ function FieldInput({
     </div>
   );
 }
+
+export default ResultPage;

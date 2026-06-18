@@ -22,7 +22,7 @@ export function MatrixRain() {
     const init = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      fontSize = 14;
+      fontSize = 13;
       columns = Math.ceil(canvas.width / fontSize);
       // Initialize drops at random Y positions above the screen
       drops = new Array(columns).fill(0).map(() => Math.random() * -100);
@@ -51,9 +51,9 @@ export function MatrixRain() {
           if (trailY < 0) break;
 
           const char = Math.random() > 0.5 ? '1' : '0';
-          // Fade from bright head to dim tail
-          const alpha = j === 0 ? 0.12 : Math.max(0.01, 0.04 - j * 0.004);
-          ctx.fillStyle = `rgba(80, 130, 220, ${alpha})`;
+          // Fade from bright head to dim tail — more visible on mobile
+          const alpha = j === 0 ? 0.18 : Math.max(0.02, 0.06 - j * 0.005);
+          ctx.fillStyle = `rgba(100, 150, 255, ${alpha})`;
           ctx.fillText(char, x, trailY);
         }
 

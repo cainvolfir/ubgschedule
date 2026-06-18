@@ -53,7 +53,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-font-smoothing: antialiased; }
+html { -webkit-font-smoothing: antialiased; font-size: 14px; }
 
 body {
   min-height: 100dvh;
@@ -390,14 +390,7 @@ body::before {
   }
 }
 
-/* ===== Mobile ===== */
-@media (max-width: 520px) {
-  .card-body { padding: 1.25rem 1.25rem 1.5rem; }
-  .glitch-title { font-size: 1.25rem; }
-  .glitch-header::before, .glitch-header::after { display: none; }
-}
-
-/* ===== Print ===== */
+/* ===== Matrix Rain — very slow, subtle, safe ===== */
 @media print {
   body { background: white !important; color: #1a1a1a !important; }
   .no-print { display: none !important; }
