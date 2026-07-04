@@ -1,14 +1,6 @@
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { type VariantProps, cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import {
-  Select as ShadcnSelect,
-  SelectGroup as ShadcnSelectGroup,
-  SelectItem as ShadcnSelectItem,
-  SelectLabel as ShadcnSelectLabel,
-  SelectSeparator as ShadcnSelectSeparator,
-  SelectValue as ShadcnSelectValue,
-} from "@/components/ui/select";
 import "@/components/ui/pixelact-ui/styles/styles.css";
 
 export const inputVariants = cva("text-foreground", {
@@ -18,16 +10,11 @@ export const inputVariants = cva("text-foreground", {
   defaultVariants: { font: "pixel" },
 });
 
-function Select({ ...props }: React.ComponentProps<typeof ShadcnSelect>) {
-  return <ShadcnSelect {...props} />;
-}
-
-function SelectGroup({ ...props }: React.ComponentProps<typeof SelectPrimitive.Group>) {
-  return <ShadcnSelectGroup {...props} />;
-}
+const Select = SelectPrimitive.Root;
+const SelectGroup = SelectPrimitive.Group;
 
 function SelectValue({ font, ...props }: React.ComponentProps<typeof SelectPrimitive.Value> & VariantProps<typeof inputVariants>) {
-  return <ShadcnSelectValue className={cn(inputVariants({ font }))} {...props} />;
+  return <SelectPrimitive.Value className={cn(inputVariants({ font }))} {...props} />;
 }
 
 function SelectTrigger({
@@ -80,14 +67,14 @@ function SelectContent({
 }
 
 function SelectLabel({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Label>) {
-  return <ShadcnSelectLabel className={cn(className)} {...props} />;
+  return <SelectPrimitive.Label className={cn(className)} {...props} />;
 }
 
 function SelectItem({
   className, children, ...props
 }: React.ComponentProps<typeof SelectPrimitive.Item>) {
   return (
-    <ShadcnSelectItem
+    <SelectPrimitive.Item
       className={cn(
         "rounded px-2 py-1 mx-0.5 cursor-pointer transition-colors duration-100 text-[9px]",
         "bg-[var(--surface)] text-[var(--text)]",
@@ -98,13 +85,13 @@ function SelectItem({
       )}
       {...props}
     >
-      {children}
-    </ShadcnSelectItem>
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
   );
 }
 
 function SelectSeparator({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
-  return <ShadcnSelectSeparator className={cn(className)} {...props} />;
+  return <SelectPrimitive.Separator className={cn(className)} {...props} />;
 }
 
 function SelectScrollDownButton({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>) {

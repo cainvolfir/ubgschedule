@@ -1,6 +1,5 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Button as ShadcnButton } from "@/components/ui/button";
 import "@/components/ui/pixelact-ui/styles/styles.css";
 import "./button.css";
 
@@ -8,7 +7,6 @@ export interface PixelButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "default" | "secondary" | "warning" | "success" | "destructive" | "link";
   size?: "sm" | "default" | "lg";
-  asChild?: boolean;
 }
 
 const variantClass: Record<string, string> = {
@@ -29,10 +27,10 @@ const sizeClass: Record<string, string> = {
 const Button = React.forwardRef<HTMLButtonElement, PixelButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
     return (
-      <ShadcnButton
+      <button
         ref={ref}
         className={cn(
-          "pixel__button cursor-pointer items-center justify-center gap-2 whitespace-nowrap",
+          "pixel__button inline-flex items-center justify-center gap-2 whitespace-nowrap",
           variantClass[variant],
           sizeClass[size],
           className
