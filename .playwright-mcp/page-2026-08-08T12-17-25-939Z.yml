@@ -1,0 +1,43 @@
+- generic [ref=f16e3]:
+  - banner [ref=f16e4]:
+    - generic [ref=f16e5]:
+      - img "UBG Schedule logo" [ref=f16e6]
+      - text: UBG Schedule
+    - button "Toggle theme" [ref=f16e7] [cursor=pointer]:
+      - generic [ref=f16e8]: dark_mode
+  - main [ref=f16e10]:
+    - generic [ref=f16e11]:
+      - generic [ref=f16e12]:
+        - heading "Upload Theory Schedule" [level=1] [ref=f16e13]
+        - paragraph [ref=f16e14]: Upload official theory class schedule PDF UBG student portal.
+      - button "cloud_upload Drag & drop your PDF file click select file Maximum file size 50 MB" [ref=f16e15] [cursor=pointer]:
+        - generic [ref=f16e16]: cloud_upload
+        - paragraph [ref=f16e18]: Drag & drop your PDF file click select file
+        - paragraph [ref=f16e19]: Maximum file size 50 MB
+      - generic [ref=f16e20]:
+        - generic [ref=f16e21]:
+          - generic [ref=f16e22]:
+            - generic [ref=f16e23]: "Class:"
+            - combobox [ref=f16e25] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f16e28]:
+            - generic [ref=f16e29]: "SMT:"
+            - combobox [ref=f16e31] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f16e34]:
+            - generic [ref=f16e35]: "Day:"
+            - combobox [ref=f16e37] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f16e40]: 1 selected
+        - table [ref=f16e42]:
+          - rowgroup [ref=f16e43]:
+            - row [ref=f16e44] [cursor=pointer]:
+              - cell [ref=f16e45]:
+                - checkbox [checked] [ref=f16e46]
+              - cell "Algoritma dan Struktur Data Dosen Teori • SMT 3 • A" [ref=f16e47]:
+                - generic [ref=f16e48]: Algoritma dan Struktur Data
+                - generic [ref=f16e49]: Dosen Teori • SMT 3 • A
+              - cell "Senin 07.00-08.00" [ref=f16e50]
+      - button "Continue to Practical (1) arrow_forward" [ref=f16e52] [cursor=pointer]:
+        - text: Continue to Practical (1)
+        - generic [ref=f16e53]: arrow_forward

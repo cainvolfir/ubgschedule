@@ -1,0 +1,77 @@
+- generic [ref=f26e3]:
+  - banner [ref=f26e4]:
+    - generic [ref=f26e5]:
+      - img "UBG Schedule logo" [ref=f26e6]
+      - text: UBG Schedule
+    - button "Toggle theme" [active] [ref=f26e7] [cursor=pointer]:
+      - generic [ref=f26e8]: light_mode
+  - main [ref=f26e10]:
+    - generic [ref=f26e11]:
+      - generic [ref=f26e12]:
+        - heading "Upload Theory Schedule" [level=1] [ref=f26e13]
+        - paragraph [ref=f26e14]: Upload official theory class schedule PDF UBG student portal.
+      - button "cloud_upload Drag & drop your PDF file click select file Maximum file size 50 MB" [ref=f26e15] [cursor=pointer]:
+        - generic [ref=f26e16]: cloud_upload
+        - paragraph [ref=f26e18]: Drag & drop your PDF file click select file
+        - paragraph [ref=f26e19]: Maximum file size 50 MB
+      - generic [ref=f26e20]:
+        - generic [ref=f26e21]:
+          - generic [ref=f26e22]:
+            - generic [ref=f26e23]: "Class:"
+            - combobox [ref=f26e25] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f26e28]:
+            - generic [ref=f26e29]: "SMT:"
+            - combobox [ref=f26e31] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f26e34]:
+            - generic [ref=f26e35]: "Day:"
+            - combobox [ref=f26e37] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f26e40]: 0 selected
+        - generic [ref=f26e42]:
+          - button "Algoritma dan Struktur Data Lanjut Dr. Ahmad Fauzi, M.Kom • SMT 3 • A Senin 08.00-10.30" [ref=f26e43] [cursor=pointer]:
+            - generic [ref=f26e44]:
+              - checkbox [ref=f26e45]
+              - generic [ref=f26e46]:
+                - paragraph [ref=f26e47]: Algoritma dan Struktur Data Lanjut
+                - paragraph [ref=f26e48]: Dr. Ahmad Fauzi, M.Kom • SMT 3 • A
+            - generic [ref=f26e49]: Senin 08.00-10.30
+          - button "Basis Data Terdistribusi Ir. Siti Rahma, M.T • SMT 3 • B Senin 13.00-15.30" [ref=f26e51] [cursor=pointer]:
+            - generic [ref=f26e52]:
+              - checkbox [ref=f26e53]
+              - generic [ref=f26e54]:
+                - paragraph [ref=f26e55]: Basis Data Terdistribusi
+                - paragraph [ref=f26e56]: Ir. Siti Rahma, M.T • SMT 3 • B
+            - generic [ref=f26e57]: Senin 13.00-15.30
+          - button "Pemrograman Web Lanjut Budi Santoso, S.Kom., M.Cs • SMT 5 • A Selasa 09.00-11.00" [ref=f26e59] [cursor=pointer]:
+            - generic [ref=f26e60]:
+              - checkbox [ref=f26e61]
+              - generic [ref=f26e62]:
+                - paragraph [ref=f26e63]: Pemrograman Web Lanjut
+                - paragraph [ref=f26e64]: Budi Santoso, S.Kom., M.Cs • SMT 5 • A
+            - generic [ref=f26e65]: Selasa 09.00-11.00
+          - button "Keamanan Jaringan Komputer Rina Wulandari, S.T., M.T • SMT 5 • C Rabu 10.30-13.00" [ref=f26e67] [cursor=pointer]:
+            - generic [ref=f26e68]:
+              - checkbox [ref=f26e69]
+              - generic [ref=f26e70]:
+                - paragraph [ref=f26e71]: Keamanan Jaringan Komputer
+                - paragraph [ref=f26e72]: Rina Wulandari, S.T., M.T • SMT 5 • C
+            - generic [ref=f26e73]: Rabu 10.30-13.00
+          - button "Kecerdasan Buatan Prof. Hadi Susilo, Ph.D • SMT 7 • A Kamis 08.00-10.30" [ref=f26e75] [cursor=pointer]:
+            - generic [ref=f26e76]:
+              - checkbox [ref=f26e77]
+              - generic [ref=f26e78]:
+                - paragraph [ref=f26e79]: Kecerdasan Buatan
+                - paragraph [ref=f26e80]: Prof. Hadi Susilo, Ph.D • SMT 7 • A
+            - generic [ref=f26e81]: Kamis 08.00-10.30
+          - button "Sistem Informasi Manajemen Dewi Anggraini, M.Kom • SMT 7 • B Jumat 13.30-15.00" [ref=f26e83] [cursor=pointer]:
+            - generic [ref=f26e84]:
+              - checkbox [ref=f26e85]
+              - generic [ref=f26e86]:
+                - paragraph [ref=f26e87]: Sistem Informasi Manajemen
+                - paragraph [ref=f26e88]: Dewi Anggraini, M.Kom • SMT 7 • B
+            - generic [ref=f26e89]: Jumat 13.30-15.00
+      - button "Select classes to continue arrow_forward" [disabled] [ref=f26e92]:
+        - text: Select classes to continue
+        - generic [ref=f26e93]: arrow_forward

@@ -1,0 +1,29 @@
+- generic [ref=f4e3]:
+  - banner [ref=f4e4]:
+    - generic [ref=f4e5]:
+      - img "UBG Schedule logo" [ref=f4e6]
+      - text: UBG Schedule
+    - generic [ref=f4e7]:
+      - generic [ref=f4e9]:
+        - generic [ref=f4e10]: "1"
+        - generic [ref=f4e11]: Theory
+      - generic [ref=f4e14]:
+        - generic [ref=f4e15]: "2"
+        - generic [ref=f4e16]: Practical
+      - generic [ref=f4e19]:
+        - generic [ref=f4e20]: "3"
+        - generic [ref=f4e21]: Results
+    - button "Toggle theme" [ref=f4e22] [cursor=pointer]:
+      - generic [ref=f4e23]: light_mode
+  - main [ref=f4e25]:
+    - generic [ref=f4e26]:
+      - generic [ref=f4e27]:
+        - heading "Upload Theory Schedule" [level=1] [ref=f4e28]
+        - paragraph [ref=f4e29]: Upload official theory class schedule PDF UBG student portal.
+      - button "cloud_upload Drag & drop your PDF file click select file Maximum file size 50 MB" [ref=f4e30] [cursor=pointer]:
+        - generic [ref=f4e31]: cloud_upload
+        - paragraph [ref=f4e33]: Drag & drop your PDF file click select file
+        - paragraph [ref=f4e34]: Maximum file size 50 MB
+      - button "Select classes to continue arrow_forward" [disabled] [ref=f4e36]:
+        - text: Select classes to continue
+        - generic [ref=f4e37]: arrow_forward

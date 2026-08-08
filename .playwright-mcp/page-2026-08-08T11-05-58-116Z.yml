@@ -1,0 +1,31 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: calendar_month
+      - text: UBG Schedule
+    - generic [ref=e7]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: "1"
+        - generic [ref=e11]: Teori
+      - generic [ref=e14]:
+        - generic [ref=e15]: "2"
+        - generic [ref=e16]: Praktikum
+      - generic [ref=e19]:
+        - generic [ref=e20]: "3"
+        - generic [ref=e21]: Hasil
+    - button "Toggle theme" [active] [ref=e22] [cursor=pointer]:
+      - generic [ref=e23]: dark_mode
+  - main [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Unggah Jadwal Teori" [level=1] [ref=e29]
+        - paragraph [ref=e30]: Upload file PDF jadwal kuliah teori resmi dari portal mahasiswa UBG.
+      - button "cloud_upload Tarik & lepas file PDF di sini atau klik untuk memilih file Maksimal ukuran file PDF 50 MB" [ref=e31] [cursor=pointer]:
+        - generic [ref=e32]: cloud_upload
+        - paragraph [ref=e34]: Tarik & lepas file PDF di sini atau klik untuk memilih file
+        - paragraph [ref=e35]: Maksimal ukuran file PDF 50 MB
+      - generic [ref=e36]:
+        - button "Kembali" [ref=e37] [cursor=pointer]
+        - button "Pilih kelas untuk lanjut arrow_forward" [disabled] [ref=e38]:
+          - text: Pilih kelas untuk lanjut
+          - generic [ref=e39]: arrow_forward

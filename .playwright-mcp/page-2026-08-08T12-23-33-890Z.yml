@@ -1,0 +1,92 @@
+- generic [ref=f21e3]:
+  - banner [ref=f21e4]:
+    - generic [ref=f21e5]:
+      - img "UBG Schedule logo" [ref=f21e6]
+      - text: UBG Schedule
+    - generic [ref=f21e7]:
+      - generic [ref=f21e9]:
+        - generic [ref=f21e10]: "1"
+        - generic [ref=f21e11]: Theory
+      - generic [ref=f21e14]:
+        - generic [ref=f21e15]: "2"
+        - generic [ref=f21e16]: Practical
+      - generic [ref=f21e19]:
+        - generic [ref=f21e20]: "3"
+        - generic [ref=f21e21]: Results
+    - button "Toggle theme" [ref=f21e22] [cursor=pointer]:
+      - generic [ref=f21e23]: dark_mode
+  - main [ref=f21e25]:
+    - generic [ref=f21e69]:
+      - generic [ref=f21e70]:
+        - heading "Upload Practical Schedule" [level=1] [ref=f21e71]
+        - paragraph [ref=f21e72]: Upload practical schedule spreadsheet (XLSX/XLS/CSV) from UBG student portal.
+      - button "cloud_upload Drag & drop your spreadsheet here or click to select a file Maximum file size 50 MB (XLSX, XLS, or CSV)" [ref=f21e73] [cursor=pointer]:
+        - generic [ref=f21e74]: cloud_upload
+        - paragraph [ref=f21e76]: Drag & drop your spreadsheet here or click to select a file
+        - paragraph [ref=f21e77]: Maximum file size 50 MB (XLSX, XLS, or CSV)
+      - generic [ref=f21e78]:
+        - generic [ref=f21e79]:
+          - generic [ref=f21e80]:
+            - generic [ref=f21e81]: "Class:"
+            - combobox [ref=f21e83] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f21e86]:
+            - generic [ref=f21e87]: "Semester:"
+            - combobox [ref=f21e89] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f21e92]: 0 selected
+        - generic [ref=f21e93]:
+          - button [ref=f21e94] [cursor=pointer]:
+            - checkbox [ref=f21e95]
+            - generic [ref=f21e96]:
+              - paragraph [ref=f21e97]: Algoritma dan Struktur Data Lanjut A
+              - paragraph [ref=f21e98]: Budi Santoso • Semester 3 • A
+            - generic [ref=f21e99]:
+              - paragraph [ref=f21e100]: Senin 07:00-08:00
+              - paragraph [ref=f21e101]: LAB 1-201
+          - button [ref=f21e102] [cursor=pointer]:
+            - checkbox [ref=f21e103]
+            - generic [ref=f21e104]:
+              - paragraph [ref=f21e105]: Algoritma dan Struktur Data Lanjut A
+              - paragraph [ref=f21e106]: Budi Santoso • Semester 3 • A
+            - generic [ref=f21e107]:
+              - paragraph [ref=f21e108]: Senin 08:00-09:40
+              - paragraph [ref=f21e109]: LAB 1-201
+          - button [ref=f21e110] [cursor=pointer]:
+            - checkbox [ref=f21e111]
+            - generic [ref=f21e112]:
+              - paragraph [ref=f21e113]: Basis Data B
+              - paragraph [ref=f21e114]: Siti Aminah • Semester 3 • B
+            - generic [ref=f21e115]:
+              - paragraph [ref=f21e116]: Rabu 13:00-15:30
+              - paragraph [ref=f21e117]: LAB 2-101
+          - button [ref=f21e118] [cursor=pointer]:
+            - checkbox [ref=f21e119]
+            - generic [ref=f21e120]:
+              - paragraph [ref=f21e121]: Pemrograman Berorientasi Objek A
+              - paragraph [ref=f21e122]: Agus Wijaya • Semester 3 • A
+            - generic [ref=f21e123]:
+              - paragraph [ref=f21e124]: Kamis 09:30-11:30
+              - paragraph [ref=f21e125]: LAB 1-205
+          - button [ref=f21e126] [cursor=pointer]:
+            - checkbox [ref=f21e127]
+            - generic [ref=f21e128]:
+              - paragraph [ref=f21e129]: Jaringan Komputer B
+              - paragraph [ref=f21e130]: Dewi Lestari • Semester 3 • B
+            - generic [ref=f21e131]:
+              - paragraph [ref=f21e132]: Jumat 10:00-12:00
+              - paragraph [ref=f21e133]: LAB 2-203
+          - button [ref=f21e134] [cursor=pointer]:
+            - checkbox [ref=f21e135]
+            - generic [ref=f21e136]:
+              - paragraph [ref=f21e137]: Sistem Operasi A
+              - paragraph [ref=f21e138]: Rudi Hartono • Semester 3 • A
+            - generic [ref=f21e139]:
+              - paragraph [ref=f21e140]: Selasa 14:00-16:00
+              - paragraph [ref=f21e141]: LAB 1-102
+      - button "Skip" [ref=f21e142] [cursor=pointer]
+      - generic [ref=f21e143]:
+        - button "Back" [ref=f21e144] [cursor=pointer]
+        - button "Select classes to continue arrow_forward" [disabled] [ref=f21e145]:
+          - text: Select classes to continue
+          - generic [ref=f21e146]: arrow_forward

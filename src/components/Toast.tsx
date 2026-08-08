@@ -78,7 +78,7 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[var(--z-toast)] flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+      className="fixed bottom-4 right-4 z-[100] flex w-full max-w-sm flex-col gap-2 px-4 pointer-events-none sm:px-0"
       role="region"
       aria-label="Notifications"
       aria-live="polite"
@@ -99,23 +99,23 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
   };
 
   const icons = {
-    error: <AlertCircle size={16} className="text-destructive shrink-0" />,
-    success: <CheckCircle size={16} className="text-success shrink-0" />,
-    info: <Info size={16} className="text-primary shrink-0" />,
-    loading: <Loader2 size={16} className="text-primary shrink-0 animate-spin" />,
+    error: <AlertCircle size={16} className="shrink-0 text-error dark:text-dark-error" />,
+    success: <CheckCircle size={16} className="shrink-0 text-success dark:text-dark-success" />,
+    info: <Info size={16} className="shrink-0 text-primary dark:text-dark-primary" />,
+    loading: <Loader2 size={16} className="shrink-0 animate-spin text-primary dark:text-dark-primary" />,
   };
 
   const borderColors = {
-    error: 'border-destructive/40',
-    success: 'border-success/40',
-    info: 'border-primary/40',
-    loading: 'border-primary/40',
+    error: 'border-error/40 dark:border-dark-error/40',
+    success: 'border-success/40 dark:border-dark-success/40',
+    info: 'border-primary/40 dark:border-dark-primary/40',
+    loading: 'border-primary/40 dark:border-dark-primary/40',
   };
 
   return (
     <div
       className={cn(
-        'pointer-events-auto flex items-start gap-3 rounded-xl border bg-card-solid px-4 py-3 shadow-md transition-all duration-200',
+        'pointer-events-auto flex items-start gap-3 rounded-xl border bg-surface px-4 py-3 shadow-md transition-all duration-200 dark:bg-dark-surface',
         borderColors[toast.type],
         isExiting ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0 animate-fade-in-up',
       )}
@@ -124,16 +124,16 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
     >
       <div className="mt-0.5">{icons[toast.type]}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-semibold text-foreground">{toast.title}</p>
+        <p className="text-[12px] font-semibold text-primary dark:text-dark-primary">{toast.title}</p>
         {toast.message && (
-          <p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed break-words">
+          <p className="mt-0.5 text-[11px] leading-relaxed break-words text-secondary dark:text-on-tertiary-container">
             {toast.message}
           </p>
         )}
       </div>
       <button
         onClick={handleClose}
-        className="mt-0.5 shrink-0 rounded-md p-0.5 text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-1 focus-visible:ring-[var(--ring)]"
+        className="mt-0.5 shrink-0 rounded-md p-0.5 text-secondary transition-colors hover:text-primary focus-visible:ring-1 focus-visible:ring-primary dark:text-on-tertiary-container dark:hover:text-dark-primary"
         aria-label="Dismiss notification"
       >
         <X size={14} />

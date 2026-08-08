@@ -1,0 +1,38 @@
+- generic [ref=f36e2]:
+  - generic [ref=f36e3]:
+    - banner [ref=f36e4]:
+      - generic [ref=f36e5]:
+        - img "UBG Schedule logo" [ref=f36e6]
+        - text: UBG Schedule
+      - button "Toggle theme" [ref=f36e7] [cursor=pointer]:
+        - generic [ref=f36e8]: dark_mode
+    - main [ref=f36e10]:
+      - generic [ref=f36e115]:
+        - generic [ref=f36e116]:
+          - heading "Upload Practical Schedule" [level=1] [ref=f36e117]
+          - paragraph [ref=f36e118]: Upload practical schedule spreadsheet (XLSX/XLS/CSV) from UBG student portal.
+        - generic [ref=f36e129]:
+          - generic [ref=f36e130]:
+            - generic [ref=f36e131]: picture_as_pdf
+            - generic [ref=f36e134]:
+              - generic [ref=f36e135]: praktikum-test.xlsx
+              - generic [ref=f36e136]: check_circle
+            - button "Replace file" [ref=f36e138] [cursor=pointer]:
+              - generic [ref=f36e139]: delete
+          - paragraph [ref=f36e141]: "[20.57.47] Web Worker scanning spreadsheet... 1 room prefixes found, 0 courses found"
+        - generic [ref=f36e142]:
+          - generic [ref=f36e143]: Select room prefix
+          - combobox [ref=f36e145] [cursor=pointer]:
+            - generic: Choose room prefix...
+        - button "Skip" [ref=f36e124] [cursor=pointer]
+        - generic [ref=f36e125]:
+          - button "Back" [ref=f36e126] [cursor=pointer]
+          - button "Select classes to continue arrow_forward" [disabled] [ref=f36e127]:
+            - text: Select classes to continue
+            - generic [ref=f36e128]: arrow_forward
+  - region "Notifications":
+    - alert [ref=f36e148]:
+      - generic [ref=f36e153]:
+        - paragraph [ref=f36e154]: found 1 room prefixes
+        - paragraph [ref=f36e155]: select a room prefix to see classes.
+      - button "Dismiss notification" [ref=f36e156] [cursor=pointer]

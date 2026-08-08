@@ -1,0 +1,53 @@
+- generic [ref=f19e3]:
+  - banner [ref=f19e4]:
+    - generic [ref=f19e5]:
+      - img "UBG Schedule logo" [ref=f19e6]
+      - text: UBG Schedule
+    - generic [ref=f19e7]:
+      - generic [ref=f19e9]:
+        - generic [ref=f19e10]: "1"
+        - generic [ref=f19e11]: Theory
+      - generic [ref=f19e14]:
+        - generic [ref=f19e15]: "2"
+        - generic [ref=f19e16]: Practical
+      - generic [ref=f19e19]:
+        - generic [ref=f19e20]: "3"
+        - generic [ref=f19e21]: Results
+    - button "Toggle theme" [ref=f19e22] [cursor=pointer]:
+      - generic [ref=f19e23]: dark_mode
+  - main [ref=f19e25]:
+    - generic [ref=f19e26]:
+      - generic [ref=f19e27]:
+        - heading "Upload Theory Schedule" [level=1] [ref=f19e28]
+        - paragraph [ref=f19e29]: Upload official theory class schedule PDF UBG student portal.
+      - button "cloud_upload Drag & drop your PDF file click select file Maximum file size 50 MB" [ref=f19e30] [cursor=pointer]:
+        - generic [ref=f19e31]: cloud_upload
+        - paragraph [ref=f19e33]: Drag & drop your PDF file click select file
+        - paragraph [ref=f19e34]: Maximum file size 50 MB
+      - generic [ref=f19e35]:
+        - generic [ref=f19e36]:
+          - generic [ref=f19e37]:
+            - generic [ref=f19e38]: "Class:"
+            - combobox [ref=f19e40] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f19e43]:
+            - generic [ref=f19e44]: "SMT:"
+            - combobox [ref=f19e46] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f19e49]:
+            - generic [ref=f19e50]: "Day:"
+            - combobox [ref=f19e52] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f19e55]: 1 selected
+        - table [ref=f19e57]:
+          - rowgroup [ref=f19e58]:
+            - row [ref=f19e59] [cursor=pointer]:
+              - cell [ref=f19e60]:
+                - checkbox [ref=f19e61]
+              - cell "Algoritma dan Struktur Data Lanjut Budi Santoso • SMT 3 • A" [ref=f19e62]:
+                - generic [ref=f19e63]: Algoritma dan Struktur Data Lanjut
+                - generic [ref=f19e64]: Budi Santoso • SMT 3 • A
+              - cell "Senin 07:00-08:00" [ref=f19e65]
+      - button "Continue to Practical (1) arrow_forward" [ref=f19e67] [cursor=pointer]:
+        - text: Continue to Practical (1)
+        - generic [ref=f19e68]: arrow_forward

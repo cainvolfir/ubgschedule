@@ -1,0 +1,33 @@
+- generic [ref=f34e2]:
+  - generic [ref=f34e3]:
+    - banner [ref=f34e4]:
+      - generic [ref=f34e5]:
+        - img "UBG Schedule logo" [ref=f34e6]
+        - text: UBG Schedule
+      - button "Toggle theme" [ref=f34e7] [cursor=pointer]:
+        - generic [ref=f34e8]: dark_mode
+    - main [ref=f34e10]:
+      - generic [ref=f34e11]:
+        - generic [ref=f34e12]:
+          - heading "Upload Theory Schedule" [level=1] [ref=f34e13]
+          - paragraph [ref=f34e14]: Upload official theory class schedule PDF UBG student portal.
+        - generic [ref=f34e24]:
+          - generic [ref=f34e25]: picture_as_pdf
+          - generic [ref=f34e27]:
+            - generic [ref=f34e28]:
+              - generic [ref=f34e29]: theory-sample.pdf
+              - generic [ref=f34e30]: error
+            - generic [ref=f34e32]:
+              - generic [ref=f34e33]: info
+              - text: no class data extracted. make sure this is a valid theory schedule PDF.
+          - button "Replace file" [ref=f34e34] [cursor=pointer]:
+            - generic [ref=f34e35]: delete
+        - button "Select classes to continue arrow_forward" [disabled] [ref=f34e21]:
+          - text: Select classes to continue
+          - generic [ref=f34e22]: arrow_forward
+  - region "Notifications":
+    - alert [ref=f34e36]:
+      - generic [ref=f34e40]:
+        - paragraph [ref=f34e41]: no classes found
+        - paragraph [ref=f34e42]: the PDF was parsed but no class schedules were detected.
+      - button "Dismiss notification" [ref=f34e43] [cursor=pointer]

@@ -196,9 +196,13 @@ export function ExportICS({ dayGroups, merged, courseColors }: ExportICSProps) {
   if (merged.length === 0) return null;
 
   return (
-    <button onClick={handleExport} className="terminal-btn-sm" title="Export as ICS calendar">
-      <CalendarDays size={9} />
-      <span>ICS</span>
+    <button
+      onClick={handleExport}
+      className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-border px-lg py-sm text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
+      title="Export as ICS calendar"
+    >
+      <CalendarDays size={12} />
+      ICS
     </button>
   );
 }

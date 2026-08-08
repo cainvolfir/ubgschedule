@@ -1,0 +1,41 @@
+- generic [ref=f24e3]:
+  - banner [ref=f24e4]:
+    - generic [ref=f24e5]:
+      - img "UBG Schedule logo" [ref=f24e6]
+      - text: UBG Schedule
+    - button "Toggle theme" [ref=f24e7] [cursor=pointer]:
+      - generic [ref=f24e8]: light_mode
+  - main [ref=f24e10]:
+    - generic [ref=f24e11]:
+      - generic [ref=f24e12]:
+        - heading "Upload Theory Schedule" [level=1] [ref=f24e13]
+        - paragraph [ref=f24e14]: Upload official theory class schedule PDF UBG student portal.
+      - button "cloud_upload Drag & drop your PDF file click select file Maximum file size 50 MB" [ref=f24e15] [cursor=pointer]:
+        - generic [ref=f24e16]: cloud_upload
+        - paragraph [ref=f24e18]: Drag & drop your PDF file click select file
+        - paragraph [ref=f24e19]: Maximum file size 50 MB
+      - generic [ref=f24e20]:
+        - generic [ref=f24e21]:
+          - generic [ref=f24e22]:
+            - generic [ref=f24e23]: "Class:"
+            - combobox [ref=f24e25] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f24e28]:
+            - generic [ref=f24e29]: "SMT:"
+            - combobox [ref=f24e31] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f24e34]:
+            - generic [ref=f24e35]: "Day:"
+            - combobox [ref=f24e37] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f24e40]: 1 selected
+        - button "Algoritma dan Struktur Data Lanjut Budi Santoso • SMT 3 • A Senin 07:00-08:00" [ref=f24e43] [cursor=pointer]:
+          - generic [ref=f24e44]:
+            - checkbox [checked] [ref=f24e45]
+            - generic [ref=f24e46]:
+              - paragraph [ref=f24e47]: Algoritma dan Struktur Data Lanjut
+              - paragraph [ref=f24e48]: Budi Santoso • SMT 3 • A
+          - generic [ref=f24e49]: Senin 07:00-08:00
+      - button "Continue to Practical (1) arrow_forward" [ref=f24e52] [cursor=pointer]:
+        - text: Continue to Practical (1)
+        - generic [ref=f24e53]: arrow_forward

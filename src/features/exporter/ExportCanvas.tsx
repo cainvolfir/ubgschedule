@@ -222,9 +222,13 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
   return (
     <>
       <canvas ref={canvasRef} className="hidden" />
-      <button onClick={handleExport} className="terminal-btn-sm" title="Export as PNG image">
-        <Image size={9} />
-        <span>PNG</span>
+      <button
+        onClick={handleExport}
+        className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-border px-lg py-sm text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
+        title="Export as PNG image"
+      >
+        <Image size={12} />
+        PNG
       </button>
     </>
   );

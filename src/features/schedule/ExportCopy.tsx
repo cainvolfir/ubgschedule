@@ -113,19 +113,19 @@ export function ExportCopy({ dayGroups }: ExportCopyProps) {
     <div className="flex items-center gap-1">
       <button
         onClick={() => handleCopy('text')}
-        className="terminal-btn-sm"
+        className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-border px-lg py-sm text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
         title="Copy as plain text"
       >
-        {copied ? <Check size={9} /> : <FileText size={9} />}
-        <span>TXT</span>
+        {copied ? <Check size={12} /> : <FileText size={12} />}
+        TXT
       </button>
       <button
         onClick={() => handleCopy('markdown')}
-        className="terminal-btn-sm"
+        className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-border px-lg py-sm text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
         title="Copy as markdown table"
       >
-        {copied ? <Check size={9} /> : <Table size={9} />}
-        <span>MD</span>
+        {copied ? <Check size={12} /> : <Table size={12} />}
+        MD
       </button>
     </div>
   );

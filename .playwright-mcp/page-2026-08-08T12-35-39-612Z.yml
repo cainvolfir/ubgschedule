@@ -1,0 +1,43 @@
+- generic [ref=f23e3]:
+  - banner [ref=f23e4]:
+    - generic [ref=f23e5]:
+      - img "UBG Schedule logo" [ref=f23e6]
+      - text: UBG Schedule
+    - button "Toggle theme" [ref=f23e7] [cursor=pointer]:
+      - generic [ref=f23e8]: dark_mode
+  - main [ref=f23e10]:
+    - generic [ref=f23e11]:
+      - generic [ref=f23e12]:
+        - heading "Upload Theory Schedule" [level=1] [ref=f23e13]
+        - paragraph [ref=f23e14]: Upload official theory class schedule PDF UBG student portal.
+      - button "cloud_upload Drag & drop your PDF file click select file Maximum file size 50 MB" [ref=f23e15] [cursor=pointer]:
+        - generic [ref=f23e16]: cloud_upload
+        - paragraph [ref=f23e18]: Drag & drop your PDF file click select file
+        - paragraph [ref=f23e19]: Maximum file size 50 MB
+      - generic [ref=f23e20]:
+        - generic [ref=f23e21]:
+          - generic [ref=f23e22]:
+            - generic [ref=f23e23]: "Class:"
+            - combobox [ref=f23e25] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f23e28]:
+            - generic [ref=f23e29]: "SMT:"
+            - combobox [ref=f23e31] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f23e34]:
+            - generic [ref=f23e35]: "Day:"
+            - combobox [ref=f23e37] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f23e40]: 1 selected
+        - table [ref=f23e42]:
+          - rowgroup [ref=f23e43]:
+            - row [ref=f23e44] [cursor=pointer]:
+              - cell [ref=f23e45]:
+                - checkbox [checked] [ref=f23e46]
+              - cell "Algoritma dan Struktur Data Lanjut Budi Santoso • SMT 3 • A" [ref=f23e47]:
+                - generic [ref=f23e48]: Algoritma dan Struktur Data Lanjut
+                - generic [ref=f23e49]: Budi Santoso • SMT 3 • A
+              - cell "Senin 07:00-08:00" [ref=f23e50]
+      - button "Continue to Practical (1) arrow_forward" [ref=f23e52] [cursor=pointer]:
+        - text: Continue to Practical (1)
+        - generic [ref=f23e53]: arrow_forward

@@ -1,0 +1,54 @@
+- generic [ref=f36e3]:
+  - banner [ref=f36e4]:
+    - generic [ref=f36e5]:
+      - img "UBG Schedule logo" [ref=f36e6]
+      - text: UBG Schedule
+    - button "Toggle theme" [ref=f36e7] [cursor=pointer]:
+      - generic [ref=f36e8]: dark_mode
+  - main [ref=f36e10]:
+    - generic [ref=f36e11]:
+      - generic [ref=f36e12]:
+        - heading "Upload Theory Schedule" [level=1] [ref=f36e13]
+        - paragraph [ref=f36e14]: Upload official theory class schedule PDF UBG student portal.
+      - generic [ref=f36e52]:
+        - generic [ref=f36e53]:
+          - generic [ref=f36e54]: picture_as_pdf
+          - generic [ref=f36e57]:
+            - generic [ref=f36e58]: theory-sample.pdf
+            - generic [ref=f36e59]: check_circle
+          - button "Replace file" [ref=f36e61] [cursor=pointer]:
+            - generic [ref=f36e62]: delete
+        - paragraph [ref=f36e64]: "[20.57.00] Web Worker scanning PDF... 2 courses found, 0 schedule conflicts"
+      - generic [ref=f36e65]:
+        - generic [ref=f36e66]:
+          - generic [ref=f36e67]:
+            - generic [ref=f36e68]: "Class:"
+            - combobox [ref=f36e70] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f36e73]:
+            - generic [ref=f36e74]: "SMT:"
+            - combobox [ref=f36e76] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f36e79]:
+            - generic [ref=f36e80]: "Day:"
+            - combobox [ref=f36e82] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f36e85]: 0 selected
+        - generic [ref=f36e87]:
+          - button "Basis Data Senin 08.00-10.00" [ref=f36e88] [cursor=pointer]:
+            - generic [ref=f36e89]:
+              - checkbox [ref=f36e90]
+              - generic [ref=f36e91]:
+                - paragraph
+                - paragraph [ref=f36e92]: Basis Data
+            - generic [ref=f36e93]: Senin 08.00-10.00
+          - button "Jaringan Komputer Selasa 13.00-15.00" [ref=f36e95] [cursor=pointer]:
+            - generic [ref=f36e96]:
+              - checkbox [ref=f36e97]
+              - generic [ref=f36e98]:
+                - paragraph
+                - paragraph [ref=f36e99]: Jaringan Komputer
+            - generic [ref=f36e100]: Selasa 13.00-15.00
+      - button "Select classes to continue arrow_forward" [disabled] [ref=f36e21]:
+        - text: Select classes to continue
+        - generic [ref=f36e22]: arrow_forward

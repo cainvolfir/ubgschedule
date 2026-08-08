@@ -1,10 +1,8 @@
 import { lazy, Suspense, useMemo, useState, useCallback } from 'react';
 import {
-  AlertTriangle, Pencil, Trash2, Plus, X, Check,
+  AlertTriangle, Pencil, Trash2, Plus, X, Check, Search,
 } from 'lucide-react';
 import { useJadwalStore } from '../../store/useJadwalStore';
-import { CatState } from '../../components/CatState';
-import { TypingMessage } from '../../components/TypingMessage';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../components/Toast';
 
@@ -77,7 +75,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
     const parts = text.split(regex);
     return parts.map((part, i) =>
       regex.test(part)
-        ? <mark key={i} className="bg-warning/30 text-foreground rounded-sm px-0.5">{part}</mark>
+        ? <mark key={i} className="rounded-sm bg-warning/30 px-0.5 text-primary dark:text-dark-primary">{part}</mark>
         : part,
     );
   }, [searchQuery]);
@@ -169,9 +167,16 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
   if (merged.length === 0) {
     return (
       <div className="flex min-h-[calc(100dvh-3rem)] flex-col items-center justify-center px-4 py-6">
-        <CatState pose="sleep" size={80} message="No schedule data available.">
-          <button className="terminal-btn text-xs mt-2" onClick={goBack}>Back to Upload</button>
-        </CatState>
+        <div className="flex flex-col items-center justify-center py-xl text-center">
+          <p className="font-headline-md text-headline-md text-primary dark:text-dark-primary">No schedule data available</p>
+          <p className="font-body-md text-body-md mt-sm text-secondary dark:text-on-tertiary-container">Upload theory schedule first, return here.</p>
+          <button
+            onClick={goBack}
+            className="font-body-semibold text-body-semibold mt-md rounded-full border border-outline px-xl py-md text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
+          >
+            Back to Upload
+          </button>
+        </div>
       </div>
     );
   }
@@ -181,38 +186,88 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
       {/* Print-only header */}
       <div className="print-only hidden">
         <div className="print-header">
-          <h1>Jadwal Perkuliahan — UBG Schedule</h1>
-          <span className="print-date">Dicetak: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          <h1>Class Schedule — UBG Schedule</h1>
+          <span className="print-date">Printed: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
       </div>
 
       {/* Header */}
-      <div className="mb-4 no-print">
-        <div className="flex items-center gap-2 mb-3">
-          <TypingMessage
-            messages={[
-              `❯ schedule generated: ${merged.length} classes, ${dayGroups.length} days.`,
-              '❯ use the toolbar to search, edit, or export.',
-              '❯ click any cell to edit. add new classes with +.',
-            ]}
-            typingSpeed={30}
-            pauseDuration={6000}
-          />
+      <div className="mb-lg no-print">
+        <div className="mb-md">
+          <h1 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Class Schedule</h1>
+          <p className="font-body-md text-body-md text-secondary dark:text-on-tertiary-container">{merged.length} classes across {dayGroups.length} days. Use toolbar search, edit, export.</p>
         </div>
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <button onClick={goBack} className="terminal-btn-sm" aria-label="Go back">[ back ]</button>
-            <h2 className="font-mono text-sm font-bold">
-              <span className="text-[var(--blue)]">❯</span>{' '}
-              ~/schedule{' '}
-              <span className="text-[var(--text-muted)] font-normal">
-                — {filteredMerged.length !== merged.length
-                  ? `${filteredMerged.length}/${merged.length} classes`
-                  : `${merged.length} classes, ${dayGroups.length} days`}
-              </span>
-            </h2>
+
+        {/* Stats cards */}
+        <div className="mb-md grid grid-cols-2 gap-sm sm:grid-cols-4 print-stats">
+          {[
+            { label: 'Total Classes', value: merged.length, color: '' },
+            { label: 'Days', value: dayGroups.length, color: '' },
+            { label: 'Conflicts', value: totalCollisions, color: totalCollisions > 0 ? 'text-error dark:text-dark-error' : '' },
+            { label: 'Total SKS', value: merged.reduce((s, r) => s + (parseInt(r.SKS) || 0), 0), color: '' },
+          ].map((stat) => (
+            <div key={stat.label} className={cn(
+              'rounded-xl border border-border bg-surface-container-low p-md text-center dark:border-dark-border dark:bg-dark-background',
+              stat.color && 'border-error/30 dark:border-dark-error/30',
+            )}>
+              <p className={cn('font-headline-md text-headline-md font-bold text-primary dark:text-dark-primary', stat.color)}>{stat.value}</p>
+              <p className="font-label-sm text-label-sm mt-xs uppercase tracking-wider text-secondary dark:text-on-tertiary-container">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex flex-col gap-sm">
+          {/* Search bar */}
+          <div className="relative">
+            <label htmlFor="schedule-search" className="sr-only">Search</label>
+            <Search size={14} className="absolute left-md top-1/2 -translate-y-1/2 text-secondary dark:text-on-tertiary-container" />
+            <input
+              id="schedule-search"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search course, lecturer, room..."
+              className="font-body-md text-body-md h-10 w-full rounded-full border border-border bg-surface pl-xl pr-lg text-primary shadow-sm outline-none transition-colors placeholder:text-secondary focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-dark-border dark:bg-dark-surface dark:text-dark-primary dark:placeholder:text-on-tertiary-container"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-md top-1/2 -translate-y-1/2 rounded-full p-1 text-secondary transition-colors hover:text-primary dark:text-on-tertiary-container dark:hover:text-dark-primary"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap items-center gap-sm">
+            <Suspense fallback={null}><ExportCopy dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
+            <Suspense fallback={null}><ExportCanvas dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
+            <Suspense fallback={null}><ExportICS dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} courseColors={courseColors} /></Suspense>
+            <button
+              onClick={handlePrint}
+              className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-border px-lg py-sm text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
+              title="Print schedule"
+            >
+              Print
+            </button>
+            <button
+              onClick={() => setShowAddForm((v) => !v)}
+              className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-border px-lg py-sm text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
+              title="Add new class"
+            >
+              <Plus size={12} />
+              Add
+            </button>
+            <button
+              onClick={resetAll}
+              className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-error/40 px-lg py-sm text-error transition-colors hover:bg-error/10 dark:border-dark-error/40 dark:text-dark-error dark:hover:bg-dark-error/10"
+              title="Reset all data"
+            >
+              Reset
+            </button>
             {totalCollisions > 0 && (
               <button
                 onClick={() => {
@@ -220,101 +275,83 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                   const el = document.querySelector(`[data-row-idx="${firstCollision}"]`);
                   el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="flex items-center gap-1.5 rounded-full bg-destructive/10 border border-destructive/20 px-3 py-1.5 text-[9px] pixel-font text-destructive hover:bg-destructive/20 transition-colors"
-                aria-label={`View ${totalCollisions} schedule collision${totalCollisions > 1 ? 's' : ''}`}
+                className="font-label-sm text-label-sm flex items-center gap-1 rounded-full border border-error/40 bg-error/10 px-lg py-sm text-error dark:border-dark-error/40 dark:bg-dark-error/10 dark:text-dark-error"
               >
-                <AlertTriangle size={12} className="text-destructive" />
-                {totalCollisions} collision{totalCollisions > 1 ? 's' : ''}
+                <AlertTriangle size={12} />
+                {totalCollisions} conflicts
               </button>
             )}
+            <button
+              onClick={goBack}
+              className="font-label-sm text-label-sm ml-auto flex items-center gap-1 rounded-full border border-outline px-lg py-sm text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
+              title="Back to upload"
+            >
+              Back
+            </button>
           </div>
-        </div>
-
-        {/* Search bar — full width */}
-        <div className="mt-3">
-          <div className="relative">
-            <label htmlFor="schedule-search" className="sr-only">Search</label>
-            <input
-              id="schedule-search"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="❯ search courses, lecturers, rooms..."
-              className="terminal-input pr-5 py-1 text-[10px] w-full"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[var(--text-faint)] hover:text-[var(--text)] transition-colors"
-                aria-label="Clear search"
-              >
-                <X size={10} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Action buttons — single row */}
-        <div className="mt-2 flex items-center gap-1">
-          <Suspense fallback={null}><ExportCopy dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
-          <Suspense fallback={null}><ExportCanvas dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} /></Suspense>
-          <Suspense fallback={null}><ExportICS dayGroups={dayGroups as { hari: string; rows: FinalRow[] }[]} merged={merged} courseColors={courseColors} /></Suspense>
-          <button className="terminal-btn-sm" onClick={handlePrint} title="Print schedule" aria-label="Print schedule">[ PRINT ]</button>
-          <button className="terminal-btn-sm !bg-[var(--red)] !border-[var(--red)] !text-white hover:!bg-[var(--red)]/80" onClick={resetAll} title="Reset all data" aria-label="Reset all schedule data">[ RESET ]</button>
         </div>
       </div>
 
       {/* Search active indicator */}
       {isSearching && (
-        <div className="mb-2 flex items-center gap-2 font-mono text-[10px] text-[var(--text-muted)]">
-          <span className="text-[var(--blue)]">❯</span>
-          <span>
+        <div className="mb-md flex items-center gap-sm">
+          <span className="font-label-sm text-label-sm text-secondary dark:text-on-tertiary-container">
             {filteredMerged.length > 0
-              ? `showing ${filteredMerged.length} result${filteredMerged.length > 1 ? 's' : ''} for "${searchQuery}"`
-              : `no results for "${searchQuery}"`}
+              ? `${filteredMerged.length} results for "${searchQuery}"`
+              : `No results for "${searchQuery}"`}
           </span>
-          <button onClick={() => setSearchQuery('')} className="ml-auto text-[var(--blue)] hover:underline">clear</button>
+          <button onClick={() => setSearchQuery('')} className="font-label-sm text-label-sm text-primary underline underline-offset-4 dark:text-dark-primary">clear</button>
         </div>
       )}
 
       {/* Add Class Form */}
       {showAddForm && (
-        <div className="mb-4 rounded-xl border-2 border-[var(--primary)] bg-primary/5 p-3 no-print animate-fade-in-up" role="dialog" aria-label="Add new class form">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[12px] font-semibold text-foreground flex items-center gap-2">
-              <Plus size={14} className="text-primary" /> Add New Class
+        <div className="mb-md rounded-2xl border-2 border-primary bg-surface-container-low p-lg no-print animate-fade-in-up dark:border-dark-primary dark:bg-dark-background" role="dialog" aria-label="Add new class form">
+          <div className="mb-md flex items-center justify-between">
+            <p className="font-body-semibold text-body-semibold flex items-center gap-sm text-primary dark:text-dark-primary">
+              <Plus size={14} /> Add New Class
             </p>
-            <button onClick={() => setShowAddForm(false)} className="rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-1 focus-visible:ring-[var(--ring)]" aria-label="Close form"><X size={14} /></button>
+            <button onClick={() => setShowAddForm(false)} className="rounded-full p-sm text-secondary transition-colors hover:text-primary dark:text-on-tertiary-container dark:hover:text-dark-primary" aria-label="Close form"><X size={14} /></button>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <FieldInput label="mata kuliah" value={addForm.MataKuliah} onChange={(v) => setAddForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" />
-            <FieldInput label="dosen" value={addForm.DosenPengampuh} onChange={(v) => setAddForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" />
+          <div className="grid grid-cols-2 gap-sm">
+            <FieldInput label="Course" value={addForm.MataKuliah} onChange={(v) => setAddForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" />
+            <FieldInput label="Lecturer" value={addForm.DosenPengampuh} onChange={(v) => setAddForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" />
             <div>
-              <label className="mb-1 block font-mono text-[10px] text-[var(--text-faint)]" id="add-hari-label">hari</label>
-              <select value={addForm.Hari} onChange={(e) => setAddForm((f) => ({ ...f, Hari: e.target.value }))} className="terminal-input text-xs py-1" aria-labelledby="add-hari-label">
+              <label className="font-label-sm text-label-sm mb-sm block text-secondary dark:text-on-tertiary-container" id="add-hari-label">Day</label>
+              <select value={addForm.Hari} onChange={(e) => setAddForm((f) => ({ ...f, Hari: e.target.value }))} className="font-body-md text-body-md h-10 w-full rounded-lg border border-border bg-surface px-md text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-dark-border dark:bg-dark-surface dark:text-dark-primary" aria-labelledby="add-hari-label">
                 {HARI_LIST.map((h) => <option key={h} value={h}>{h}</option>)}
               </select>
             </div>
-            <FieldInput label="jam" value={addForm.Jam} onChange={(v) => setAddForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" />
-            <FieldInput label="ruang" value={addForm.Ruang} onChange={(v) => setAddForm((f) => ({ ...f, Ruang: v }))} placeholder="e.g. LAB 101" />
-            <FieldInput label="sks" value={addForm.SKS} onChange={(v) => setAddForm((f) => ({ ...f, SKS: v }))} placeholder="2" />
-            <FieldInput label="ket" value={addForm.Keterangan} onChange={(v) => setAddForm((f) => ({ ...f, Keterangan: v }))} placeholder="-" />
+            <FieldInput label="Time" value={addForm.Jam} onChange={(v) => setAddForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" />
+            <FieldInput label="Room" value={addForm.Ruang} onChange={(v) => setAddForm((f) => ({ ...f, Ruang: v }))} placeholder="e.g. LAB 101" />
+            <FieldInput label="SKS" value={addForm.SKS} onChange={(v) => setAddForm((f) => ({ ...f, SKS: v }))} placeholder="2" />
+            <FieldInput label="Notes" value={addForm.Keterangan} onChange={(v) => setAddForm((f) => ({ ...f, Keterangan: v }))} placeholder="-" />
           </div>
-          <div className="mt-2 flex gap-2">
-            <button className="terminal-btn text-xs" onClick={handleAdd}>save</button>
-            <button className="terminal-btn text-xs" onClick={() => setShowAddForm(false)}>cancel</button>
+          <div className="mt-md flex gap-sm">
+            <button
+              onClick={handleAdd}
+              className="font-body-semibold text-body-semibold flex items-center gap-sm rounded-full bg-primary px-xl py-md text-on-primary shadow-md transition-all hover:opacity-90 active:scale-[0.98] dark:bg-dark-primary dark:text-primary"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowAddForm(false)}
+              className="font-body-semibold text-body-semibold rounded-full border border-outline px-xl py-md text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto -mx-4 px-4">
-        <div className="rounded-lg border border-[var(--color-rule)] overflow-hidden min-w-[500px]">
+      <div className="hidden md:block -mx-4 overflow-x-auto px-4">
+        <div className="min-w-[500px] overflow-hidden rounded-xl border border-border dark:border-dark-border">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="font-mono text-[9px] bg-[var(--surface-2)] text-[var(--blue)] uppercase tracking-wider border-b border-[var(--border)]">
-                {['hari', 'mata kuliah', 'dosen', 'sks', 'jam', 'ruang', 'ket', ''].map((h, i, arr) => (
-                  <th key={h || i} className={`px-1 py-1.5 text-left align-middle font-semibold font-mono ${i < arr.length - 1 ? 'border-r border-[var(--border)]' : ''}`}>{h}</th>
+              <tr className="font-label-sm text-label-sm border-b border-border bg-surface-container-low text-left uppercase tracking-wider text-secondary dark:border-dark-border dark:bg-dark-background dark:text-on-tertiary-container">
+                {['day', 'course', 'lecturer', 'sks', 'time', 'room', 'notes', ''].map((h, i, arr) => (
+                  <th key={h || i} className={`px-md py-sm align-middle font-semibold ${i < arr.length - 1 ? 'border-r border-border dark:border-dark-border' : ''}`}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -328,32 +365,32 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                     displayIdx++;
                     const collided = collisionMap.get(gi) || [];
                     const isEditing = editingIdx === gi;
-                    const keterangan = collided.length > 0 ? 'Jadwal Bentrok' : row.Keterangan;
-                    const cellCls = collided.length > 0 ? 'bg-[var(--red)]/5' : '';
-                    const ketCls = collided.length > 0 ? 'text-[var(--red)] font-semibold' : '';
+                    const keterangan = collided.length > 0 ? 'Schedule Conflict' : row.Keterangan;
+                    const cellCls = collided.length > 0 ? 'bg-error/5 dark:bg-dark-error/5' : '';
+                    const ketCls = collided.length > 0 ? 'text-error dark:text-dark-error font-semibold' : 'text-secondary dark:text-on-tertiary-container';
 
                     if (isEditing) {
                       return (
-                        <tr key={`edit-${gi}`} className="text-[12px] bg-primary/5 border-b border-[var(--border)]">
-                          <td className="border-r border-[var(--border)] px-2 py-2 align-middle" colSpan={8}>
-                            <div className="grid grid-cols-2 gap-2">
-                              <FieldInput label="Mata Kuliah" value={editForm.MataKuliah} onChange={(v) => setEditForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" small />
-                              <FieldInput label="Dosen" value={editForm.DosenPengampuh} onChange={(v) => setEditForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" small />
+                        <tr key={`edit-${gi}`} className="border-b border-border bg-primary/5 text-primary dark:border-dark-border dark:bg-dark-primary/5 dark:text-dark-primary">
+                          <td className="border-r border-border px-md py-sm align-middle dark:border-dark-border" colSpan={8}>
+                            <div className="grid grid-cols-2 gap-sm">
+                              <FieldInput label="Course" value={editForm.MataKuliah} onChange={(v) => setEditForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" small />
+                              <FieldInput label="Lecturer" value={editForm.DosenPengampuh} onChange={(v) => setEditForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" small />
                               <div>
-                                <label className="mb-0.5 block text-[9px] font-medium text-muted-foreground">Hari</label>
-                                <select value={editForm.Hari} onChange={(e) => setEditForm((f) => ({ ...f, Hari: e.target.value }))} className="w-full rounded-md border-2 border-[var(--border)] bg-card px-1.5 py-1 text-[11px] outline-none focus:border-[var(--primary)]">
+                                <label className="font-label-sm text-label-sm mb-sm block text-secondary dark:text-on-tertiary-container">Day</label>
+                                <select value={editForm.Hari} onChange={(e) => setEditForm((f) => ({ ...f, Hari: e.target.value }))} className="font-body-md text-body-md h-10 w-full rounded-lg border border-border bg-surface px-md text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-dark-border dark:bg-dark-surface dark:text-dark-primary">
                                   {HARI_LIST.map((h) => <option key={h} value={h}>{h}</option>)}
                                 </select>
                               </div>
-                              <FieldInput label="Jam" value={editForm.Jam} onChange={(v) => setEditForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" small />
-                              <FieldInput label="Ruang" value={editForm.Ruang} onChange={(v) => setEditForm((f) => ({ ...f, Ruang: v }))} placeholder="LAB 101" small />
+                              <FieldInput label="Time" value={editForm.Jam} onChange={(v) => setEditForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" small />
+                              <FieldInput label="Room" value={editForm.Ruang} onChange={(v) => setEditForm((f) => ({ ...f, Ruang: v }))} placeholder="LAB 101" small />
                               <FieldInput label="SKS" value={editForm.SKS} onChange={(v) => setEditForm((f) => ({ ...f, SKS: v }))} placeholder="2" small />
                             </div>
                           </td>
-                          <td className="px-2 py-2 align-middle text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <button onClick={saveEdit} className="flex h-7 w-7 items-center justify-center rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors" title="Save"><Check size={13} /></button>
-                              <button onClick={cancelEdit} className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Cancel"><X size={13} /></button>
+                          <td className="px-md py-sm align-middle text-center">
+                            <div className="flex items-center justify-center gap-sm">
+                              <button onClick={saveEdit} className="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-success transition-colors hover:bg-success/20 dark:text-dark-success" title="Save"><Check size={13} /></button>
+                              <button onClick={cancelEdit} className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high text-secondary transition-colors hover:text-primary dark:bg-dark-surface dark:text-on-tertiary-container dark:hover:text-dark-primary" title="Cancel"><X size={13} /></button>
                             </div>
                           </td>
                         </tr>
@@ -361,31 +398,31 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
                     }
 
                     return (
-                      <tr key={`${group.hari}-${idx}`} className={cn('text-[10px] border-b border-[var(--border)] last:border-b-0 transition-colors hover:bg-[var(--surface-2)]', collided.length > 0 && 'hover:bg-[var(--red)]/10')}>
+                      <tr key={`${group.hari}-${idx}`} className={cn('border-b border-border text-primary transition-colors last:border-b-0 hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-dark-surface', collided.length > 0 && 'hover:bg-error/10 dark:hover:bg-dark-error/10')}>
                         {idx === 0 && (
-                          <td className="border-r border-[var(--border)] bg-[var(--surface-2)] px-1 py-1 align-middle" rowSpan={group.rows.length}>
-                            <span className="font-mono text-[9px] font-bold text-[var(--blue)]">{group.hari}</span>
+                          <td className="border-r border-border bg-surface-container-low px-md py-sm align-middle dark:border-dark-border dark:bg-dark-background" rowSpan={group.rows.length}>
+                            <span className="font-label-sm text-label-sm font-bold text-primary dark:text-dark-primary">{group.hari}</span>
                           </td>
                         )}
-                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
-                          <span className="text-[var(--text)]">{highlightMatch(row.MataKuliah)}</span>
+                        <td className={cn('border-r border-border px-md py-sm align-middle font-body-md text-body-md dark:border-dark-border', cellCls)}>
+                          {highlightMatch(row.MataKuliah)}
                         </td>
-                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>
-                          <span className="text-[var(--text)]">{highlightMatch(row.DosenPengampuh)}</span>
+                        <td className={cn('border-r border-border px-md py-sm align-middle font-body-md text-body-md dark:border-dark-border', cellCls)}>
+                          {highlightMatch(row.DosenPengampuh)}
                         </td>
-                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px] text-center', cellCls)}>{row.SKS}</td>
-                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>{highlightMatch(row.Jam)}</td>
-                        <td className={cn('border-r border-[var(--border)] px-1 py-1 align-middle font-mono text-[10px]', cellCls)}>{highlightMatch(row.Ruang)}</td>
-                        <td className={cn('px-1 py-1 align-middle font-mono text-[9px]', ketCls, cellCls)}>
-                          <span className={cn('cursor-pointer inline-flex items-center gap-1', collided.length > 0 && 'hover:underline')} onClick={() => collided.length > 0 && setShowCollisionDetail(showCollisionDetail === gi ? null : gi)}>
-                            {collided.length > 0 && <AlertTriangle size={9} className="text-[var(--red)]" />}
+                        <td className={cn('border-r border-border px-md py-sm text-center font-body-md text-body-md dark:border-dark-border', cellCls)}>{row.SKS}</td>
+                        <td className={cn('border-r border-border px-md py-sm align-middle font-body-md text-body-md dark:border-dark-border', cellCls)}>{highlightMatch(row.Jam)}</td>
+                        <td className={cn('border-r border-border px-md py-sm align-middle font-body-md text-body-md dark:border-dark-border', cellCls)}>{highlightMatch(row.Ruang)}</td>
+                        <td className={cn('px-md py-sm align-middle font-label-sm text-label-sm', ketCls, cellCls)}>
+                          <span className={cn('inline-flex items-center gap-xs', collided.length > 0 && 'cursor-pointer hover:underline')} onClick={() => collided.length > 0 && setShowCollisionDetail(showCollisionDetail === gi ? null : gi)}>
+                            {collided.length > 0 && <AlertTriangle size={12} className="text-error dark:text-dark-error" />}
                             {keterangan}
                           </span>
                         </td>
-                        <td className="px-1.5 py-1.5 align-middle no-print">
-                          <div className="flex items-center justify-center gap-1">
-                            <button onClick={() => startEdit(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--blue)]/10 hover:text-[var(--blue)] transition-colors" title="Edit"><Pencil size={10} /></button>
-                            <button onClick={() => handleDelete(gi)} className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:bg-[var(--red)]/10 hover:text-[var(--red)] transition-colors" title="Delete"><Trash2 size={10} /></button>
+                        <td className="px-md py-sm align-middle no-print">
+                          <div className="flex items-center justify-center gap-xs">
+                            <button onClick={() => startEdit(gi)} className="flex h-7 w-7 items-center justify-center rounded-full text-secondary transition-colors hover:bg-surface-variant hover:text-primary dark:text-on-tertiary-container dark:hover:bg-dark-surface dark:hover:text-dark-primary" title="Edit"><Pencil size={12} /></button>
+                            <button onClick={() => handleDelete(gi)} className="flex h-7 w-7 items-center justify-center rounded-full text-secondary transition-colors hover:bg-error/10 hover:text-error dark:text-on-tertiary-container dark:hover:bg-dark-error/10 dark:hover:text-dark-error" title="Delete"><Trash2 size={12} /></button>
                           </div>
                         </td>
                       </tr>
@@ -398,28 +435,93 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
+      {/* Mobile cards */}
+      <div className="md:hidden flex flex-col gap-sm">
+        {(() => {
+          let displayIdx = 0;
+          return dayGroups.map((group) => (
+            <div key={group.hari} className="overflow-hidden rounded-xl border border-border dark:border-dark-border">
+              <div className="bg-surface-container-low px-md py-sm font-label-sm text-label-sm font-bold text-primary dark:bg-dark-background dark:text-dark-primary">{group.hari}</div>
+              {group.rows.map((row, idx) => {
+                const gi = group.indices[displayIdx];
+                displayIdx++;
+                const collided = collisionMap.get(gi) || [];
+                const isEditing = editingIdx === gi;
+                const cardCls = collided.length > 0 ? 'bg-error/5 dark:bg-dark-error/5' : '';
+
+                if (isEditing) {
+                  return (
+                    <div key={`edit-${gi}`} className="border-t border-border p-md dark:border-dark-border">
+                      <div className="grid grid-cols-2 gap-sm">
+                        <FieldInput label="Course" value={editForm.MataKuliah} onChange={(v) => setEditForm((f) => ({ ...f, MataKuliah: v }))} placeholder="e.g. Algoritma" small />
+                        <FieldInput label="Lecturer" value={editForm.DosenPengampuh} onChange={(v) => setEditForm((f) => ({ ...f, DosenPengampuh: v }))} placeholder="e.g. Budi" small />
+                        <div>
+                          <label className="font-label-sm text-label-sm mb-sm block text-secondary dark:text-on-tertiary-container">Day</label>
+                          <select value={editForm.Hari} onChange={(e) => setEditForm((f) => ({ ...f, Hari: e.target.value }))} className="font-body-md text-body-md h-10 w-full rounded-lg border border-border bg-surface px-md text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-dark-border dark:bg-dark-surface dark:text-dark-primary">
+                            {HARI_LIST.map((h) => <option key={h} value={h}>{h}</option>)}
+                          </select>
+                        </div>
+                        <FieldInput label="Time" value={editForm.Jam} onChange={(v) => setEditForm((f) => ({ ...f, Jam: v }))} placeholder="08.00-09.40" small />
+                        <FieldInput label="Room" value={editForm.Ruang} onChange={(v) => setEditForm((f) => ({ ...f, Ruang: v }))} placeholder="LAB 101" small />
+                        <FieldInput label="SKS" value={editForm.SKS} onChange={(v) => setEditForm((f) => ({ ...f, SKS: v }))} placeholder="2" small />
+                      </div>
+                      <div className="mt-md flex items-center justify-end gap-sm">
+                        <button onClick={saveEdit} className="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-success transition-colors hover:bg-success/20 dark:text-dark-success" title="Save"><Check size={13} /></button>
+                        <button onClick={cancelEdit} className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high text-secondary transition-colors hover:text-primary dark:bg-dark-surface dark:text-on-tertiary-container dark:hover:text-dark-primary" title="Cancel"><X size={13} /></button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={`${group.hari}-${idx}`} className={cn('border-t border-border p-md dark:border-dark-border', cardCls)}>
+                    <div className="flex items-start justify-between gap-sm">
+                      <p className="font-body-semibold text-body-semibold text-primary dark:text-dark-primary">{highlightMatch(row.MataKuliah)}</p>
+                      {collided.length > 0 && (
+                        <button onClick={() => setShowCollisionDetail(showCollisionDetail === gi ? null : gi)} className="flex shrink-0 items-center gap-xs font-label-sm text-label-sm text-error dark:text-dark-error">
+                          <AlertTriangle size={12} /> Schedule Conflict
+                        </button>
+                      )}
+                    </div>
+                    <p className="font-label-sm text-label-sm mt-xs text-secondary dark:text-on-tertiary-container">{highlightMatch(row.DosenPengampuh)}</p>
+                    <p className="font-body-md text-body-md mt-xs text-primary dark:text-dark-primary">{highlightMatch(row.Jam)} • {highlightMatch(row.Ruang)}</p>
+                    {row.Keterangan && row.Keterangan !== '-' && (
+                      <p className="font-label-sm text-label-sm mt-xs text-secondary dark:text-on-tertiary-container">Notes: {row.Keterangan}</p>
+                    )}
+                    <div className="mt-sm flex justify-end gap-xs">
+                      <button onClick={() => startEdit(gi)} className="flex h-7 w-7 items-center justify-center rounded-full text-secondary transition-colors hover:bg-surface-variant hover:text-primary dark:text-on-tertiary-container dark:hover:bg-dark-surface dark:hover:text-dark-primary" title="Edit"><Pencil size={12} /></button>
+                      <button onClick={() => handleDelete(gi)} className="flex h-7 w-7 items-center justify-center rounded-full text-secondary transition-colors hover:bg-error/10 hover:text-error dark:text-on-tertiary-container dark:hover:bg-dark-error/10 dark:hover:text-dark-error" title="Delete"><Trash2 size={12} /></button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ));
+        })()}
+      </div>
+
       {/* Collision detail overlay */}
       {showCollisionDetail !== null && (
-        <div className="mt-4 rounded-xl border-2 border-destructive/30 bg-destructive/5 p-4 no-print">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[12px] font-semibold text-destructive flex items-center gap-2">
-              <AlertTriangle size={14} /> Collision Details
+        <div className="mt-md rounded-2xl border-2 border-error/30 bg-error/5 p-lg no-print dark:border-dark-error/30 dark:bg-dark-error/5">
+          <div className="mb-md flex items-center justify-between">
+            <p className="font-body-semibold text-body-semibold flex items-center gap-sm text-error dark:text-dark-error">
+              <AlertTriangle size={14} /> Conflict Details
             </p>
-            <button onClick={() => setShowCollisionDetail(null)} className="rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors"><X size={14} /></button>
+            <button onClick={() => setShowCollisionDetail(null)} className="rounded-full p-sm text-secondary transition-colors hover:text-primary dark:text-on-tertiary-container dark:hover:text-dark-primary"><X size={14} /></button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-sm">
             {[showCollisionDetail, ...(collisionMap.get(showCollisionDetail) || [])].sort((a, b) => a - b).map((idx) => {
               const r = merged[idx];
               return (
-                <div key={idx} className={cn('rounded-lg border p-3', idx === showCollisionDetail ? 'border-destructive/40 bg-destructive/10' : 'border-[var(--border)] bg-card')}>
+                <div key={idx} className={cn('rounded-xl border p-md', idx === showCollisionDetail ? 'border-error/40 bg-error/10 dark:border-dark-error/40 dark:bg-dark-error/10' : 'border-border bg-surface dark:border-dark-border dark:bg-dark-surface')}>
                   <div className="flex items-center justify-between">
-                    <p className="text-[12px] font-semibold">{r.MataKuliah}</p>
-                    <div className="flex gap-1">
-                      <button onClick={() => { startEdit(idx); setShowCollisionDetail(null); }} className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1"><Pencil size={10} /> Edit</button>
-                      <button onClick={() => handleDelete(idx)} className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1"><Trash2 size={10} /> Remove</button>
+                    <p className="font-body-semibold text-body-semibold text-primary dark:text-dark-primary">{r.MataKuliah}</p>
+                    <div className="flex gap-sm">
+                      <button onClick={() => { startEdit(idx); setShowCollisionDetail(null); }} className="font-label-sm text-label-sm flex items-center gap-xs text-secondary transition-colors hover:text-primary dark:text-on-tertiary-container dark:hover:text-dark-primary"><Pencil size={10} /> Edit</button>
+                      <button onClick={() => handleDelete(idx)} className="font-label-sm text-label-sm flex items-center gap-xs text-secondary transition-colors hover:text-error dark:text-on-tertiary-container dark:hover:text-dark-error"><Trash2 size={10} /> Delete</button>
                     </div>
                   </div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
+                  <div className="font-body-md text-body-md mt-sm text-secondary dark:text-on-tertiary-container">
                     {r.Hari} • {r.Jam} • {r.Ruang || 'No room'} • {r.DosenPengampuh || 'No lecturer'}
                   </div>
                 </div>
@@ -428,24 +530,6 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       )}
-
-      {/* Summary stats */}
-      <div className="mt-4 grid grid-cols-4 gap-1.5 print-stats">
-        {[
-          { label: 'Total Classes', value: merged.length, color: '' },
-          { label: 'Days', value: dayGroups.length, color: '' },
-          { label: 'Collisions', value: totalCollisions, color: totalCollisions > 0 ? 'text-destructive' : '' },
-          { label: 'Total SKS', value: merged.reduce((s, r) => s + (parseInt(r.SKS) || 0), 0), color: '' },
-        ].map((stat) => (
-          <div key={stat.label} className={cn(
-            'rounded-lg border border-[var(--border)] bg-card-solid p-2 text-center',
-            stat.color && 'border-destructive/30 bg-destructive/5',
-          )}>
-            <p className={cn('text-lg font-bold text-foreground', stat.color)}>{stat.value}</p>
-            <p className="text-[7px] uppercase tracking-wider text-[var(--text-muted)] mt-0.5">{stat.label}</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -458,10 +542,13 @@ function FieldInput({
 }) {
   return (
     <div>
-      <label className={cn('mb-1 block font-medium text-muted-foreground', small ? 'text-[9px]' : 'text-[10px]')}>{label}</label>
+      <label className={cn('font-label-sm text-label-sm mb-sm block text-secondary dark:text-on-tertiary-container', small && 'text-[10px]')}>{label}</label>
       <input
         type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className={cn('w-full rounded-lg border-2 border-[var(--border)] bg-card outline-none transition-colors focus:border-[var(--primary)]', small ? 'px-1.5 py-1 text-[11px]' : 'px-2 py-1.5 text-[11px]')}
+        className={cn(
+          'font-body-md text-body-md w-full rounded-lg border border-border bg-surface px-md text-primary outline-none transition-colors placeholder:text-secondary focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-dark-border dark:bg-dark-surface dark:text-dark-primary dark:placeholder:text-on-tertiary-container',
+          small ? 'h-8 text-[11px]' : 'h-10',
+        )}
       />
     </div>
   );

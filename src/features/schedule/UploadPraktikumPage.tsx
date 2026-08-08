@@ -4,13 +4,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../../components/ui/pixelact-ui/select';
 import { cn } from '../../lib/utils';
-import { CatState } from '../../components/CatState';
-import { UGOMascotArt } from '../../components/UGOMascotArt';
 import { useToast } from '../../components/Toast';
-
-function truncate(name: string, max = 28): string {
-  return name.length > max ? name.slice(0, max) + '...' : name;
-}
 
 type DropState = 'empty' | 'processing' | 'populated' | 'error';
 
@@ -156,90 +150,116 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     onNext();
   };
 
-  const dragClasses = isDragOver ? 'border-[var(--blue)] bg-[var(--blue-faint)]' : '';
   const hasCandidates = praktikumCandidates.length > 0;
   const hasChecked = selectedCandidateIds.length > 0;
   const isProcessing = dropState === 'processing' || isScanning || isParsing;
+  const isUploadDone = dropState === 'populated';
 
   return (
-    <div className="animate-fade-in-up">
-      {/* Back button + typing */}
-      <div className="flex items-center gap-2 mb-3">
-        <button
-          onClick={onBack}
-          className="terminal-btn-sm"
-        >[ back ]</button>
+    <div className="animate-fade-in-up flex flex-col">
+      {/* Header content */}
+      <div className="mb-lg">
+        <h1 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Upload Practical Schedule</h1>
+        <p className="font-body-md text-body-md text-secondary dark:text-on-tertiary-container">Upload practical schedule spreadsheet (XLSX/XLS/CSV) from UBG student portal.</p>
       </div>
 
-      {/* Command line prompt */}
-      <div className="prompt-line">
-        <span className="prompt-arrow">❯</span>
-        <span className="prompt-path">~/tools</span>
-        <span className="prompt-cmd">--upload</span>
-        <span className="prompt-file">your_practical_schedule.xlsx</span>
-      </div>
-
-      {/* Input area */}
-      <div className="input-block">
-        {isProcessing ? (
-          <div className="flex flex-col items-center gap-3 py-4">
-            <CatState pose="loading" size={40} message={truncate(fileName)} />
-            <div className="font-mono text-xs text-[var(--blue)]">{'❯'} {isScanning ? 'scanning spreadsheet...' : 'parsing data...'}</div>
-            {progressStage && <div className="font-mono text-[10px] text-[var(--text-muted)]">{progressStage}</div>}
-            <div className="w-40 h-1 rounded-full bg-[var(--surface-2)] border border-[var(--border)] overflow-hidden">
-              <div className="h-full bg-[var(--blue)] rounded-full animate-progress-bar" />
-            </div>
-          </div>
-        ) : dropState === 'empty' ? (
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={handleClick}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
-            onDrop={handleDrop}
-            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-            onDragLeave={() => setIsDragOver(false)}
-            className={cn('terminal-input text-center cursor-pointer py-8', dragClasses)}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <UGOMascotArt size={36} alt="UGO" />
-              <span className="text-[var(--text-faint)] text-xs">drop spreadsheet here or click to browse</span>
-            </div>
-          </div>
-        ) : dropState === 'error' ? (
-          <div className="flex flex-col items-center gap-2 py-4">
-            <CatState pose="blink" size={32} />
-            <div className="error-line visible !block font-mono text-xs">{errorDetail}</div>
-            <div className="flex gap-2 mt-1">
-              <button className="terminal-btn-sm" onClick={(e) => { e.stopPropagation(); handleRetry(); }}>[ try again ]</button>
-              <button className="terminal-btn-sm" onClick={(e) => { e.stopPropagation(); handleClick(); }}>[ different file ]</button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2 py-3">
-            <UGOMascotArt size={36} alt="UGO" />
-            <div className="font-mono text-xs text-[var(--success)]">{'❯'} {truncate(fileName)} — loaded</div>
-            <button className="terminal-btn-sm" onClick={handleClick}>[ replace file ]</button>
-          </div>
-        )}
-      </div>
-
+      {/* Dropzone / file states */}
       {dropState === 'empty' && (
-        <button className="terminal-btn" onClick={handleClick}>
-          <span>[ browse files ]</span>
-        </button>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleClick}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
+          onDrop={handleDrop}
+          onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+          onDragLeave={() => setIsDragOver(false)}
+          className={cn(
+            'group mb-lg flex cursor-pointer flex-col items-center justify-center rounded-[16px] border-2 border-dashed border-transparent bg-dropzone p-xl transition-all dark:bg-dark-dropzone',
+            isDragOver ? 'border-primary dark:border-dark-primary' : 'hover:border-primary dark:hover:border-dark-primary',
+          )}
+        >
+          <div className="mb-md flex h-14 w-14 items-center justify-center rounded-full bg-surface shadow-sm transition-transform group-hover:scale-105 dark:bg-dark-surface">
+            <span className="material-symbols-outlined text-secondary dark:text-dark-primary">cloud_upload</span>
+          </div>
+          <p className="font-body-semibold text-body-semibold mb-xs text-center text-primary dark:text-dark-primary">Drag &amp; drop your spreadsheet here or click to select a file</p>
+          <p className="font-label-sm text-label-sm text-center text-secondary dark:text-on-tertiary-container">Maximum file size 50 MB (XLSX, XLS, or CSV)</p>
+        </div>
+      )}
+
+      {(dropState === 'processing' || dropState === 'populated' || dropState === 'error') && (
+        <div className="mb-md flex flex-col gap-sm">
+          {/* File item */}
+          <div className={cn(
+            'relative flex items-center gap-md overflow-hidden rounded-xl border border-border bg-surface-container-low p-md dark:border-dark-border dark:bg-dark-background',
+            dropState === 'error' && 'border-error dark:border-dark-error',
+          )}>
+            {isProcessing && (
+              <div className="no-transition absolute bottom-0 left-0 h-1 w-full bg-primary dark:bg-dark-primary" />
+            )}
+            <div className="text-error dark:text-dark-error">
+              <span className="material-symbols-outlined">picture_as_pdf</span>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-body-semibold text-body-semibold truncate pr-md text-primary dark:text-dark-primary">{fileName || 'file.xlsx'}</span>
+                {isUploadDone && !isParsing && (
+                  <div className="flex shrink-0 items-center gap-xs text-success dark:text-dark-success">
+                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                    <span className="font-label-sm text-label-sm hidden sm:inline">Done</span>
+                  </div>
+                )}
+                {dropState === 'error' && (
+                  <div className="flex shrink-0 items-center gap-xs text-error dark:text-dark-error">
+                    <span className="material-symbols-outlined text-[18px]">error</span>
+                    <span className="font-label-sm text-label-sm hidden sm:inline">Failed</span>
+                  </div>
+                )}
+                {isProcessing && (
+                  <span className="font-label-sm text-label-sm shrink-0 text-primary dark:text-dark-primary">
+                    {isParsing ? 'Processing...' : isScanning ? 'Scanning...' : 'Processing...'}
+                  </span>
+                )}
+              </div>
+              {(isProcessing || isParsing) && (
+                <div className="font-label-sm text-label-sm flex items-center gap-xs text-secondary dark:text-on-tertiary-container">
+                  <span className="material-symbols-outlined animate-spin text-[14px]">sync</span>
+                  {progressStage || 'Processing table...'}
+                </div>
+              )}
+              {dropState === 'error' && (
+                <div className="font-label-sm text-label-sm flex items-center gap-xs text-error dark:text-dark-error">
+                  <span className="material-symbols-outlined text-[14px]">info</span>
+                  {errorDetail}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={dropState === 'error' ? (e) => { e.stopPropagation(); handleRetry(); } : handleClick}
+              className="shrink-0 rounded-full p-xs text-secondary transition-colors hover:bg-surface-variant hover:text-error dark:text-on-tertiary-container dark:hover:bg-dark-surface dark:hover:text-dark-error"
+              aria-label="Replace file"
+            >
+              <span className="material-symbols-outlined text-[20px]">delete</span>
+            </button>
+          </div>
+
+          {/* Worker log */}
+          {isUploadDone && !isScanning && !isParsing && (
+            <div className="rounded-lg border border-transparent bg-surface-container-low p-md dark:border-dark-border dark:bg-[#1A1A1A]">
+              <p className="font-code-log text-code-log m-0 font-mono-code text-secondary dark:text-on-tertiary-container">
+                [{new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}] Web Worker scanning spreadsheet... {praktikumRoomPrefixes.length} room prefixes found, {praktikumCandidates.length} courses found
+              </p>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Room prefix selection */}
-      {dropState === 'populated' && praktikumRoomPrefixes.length > 0 && (
-        <div className="mt-3">
-          <div className="prompt-line mb-2">
-            <span className="prompt-arrow">❯</span>
-            <span className="prompt-cmd">select room prefix</span>
-          </div>
+      {isUploadDone && !isScanning && !isParsing && praktikumRoomPrefixes.length > 0 && (
+        <div className="mb-lg">
+          <label className="font-label-sm text-label-sm mb-sm block text-secondary dark:text-on-tertiary-container" id="prefix-label">Select room prefix</label>
           <Select value={selectedRoomPrefix} onValueChange={handlePrefixChange}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="choose a room prefix..." />
+              <SelectValue placeholder="Choose room prefix..." />
             </SelectTrigger>
             <SelectContent>
               {praktikumRoomPrefixes.map((prefix) => <SelectItem key={prefix} value={prefix}>{prefix}</SelectItem>)}
@@ -248,95 +268,103 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
         </div>
       )}
 
-      {/* Parsing spinner */}
-      {isParsing && (
-        <div className="flex flex-col items-center gap-2 mt-3 py-4">
-          <CatState pose="loading" size={32} />
-          <div className="font-mono text-[10px] text-[var(--text-muted)]">{progressStage || 'parsing...'}</div>
-          <div className="w-40 h-1 rounded-full bg-[var(--surface-2)] border border-[var(--border)] overflow-hidden">
-            <div className="h-full bg-[var(--blue)] rounded-full animate-progress-bar" />
-          </div>
-        </div>
-      )}
-
       {/* Candidates */}
       {!isScanning && hasCandidates && !isParsing && (
-        <div className="animate-expand mt-3">
-          <div className="flex items-center gap-2 mb-2 font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
-            <span>output</span>
-            <div className="flex-1 h-px bg-[var(--border)]" />
-            <span>{praktikumCandidates.length} classes</span>
-          </div>
-
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-4">
-            {[{ label: 'kelas', value: filterKelas, setter: setFilterKelas, items: uniqueKelas },
-              { label: 'smt', value: filterSemester, setter: setFilterSemester, items: uniqueSemesters },
+        <div className="animate-fade-in-up mb-lg">
+          <div className="mb-md flex flex-wrap items-center gap-md">
+            {[{ label: 'Class', value: filterKelas, setter: setFilterKelas, items: uniqueKelas },
+              { label: 'Semester', value: filterSemester, setter: setFilterSemester, items: uniqueSemesters },
             ].map((f) => (
-              <div key={f.label} className="flex items-center gap-1">
-                <span className="font-mono text-[9px] text-[var(--text-faint)]">{f.label}:</span>
+              <div key={f.label} className="flex items-center gap-sm">
+                <span className="font-label-sm text-label-sm text-secondary dark:text-on-tertiary-container">{f.label}:</span>
                 <Select value={f.value} onValueChange={f.setter}>
-                  <SelectTrigger size="xs" className="min-w-[36px]">
-                    <SelectValue placeholder="all" />
+                  <SelectTrigger size="sm" className="w-auto min-w-[90px]">
+                    <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__all__" className="text-[9px]">all</SelectItem>
-                    {f.items.map((item) => <SelectItem key={item} value={item} className="text-[9px]">{item}</SelectItem>)}
+                    <SelectItem value="__all__">All</SelectItem>
+                    {f.items.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             ))}
-            <span className="font-mono text-[10px] text-[var(--blue)]">{selectedCandidateIds.length} selected</span>
+            <span className="font-label-sm text-label-sm ml-auto text-primary dark:text-dark-primary">{selectedCandidateIds.length} selected</span>
           </div>
 
           {filteredCandidates.length > 0 ? (
-            <div className="max-h-[180px] overflow-y-auto border border-[var(--border)] rounded-sm">
-              <table className="w-full text-left border-collapse">
-                <tbody>
-                  {filteredCandidates.map((cand) => {
-                    const isChecked = selectedCandidateIds.includes(cand.id);
-                    return (
-                      <tr
-                        key={cand.id}
-                        className={cn(
-                          'border-b border-[var(--border)] cursor-pointer transition-colors',
-                          isChecked ? 'bg-[var(--blue-faint)]' : 'hover:bg-[var(--surface-2)]',
-                        )}
-                        onClick={() => toggleCandidateId(cand.id)}
-                      >
-                        <td className="px-2 py-1.5 w-6">
-                          <input type="checkbox" checked={isChecked} onChange={() => toggleCandidateId(cand.id)} className="accent-[var(--blue)] w-3 h-3" />
-                        </td>
-                        <td className="px-2 py-1.5 font-mono text-xs">
-                          <div className="text-[var(--text)]">{cand.courseName}</div>
-                          <div className="text-[10px] text-[var(--text-muted)]">
-                            {cand.dosen || '—'}{cand.semester ? ` • SMT ${cand.semester}` : ''} • {cand.kelas}
-                          </div>
-                        </td>
-                        <td className="px-2 py-1.5 font-mono text-[10px] text-[var(--text-muted)] text-right">
-                          {cand.hari} {cand.jam}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {/* Cards (no horizontal scroll — grid stacks 1-col mobile, 2-col desktop) */}
+              <div className="overflow-y-auto rounded-xl border border-border dark:border-dark-border" style={{ maxHeight: 220 }}>
+                <div className="grid grid-cols-1 gap-sm p-sm md:grid-cols-2">
+                {filteredCandidates.map((cand) => {
+                  const isChecked = selectedCandidateIds.includes(cand.id);
+                  return (
+                    <button
+                      key={cand.id}
+                      type="button"
+                      onClick={() => toggleCandidateId(cand.id)}
+                      className={cn(
+                        'flex w-full flex-col gap-sm rounded-xl border border-border p-md text-left transition-colors dark:border-dark-border',
+                        isChecked ? 'bg-primary/5 dark:bg-dark-primary/5' : 'bg-surface-container-low hover:bg-surface-container-high dark:bg-dark-background dark:hover:bg-dark-surface',
+                      )}
+                    >
+                      <div className="flex items-start gap-sm">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCandidateId(cand.id)}
+                          className="mt-0.5 h-4 w-4 shrink-0 accent-primary dark:accent-dark-primary"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-body-semibold text-body-semibold truncate text-primary dark:text-dark-primary">{cand.courseName}</p>
+                          <p className="font-label-sm text-label-sm mt-xs text-secondary dark:text-on-tertiary-container">
+                            {cand.dosen || '—'}{cand.semester ? ` • Semester ${cand.semester}` : ''} • {cand.kelas}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="ml-7 flex items-center gap-sm">
+                        <span className="font-label-sm text-label-sm whitespace-nowrap rounded bg-surface-container px-sm py-xs text-secondary dark:bg-[#1A1A1A] dark:text-on-tertiary-container">{cand.hari} {cand.jam}</span>
+                        <span className="font-label-sm text-label-sm whitespace-nowrap rounded bg-surface-container px-sm py-xs text-primary dark:bg-[#1A1A1A] dark:text-dark-primary">{cand.ruang}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+                </div>
+              </div>
+            </>
           ) : (
-            <div className="font-mono text-xs text-[var(--text-muted)] py-2">{'❯'} no classes match this filter.</div>
-          )}
-
-          {hasChecked && (
-            <button className="terminal-btn mt-3" onClick={handleContinue}>
-              <span>[ continue with {selectedCandidateIds.length} classes ]</span>
-            </button>
+            <div className="font-body-md text-body-md rounded-xl border border-border bg-surface-container-low px-md py-lg text-center text-secondary dark:border-dark-border dark:bg-dark-background dark:text-on-tertiary-container">
+              No classes match the filter.
+            </div>
           )}
         </div>
       )}
 
       {/* Skip */}
-      <button className="terminal-btn-sm mt-3" onClick={handleSkip}>
-        {'>'} skip practical — view schedule
+      <button
+        onClick={handleSkip}
+        className="font-body-semibold text-body-semibold mb-lg w-full rounded-full border border-outline px-xl py-md text-primary transition-colors hover:bg-surface-container-low focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10 sm:w-auto"
+      >
+        Skip
       </button>
+
+      {/* Footer actions */}
+      <div className="mt-auto flex flex-col items-center justify-between gap-md border-t border-canvas-line pt-lg dark:border-dark-canvas-line sm:flex-row">
+        <button
+          onClick={onBack}
+          className="font-body-semibold text-body-semibold w-full rounded-full border border-outline px-xl py-md text-primary transition-colors hover:bg-surface-container-low focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10 sm:w-auto"
+        >
+          Back
+        </button>
+        <button
+          onClick={handleContinue}
+          disabled={!hasChecked}
+          className="font-body-semibold text-body-semibold flex w-full items-center justify-center gap-2 rounded-full bg-primary px-xl py-md text-on-primary shadow-md transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-dark-primary dark:text-primary sm:w-auto"
+        >
+          {hasChecked ? `Continue to Results (${selectedCandidateIds.length})` : 'Select classes to continue'}
+          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
+      </div>
 
       <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleInputChange} />
     </div>

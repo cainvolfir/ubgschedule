@@ -1,0 +1,66 @@
+- generic [ref=f17e3]:
+  - banner [ref=f17e4]:
+    - generic [ref=f17e5]:
+      - img "UBG Schedule logo" [ref=f17e6]
+      - text: UBG Schedule
+    - button "Toggle theme" [ref=f17e7] [cursor=pointer]:
+      - generic [ref=f17e8]: dark_mode
+  - main [ref=f17e10]:
+    - generic [ref=f17e56]:
+      - generic [ref=f17e57]:
+        - heading "Upload Practical Schedule" [level=1] [ref=f17e58]
+        - paragraph [ref=f17e59]: Upload practical schedule spreadsheet (XLSX/XLS/CSV) from UBG student portal.
+      - button "cloud_upload Drag & drop your spreadsheet here or click to select a file Maximum file size 50 MB (XLSX, XLS, or CSV)" [ref=f17e60] [cursor=pointer]:
+        - generic [ref=f17e61]: cloud_upload
+        - paragraph [ref=f17e63]: Drag & drop your spreadsheet here or click to select a file
+        - paragraph [ref=f17e64]: Maximum file size 50 MB (XLSX, XLS, or CSV)
+      - generic [ref=f17e65]:
+        - generic [ref=f17e66]:
+          - generic [ref=f17e67]:
+            - generic [ref=f17e68]: "Class:"
+            - combobox [ref=f17e70] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f17e73]:
+            - generic [ref=f17e74]: "Semester:"
+            - combobox [ref=f17e76] [cursor=pointer]:
+              - generic: All
+          - generic [ref=f17e79]: 0 selected
+        - generic [ref=f17e80]:
+          - button [ref=f17e81] [cursor=pointer]:
+            - checkbox [ref=f17e82]
+            - generic [ref=f17e83]:
+              - paragraph [ref=f17e84]: Algoritma dan Struktur Data Lanjut
+              - paragraph [ref=f17e85]: Budi Santoso • Semester 3 • A
+            - generic [ref=f17e86]:
+              - paragraph [ref=f17e87]: Senin 07.00-08.00
+              - paragraph [ref=f17e88]: LAB 1-201
+          - button [ref=f17e89] [cursor=pointer]:
+            - checkbox [ref=f17e90]
+            - generic [ref=f17e91]:
+              - paragraph [ref=f17e92]: Algoritma dan Struktur Data Lanjut
+              - paragraph [ref=f17e93]: Budi Santoso • Semester 3 • A
+            - generic [ref=f17e94]:
+              - paragraph [ref=f17e95]: Senin 08.00-09.40
+              - paragraph [ref=f17e96]: LAB 1-201
+          - button [ref=f17e97] [cursor=pointer]:
+            - checkbox [ref=f17e98]
+            - generic [ref=f17e99]:
+              - paragraph [ref=f17e100]: Pemrograman Web Lanjut
+              - paragraph [ref=f17e101]: Andi Wijaya • Semester 5 • C
+            - generic [ref=f17e102]:
+              - paragraph [ref=f17e103]: Senin 10.00-12.00
+              - paragraph [ref=f17e104]: LAB 2-101
+          - button [ref=f17e105] [cursor=pointer]:
+            - checkbox [ref=f17e106]
+            - generic [ref=f17e107]:
+              - paragraph [ref=f17e108]: Basis Data Terdistribusi
+              - paragraph [ref=f17e109]: Siti Aminah • Semester 3 • B
+            - generic [ref=f17e110]:
+              - paragraph [ref=f17e111]: Rabu 13.00-15.30
+              - paragraph [ref=f17e112]: LAB 2-101
+      - button "Skip" [ref=f17e113] [cursor=pointer]
+      - generic [ref=f17e114]:
+        - button "Back" [ref=f17e115] [cursor=pointer]
+        - button "Select classes to continue arrow_forward" [disabled] [ref=f17e116]:
+          - text: Select classes to continue
+          - generic [ref=f17e117]: arrow_forward

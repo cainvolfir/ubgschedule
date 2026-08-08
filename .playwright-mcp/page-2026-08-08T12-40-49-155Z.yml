@@ -1,0 +1,22 @@
+- generic [ref=f27e3]:
+  - banner [ref=f27e4]:
+    - generic [ref=f27e5]:
+      - img "UBG Schedule logo" [ref=f27e6]
+      - text: UBG Schedule
+    - button "Toggle theme" [ref=f27e7] [cursor=pointer]:
+      - generic [ref=f27e8]: dark_mode
+  - main [ref=f27e10]:
+    - generic [ref=f27e95]:
+      - generic [ref=f27e96]:
+        - heading "Upload Practical Schedule" [level=1] [ref=f27e97]
+        - paragraph [ref=f27e98]: Upload practical schedule spreadsheet (XLSX/XLS/CSV) from UBG student portal.
+      - button "cloud_upload Drag & drop your spreadsheet here or click to select a file Maximum file size 50 MB (XLSX, XLS, or CSV)" [ref=f27e99] [cursor=pointer]:
+        - generic [ref=f27e100]: cloud_upload
+        - paragraph [ref=f27e102]: Drag & drop your spreadsheet here or click to select a file
+        - paragraph [ref=f27e103]: Maximum file size 50 MB (XLSX, XLS, or CSV)
+      - button "Skip" [ref=f27e104] [cursor=pointer]
+      - generic [ref=f27e105]:
+        - button "Back" [ref=f27e106] [cursor=pointer]
+        - button "Select classes to continue arrow_forward" [disabled] [ref=f27e107]:
+          - text: Select classes to continue
+          - generic [ref=f27e108]: arrow_forward

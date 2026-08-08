@@ -16,11 +16,11 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-4xl flex-col items-center justify-center px-4">
-          <p className="pixel-font mb-2 text-[10px] text-red-600">Something went wrong</p>
-          <p className="pixel-font mb-4 text-[8px] text-zinc-400">{this.state.error.message}</p>
+          <p className="font-body-semibold text-body-semibold mb-2 text-error dark:text-dark-error">Something went wrong</p>
+          <p className="font-body-md text-body-md mb-4 text-secondary dark:text-on-tertiary-container">{this.state.error.message}</p>
           <button
             onClick={() => { this.setState({ error: null }); window.location.reload(); }}
-            className="pixel-font rounded border border-black px-4 py-1.5 text-[9px] hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-800"
+            className="font-body-semibold text-body-semibold rounded-full border border-outline px-xl py-md text-primary transition-colors hover:bg-surface-container-low dark:border-dark-border dark:text-dark-primary dark:hover:bg-surface-variant/10"
           >
             Reload
           </button>

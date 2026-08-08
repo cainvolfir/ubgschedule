@@ -1,0 +1,32 @@
+- generic [ref=e5]:
+  - banner [ref=e6]:
+    - generic [ref=e7]: UBG Schedule
+    - generic [ref=e10]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: "1"
+        - generic [ref=e14]: Teori
+      - generic [ref=e17]:
+        - generic [ref=e18]: "2"
+        - generic [ref=e19]: Praktikum
+      - generic [ref=e22]:
+        - generic [ref=e23]: "3"
+        - generic [ref=e24]: Hasil
+    - button "Toggle theme" [ref=e25] [cursor=pointer]
+  - generic [ref=e34]:
+    - generic [ref=e35]:
+      - generic [ref=e36]: UBG SCHEDULE
+      - generic [ref=e37]: upload • parse • organize
+    - generic [ref=e38]:
+      - generic [ref=e39]: ❯
+      - generic [ref=e40]: ~/tools
+      - generic [ref=e41]: "--upload"
+      - generic [ref=e42]: your_theory_schedule.pdf
+    - button "UGO drop PDF here or click to browse" [ref=e44] [cursor=pointer]:
+      - generic [ref=e45]:
+        - img "UGO" [ref=e46]
+        - generic [ref=e107]: drop PDF here or click to browse
+    - button "[ browse files ]" [ref=e108] [cursor=pointer]
+  - generic [ref=e110]:
+    - generic [ref=e111]: "SYS.STATUS: ACTIVE"
+    - generic [ref=e112]: upload theory schedule
+    - generic [ref=e113]: V2.0.0
