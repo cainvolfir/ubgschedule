@@ -20,8 +20,8 @@ export function RootLayout({ currentStep, statusText }: RootLayoutProps) {
       <header className="z-10 mb-xl flex w-full max-w-4xl items-center justify-between px-md">
         {/* Brand */}
         <div className="font-display-serif flex items-center gap-sm text-headline-md text-primary dark:text-dark-primary">
-          <img src="/ubg-logo.png" alt="UBG Schedule logo" className="h-8 w-8 object-contain dark:invert" />
-          UBG Schedule
+          <img src="/ubg-logo.png" alt="Logo UBG Schedule — jadwal kuliah Universitas Bumigora" className="h-8 w-8 object-contain dark:invert" />
+          <h1 className="text-headline-md">UBG Schedule — Jadwal Kuliah</h1>
         </div>
 
         {/* Progress indicator */}
@@ -58,9 +58,9 @@ export function RootLayout({ currentStep, statusText }: RootLayoutProps) {
           type="button"
           onClick={toggleTheme}
           aria-label="Toggle theme"
-          className="relative flex h-8 w-12 items-center rounded-full border-2 border-black/50 bg-surface p-1 shadow-sm transition-colors hover:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background dark:border-white/50 dark:bg-dark-surface dark:hover:bg-[#1A1A1A] dark:focus:ring-offset-dark-background"
+          className="relative flex h-8 w-14 shrink-0 items-center rounded-full border-2 border-black/50 bg-surface p-1 shadow-sm transition-colors hover:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background dark:border-white/50 dark:bg-dark-surface dark:hover:bg-[#1A1A1A] dark:focus:ring-offset-dark-background"
         >
-          <div className="flex h-6 w-6 translate-x-0 items-center justify-center transition-transform duration-300 dark:translate-x-4">
+          <div className="flex h-6 w-6 translate-x-0 items-center justify-center transition-transform duration-300 dark:translate-x-5">
             {theme === 'dark' ? (
               <span className="material-symbols-outlined text-[16px] text-white">dark_mode</span>
             ) : (
