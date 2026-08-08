@@ -41,7 +41,7 @@ export function RootLayout({ currentStep, statusText }: RootLayoutProps) {
                   className={(
                     'flex h-6 w-6 items-center justify-center font-label-sm text-label-sm ' +
                     (currentStep === i
-                      ? 'no-transition rounded-full bg-white font-semibold text-black dark:bg-dark-primary dark:text-primary'
+                      ? 'no-transition rounded-full bg-white font-semibold text-black dark:bg-[#1A1A1A] dark:text-dark-primary'
                       : 'rounded-full border border-secondary dark:border-on-tertiary-container')
                   )}
                 >
