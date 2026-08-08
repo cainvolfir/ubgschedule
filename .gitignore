@@ -39,3 +39,10 @@ test-*.mjs
 .vercel
 
 .vercel
+
+# Playwright MCP test artifacts
+.playwright-mcp/
+
+# Design experiments
+/design/
+/public/design/
