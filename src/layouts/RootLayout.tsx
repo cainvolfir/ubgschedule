@@ -14,7 +14,7 @@ export function RootLayout({ currentStep, statusText }: RootLayoutProps) {
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background p-md font-sans-ui text-on-surface dark:bg-dark-background dark:text-dark-primary lg:p-lg">
       {/* Ambient grid canvas */}
-      <div className="grid-canvas fixed inset-0 z-0 pointer-events-none opacity-0 dark:opacity-20" aria-hidden="true" />
+      <div className="grid-canvas fixed inset-0 z-0 pointer-events-none opacity-0" aria-hidden="true" />
 
       {/* Wizard header */}
       <header className="z-10 mb-xl flex w-full max-w-4xl items-center justify-between px-md">
