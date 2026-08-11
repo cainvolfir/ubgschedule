@@ -20,8 +20,8 @@ export function RootLayout({ currentStep, statusText }: RootLayoutProps) {
       <header className="z-10 mb-xl flex w-full max-w-4xl items-center justify-between gap-xl px-md">
         {/* Brand */}
         <div className="font-display-serif flex items-center gap-sm text-headline-md text-primary dark:text-dark-primary">
-          <img src="/ubg-logo.png" alt="Logo UBG Schedule - jadwal kuliah Universitas Bumigora" className="h-8 w-8 object-contain dark:invert" />
-          <h1 className="text-headline-md">UBG Schedule - Jadwal Kuliah</h1>
+          <img src="/ubg-logo.png" alt="Logo UBG Schedule: jadwal kuliah Universitas Bumigora" className="h-8 w-8 object-contain dark:invert" />
+          <h1 className="text-headline-md">UBG Schedule: Jadwal Kuliah</h1>
         </div>
 
         {/* Progress indicator */}
