@@ -57,8 +57,32 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Hash-named build assets only (js/css/fonts/icons). index.html is
+        // intentionally EXCLUDED from precache so navigations always hit the
+        // network and pick up the newest deploy immediately.
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
+        // Disable the auto SPA fallback route (would serve stale cached HTML
+        // and shadow the NetworkFirst route below). NetworkFirst keeps
+        // freshness online; offline navigations show the network error page.
+        navigateFallback: null,
         runtimeCaching: [
+          {
+            // Navigations: always try network first (fresh deploy), fall back
+            // to the last cached HTML when offline.
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages',
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 7,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           {
             urlPattern: /^https?:\/\/cdnjs\.cloudflare\.com\/.*/i,
             handler: 'CacheFirst',
