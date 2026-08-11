@@ -143,8 +143,8 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
     <div className="animate-fade-in-up flex flex-col">
       {/* Header content */}
       <div className="mb-lg">
-        <h1 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Upload Theory Schedule</h1>
-        <p className="font-body-md text-body-md text-secondary dark:text-on-tertiary-container">Upload official theory class schedule PDF UBG student portal.</p>
+        <h2 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Upload Theory Schedule</h2>
+        <p className="font-body-md text-body-md text-secondary dark:text-on-tertiary-container">Drop your Schedule PDF here, or click to browse</p>
       </div>
 
       {/* Dropzone / file states */}
@@ -165,7 +165,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
           <div className="mb-md flex h-14 w-14 items-center justify-center rounded-full bg-surface shadow-sm transition-transform group-hover:scale-105 dark:bg-dark-surface">
             <span className="material-symbols-outlined text-secondary dark:text-dark-primary">cloud_upload</span>
           </div>
-          <p className="font-body-semibold text-body-semibold mb-xs text-center text-primary dark:text-dark-primary">Drag &amp; drop your PDF file click select file</p>
+          <p className="font-body-semibold text-body-semibold mb-xs text-center text-primary dark:text-dark-primary">Drop your PDF here, or click to browse</p>
           <p className="font-label-sm text-label-sm text-center text-secondary dark:text-on-tertiary-container">Maximum file size 50 MB</p>
         </div>
       )}
