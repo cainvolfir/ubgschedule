@@ -1,6 +1,5 @@
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { cn } from "@/lib/utils";
-import "@/components/ui/pixelact-ui/styles/styles.css";
 
 const Select = SelectPrimitive.Root;
 const SelectGroup = SelectPrimitive.Group;

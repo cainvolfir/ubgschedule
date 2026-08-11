@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../../components/ui/pixelact-ui/select';
+} from '../../components/ui/select';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../components/Toast';
 
@@ -159,7 +159,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
     <div className="animate-fade-in-up flex flex-col">
       {/* Header content */}
       <div className="mb-lg">
-        <h1 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Upload Practical Schedule</h1>
+        <h2 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Upload Practical Schedule</h2>
         <p className="font-body-md text-body-md text-secondary dark:text-on-tertiary-container">Upload practical schedule spreadsheet (XLSX/XLS/CSV) from UBG student portal.</p>
       </div>
 

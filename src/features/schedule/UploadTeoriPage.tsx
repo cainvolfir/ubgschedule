@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useJadwalStore } from '../../store/useJadwalStore';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../../components/ui/pixelact-ui/select';
+} from '../../components/ui/select';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../components/Toast';
 

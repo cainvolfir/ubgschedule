@@ -47,3 +47,4 @@ test-*.mjs
 # Design experiments
 /design/
 /public/design/
+.env*

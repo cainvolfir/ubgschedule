@@ -194,7 +194,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
       {/* Header */}
       <div className="mb-lg no-print">
         <div className="mb-md">
-          <h1 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Class Schedule</h1>
+          <h2 className="font-headline-lg text-headline-lg font-display-serif mb-sm text-primary dark:text-dark-primary">Class Schedule</h2>
           <p className="font-body-md text-body-md text-secondary dark:text-on-tertiary-container">{merged.length} classes across {dayGroups.length} days. Use toolbar search, edit, export.</p>
         </div>
 
