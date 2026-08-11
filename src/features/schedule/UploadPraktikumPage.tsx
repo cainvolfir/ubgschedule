@@ -293,7 +293,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
 
           {filteredCandidates.length > 0 ? (
             <>
-              {/* Cards (no horizontal scroll — grid stacks 1-col mobile, 2-col desktop) */}
+              {/* Cards (no horizontal scroll - grid stacks 1-col mobile, 2-col desktop) */}
               <div className="overflow-y-auto rounded-xl border border-border dark:border-dark-border" style={{ maxHeight: 220 }}>
                 <div className="grid grid-cols-1 gap-sm p-sm md:grid-cols-2">
                 {filteredCandidates.map((cand) => {
@@ -318,7 +318,7 @@ export function UploadPraktikumPage({ onNext, onBack }: { onNext: () => void; on
                         <div className="min-w-0">
                           <p className="font-body-semibold text-body-semibold truncate text-primary dark:text-dark-primary">{cand.courseName}</p>
                           <p className="font-label-sm text-label-sm mt-xs text-secondary dark:text-on-tertiary-container">
-                            {cand.dosen || '—'}{cand.semester ? ` • Semester ${cand.semester}` : ''} • {cand.kelas}
+                            {cand.dosen || '-'}{cand.semester ? ` • Semester ${cand.semester}` : ''} • {cand.kelas}
                           </p>
                         </div>
                       </div>

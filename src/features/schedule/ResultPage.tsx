@@ -186,7 +186,7 @@ export function ResultPage({ onBack }: { onBack: () => void }) {
       {/* Print-only header */}
       <div className="print-only hidden">
         <div className="print-header">
-          <h1>Class Schedule — UBG Schedule</h1>
+          <h1>Class Schedule - UBG Schedule</h1>
           <span className="print-date">Printed: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
       </div>

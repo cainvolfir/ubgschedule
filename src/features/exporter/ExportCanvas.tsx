@@ -88,7 +88,7 @@ export function ExportCanvas({ dayGroups, merged }: ExportCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // High-resolution scale factor — 4x for crisp text when zoomed
+    // High-resolution scale factor - 4x for crisp text when zoomed
     const SCALE = 4;
 
     const totalRows = merged.length;

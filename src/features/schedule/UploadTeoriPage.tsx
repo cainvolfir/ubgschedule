@@ -238,7 +238,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
         </div>
       )}
 
-      {/* Results — class selection */}
+      {/* Results - class selection */}
       {hasRows && (
         <div className="animate-fade-in-up mb-lg">
           <div className="mb-md flex flex-wrap items-center gap-md">
@@ -264,7 +264,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
 
           {filteredRows.length > 0 ? (
             <div className="overflow-y-auto rounded-xl border border-border dark:border-dark-border" style={{ maxHeight: 220 }}>
-              {/* Cards (no horizontal scroll — grid stacks 1-col mobile, 2-col desktop) */}
+              {/* Cards (no horizontal scroll - grid stacks 1-col mobile, 2-col desktop) */}
               <div className="grid grid-cols-1 gap-sm p-sm md:grid-cols-2">
                 {filteredRows.map((row) => {
                   const isChecked = selectedTheoryRowIds.includes(row.id);
@@ -288,7 +288,7 @@ export function UploadTeoriPage({ onNext }: { onNext: () => void }) {
                         <div className="min-w-0">
                           <p className="font-body-semibold text-body-semibold truncate text-primary dark:text-dark-primary">{row.MataKuliah}</p>
                           <p className="font-label-sm text-label-sm mt-xs text-secondary dark:text-on-tertiary-container">
-                            {row.DosenPengampuh || '—'}{row.SMT ? ` • SMT ${row.SMT}` : ''}{row.Kelas ? ` • ${row.Kelas}` : ''}
+                            {row.DosenPengampuh || '-'}{row.SMT ? ` • SMT ${row.SMT}` : ''}{row.Kelas ? ` • ${row.Kelas}` : ''}
                           </p>
                         </div>
                       </div>
