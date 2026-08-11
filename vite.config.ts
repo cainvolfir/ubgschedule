@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'icon.svg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['favicon.png', 'favicon-32.png', 'icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'UBG Schedule',
         short_name: 'UBG Schedule',
