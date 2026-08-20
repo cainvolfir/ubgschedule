@@ -191,7 +191,7 @@ export function ExportICS({ dayGroups, merged, courseColors }: ExportICSProps) {
     link.download = 'jadwal-perkuliahan.ics';
     link.click();
     URL.revokeObjectURL(url);
-  }, [dayGroups, merged]);
+  }, [dayGroups, merged, courseColors]);
 
   if (merged.length === 0) return null;
 

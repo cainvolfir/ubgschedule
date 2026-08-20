@@ -1,28 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-
-type Theme = 'light' | 'dark';
-type ThemeSetting = Theme | 'system';
-
-interface ThemeContextValue {
-  theme: Theme;
-  themeSetting: ThemeSetting;
-  setThemeSetting: (setting: ThemeSetting) => void;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
-
-function getSystemTheme(): Theme {
-  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  return 'light';
-}
-
-function resolveTheme(setting: ThemeSetting): Theme {
-  if (setting === 'system') return getSystemTheme();
-  return setting;
-}
+import { useEffect, useState, type ReactNode } from 'react';
+import { getSystemTheme, resolveTheme, ThemeContext, type ThemeSetting } from './theme';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themeSetting, setThemeSettingState] = useState<ThemeSetting>(() => {
@@ -78,10 +55,4 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
-  return ctx;
 }
