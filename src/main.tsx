@@ -1,13 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { ToastProvider } from './components/Toast';
-import App from './App';
-import './index.css';
 import { registerSW } from 'virtual:pwa-register';
+import TheoryStep from './components/TheoryStep';
+import PraktikumStep from './components/PraktikumStep';
+import ResultStep from './components/ResultStep';
+import { useJadwalStore } from './store/useJadwalStore';
+import './index.css';
 
-// Auto-update PWA: reload page as soon as a new service worker takes control,
-// so returning users always get the latest version without a manual refresh.
 registerSW({ immediate: true });
 
 let refreshing = false;
@@ -17,12 +16,16 @@ navigator.serviceWorker?.addEventListener('controllerchange', () => {
   window.location.reload();
 });
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ThemeProvider>
-      <ToastProvider>
-        <App />
-      </ToastProvider>
-    </ThemeProvider>
-  </StrictMode>,
-);
+function App() {
+  const { wizardStep, setWizardStep } = useJadwalStore();
+
+  return (
+    <StrictMode>
+      {wizardStep === 1 && <TheoryStep onNext={() => setWizardStep(2)} />}
+      {wizardStep === 2 && <PraktikumStep onBack={() => setWizardStep(1)} onNext={() => setWizardStep(3)} />}
+      {wizardStep === 3 && <ResultStep onBack={() => setWizardStep(2)} />}
+    </StrictMode>
+  );
+}
+
+createRoot(document.getElementById('root')!).render(<App />);

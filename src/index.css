@@ -1,120 +1,75 @@
-/* ===== UBG Schedule - Stitch design base =====
- * Design language: light bg #F3F3F3 / dark bg #0A0A0A, serif display (Playfair Display),
- * Plus Jakarta Sans UI, JetBrains Mono logs. Ambient 64px grid canvas.
- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Design tokens (mirror tailwind.config.js) ===== */
-:root {
-  --background: #F3F3F3;
-  --dark-background: #0A0A0A;
-  --surface: #FFFFFF;
-  --dark-surface: #141414;
-  --surface-container-low: #f3f3f3;
-  --border: #E5E5E5;
-  --dark-border: #2A2A2A;
-  --canvas-line: #E7E7E7;
-  --dark-canvas-line: #1F1F1F;
-  --dropzone: #EFEFEF;
-  --dark-dropzone: #1E1E1E;
-  --primary: #000000;
-  --dark-primary: #FFFFFF;
-  --on-surface: #1b1b1b;
-  --secondary: #5e5e5e;
-  --on-tertiary-container: #848484;
-}
+@layer base {
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background-color: #EFF6FF;
+    color: #000000;
+  }
 
-html {
-  -webkit-font-smoothing: antialiased;
-}
-
-body {
-  font-family: 'Plus Jakarta Sans', Inter, Geist, sans-serif;
-  background: var(--background);
-  color: var(--on-surface);
-  min-height: 100dvh;
-}
-.dark body {
-  background: var(--dark-background);
-  color: #FFFFFF;
-}
-
-/* Smooth theme transitions (matches Stitch reference) */
-*, *::before, *::after {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
-}
-.no-transition { transition: none !important; }
-
-/* ===== Material Symbols ===== */
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ===== Ambient grid canvas ===== */
-.grid-canvas {
-  background-image: linear-gradient(to right, var(--canvas-line) 1px, transparent 1px);
-  background-size: 64px 100%;
-}
-.dark .grid-canvas {
-  background-image: linear-gradient(to right, var(--dark-canvas-line) 1px, transparent 1px);
-}
-
-/* ===== Main modal card (28px radius) ===== */
-.card {
-  width: 100%;
-  max-width: 64rem;
-  background: var(--surface);
-  border-radius: 28px;
-  padding: 24px;
-  box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.06);
-  border: 1px solid transparent;
-}
-.dark .card {
-  background: var(--dark-surface);
-  box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.5);
-  border-color: var(--dark-border);
-}
-@media (min-width: 768px) {
-  .card { padding: 32px; }
-}
-
-/* ===== Animations ===== */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in-up {
-  animation: fadeInUp 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  ::selection {
+    background-color: #93C5FD;
+    color: #000000;
   }
 }
 
-/* ===== Print ===== */
-@media print {
-  body { background: white !important; color: #1a1a1a !important; }
-  .no-print { display: none !important; }
-  .print-only { display: block !important; }
-  * { box-shadow: none !important; }
+/* Brutalist scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #EFF6FF;
+  border-left: 3px solid #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #3B82F6;
+  border: 3px solid #000000;
+}
+
+/* Brutalist checkbox */
+.brutalist-checkbox {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #000;
+  background-color: #fff;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 2px 2px 0px #000;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.brutalist-checkbox:checked {
+  background-color: #2563EB;
+  box-shadow: 0px 0px 0px #000;
+  transform: translate(2px, 2px);
+}
+.brutalist-checkbox:checked::after {
+  content: '\2714';
+  position: absolute;
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Loading stripe animation */
+@keyframes stripe-slide {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+.loading-stripes {
+  background-image: linear-gradient(
+    45deg,
+    rgba(0,0,0,0.1) 25%, transparent 25%,
+    transparent 50%, rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.1) 75%, transparent 75%
+  );
+  background-size: 40px 40px;
+  animation: stripe-slide 0.8s linear infinite;
 }

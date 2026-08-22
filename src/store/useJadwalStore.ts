@@ -32,6 +32,7 @@ interface CourseColor {
 }
 
 interface JadwalState {
+  wizardStep: 1 | 2 | 3;
   dataTeoriMentah: DataTeoriMentah[];
   selectedTheoryRowIds: string[];
   jadwalTeoriTerpilih: DataTeoriMentah[];
@@ -46,6 +47,7 @@ interface JadwalState {
   isScanning: boolean;
   isParsing: boolean;
 
+  setWizardStep: (step: 1 | 2 | 3) => void;
   setDataTeoriMentah: (data: DataTeoriMentah[]) => void;
   setSelectedTheoryRowIds: (ids: string[]) => void;
   toggleTheoryRowId: (id: string) => void;
@@ -67,6 +69,7 @@ interface JadwalState {
 }
 
 const initialState = {
+  wizardStep: 1 as 1 | 2 | 3,
   dataTeoriMentah: [],
   selectedTheoryRowIds: [],
   jadwalTeoriTerpilih: [],
@@ -85,6 +88,8 @@ export const useJadwalStore = create<JadwalState>()(
   persist(
     (set) => ({
       ...initialState,
+
+      setWizardStep: (step) => set({ wizardStep: step }),
 
       setDataTeoriMentah: (data) => set({ dataTeoriMentah: data }),
 
@@ -150,6 +155,7 @@ export const useJadwalStore = create<JadwalState>()(
       name: 'ubg-schedule-storage',
       version: 1,
       partialize: (state) => ({
+        wizardStep: state.wizardStep,
         dataTeoriMentah: state.dataTeoriMentah,
         selectedTheoryRowIds: state.selectedTheoryRowIds,
         jadwalTeoriTerpilih: state.jadwalTeoriTerpilih,

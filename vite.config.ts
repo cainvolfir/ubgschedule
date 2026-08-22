@@ -61,6 +61,11 @@ export default defineConfig({
         // intentionally EXCLUDED from precache so navigations always hit the
         // network and pick up the newest deploy immediately.
         globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
+        // Force SW to skip waiting and claim clients immediately on activation.
+        // Combined with registerType: 'autoUpdate' and registerSW({ immediate: true }),
+        // this ensures the new SW takes over without requiring a page refresh.
+        skipWaiting: true,
+        clientsClaim: true,
         // Disable the auto SPA fallback route (would serve stale cached HTML
         // and shadow the NetworkFirst route below). NetworkFirst keeps
         // freshness online; offline navigations show the network error page.
@@ -81,6 +86,16 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200],
               },
+            },
+          },
+          {
+            // Manifest and service worker itself: always network-first
+            urlPattern: /\.(?:webmanifest|json)$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'manifests',
+              expiration: { maxEntries: 5, maxAgeSeconds: 3600 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
