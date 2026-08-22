@@ -18,7 +18,7 @@ export default function WizardHeader({ currentStep }: WizardHeaderProps) {
   return (
     <>
       {/* Top Bar: Logo + Help */}
-      <header className="bg-background border-b-2 border-black p-4 flex justify-between items-center sticky top-0 z-50">
+      <header className="bg-background border-b-2 border-black p-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white border-3 border-black shadow-[2px_2px_0px_#000000] rounded-md flex items-center justify-center p-1 shrink-0">
             <img src="/logo-ubg.png" alt="UBG" className="w-full h-full object-contain" />
@@ -35,7 +35,7 @@ export default function WizardHeader({ currentStep }: WizardHeaderProps) {
       </header>
 
       {/* Progress Bar */}
-      <div className="bg-white border-b-3 border-black px-4 py-3 flex justify-center items-center gap-2 md:gap-4 sticky top-[60px] z-40">
+      <div className="bg-white border-b-3 border-black px-4 py-3 flex justify-center items-center gap-2 md:gap-4 sticky top-0 z-50">
         {steps.map((step, i) => {
           const isCompleted = step.num < currentStep;
           const isCurrent = step.num === currentStep;
