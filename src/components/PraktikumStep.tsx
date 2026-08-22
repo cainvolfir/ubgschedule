@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   FileXls, UploadSimple, Sparkle, CheckCircle,
   Trash, MagnifyingGlass, CaretDown, MagicWand, ArrowLeft,
@@ -144,6 +144,8 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
   });
 
   const selectedCount = selectedCandidateIds.length;
+  const uniqueSmt = useMemo(() => [...new Set(praktikumCandidates.map(c => c.semester).filter(Boolean))].sort(), [praktikumCandidates]);
+  const uniqueKelasPrak = useMemo(() => [...new Set(praktikumCandidates.map(c => c.kelas).filter(Boolean))].sort(), [praktikumCandidates]);
   const isLoading = phase === 'loading';
   const isSelecting = phase === 'selecting';
 
@@ -259,17 +261,18 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                   <div className="relative flex-1 md:w-44">
                     <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary border-3 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
                       <option value="">Semua SMT</option>
-                      <option value="1">Semester 1</option><option value="2">Semester 2</option>
-                      <option value="3">Semester 3</option><option value="4">Semester 4</option>
-                      <option value="5">Semester 5</option><option value="6">Semester 6</option>
-                      <option value="7">Semester 7</option>
+                      {uniqueSmt.map(s => (
+                        <option key={s} value={s}>Semester {s}</option>
+                      ))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                   <div className="relative flex-1 md:w-44">
                     <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary border-3 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
                       <option value="">Semua Kelas</option>
-                      {['A','B','C','D','E'].map(k => (<option key={k} value={k}>Kelas {k}</option>))}
+                      {uniqueKelasPrak.map(k => (
+                        <option key={k} value={k}>{k}</option>
+                      ))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>

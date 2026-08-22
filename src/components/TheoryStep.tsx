@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   FilePdf,
   UploadSimple,
@@ -134,6 +134,9 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   });
 
   const selectedCount = selectedTheoryRowIds.length;
+
+  const uniqueSMT = useMemo(() => [...new Set(dataTeoriMentah.map(c => c.SMT).filter(Boolean))].sort(), [dataTeoriMentah]);
+  const uniqueKelas = useMemo(() => [...new Set(dataTeoriMentah.map(c => c.Kelas).filter(Boolean))].sort(), [dataTeoriMentah]);
 
   return (
     <div className="bg-background">
@@ -296,8 +299,8 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                       className="w-full appearance-none bg-secondary border-3 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black"
                     >
                       <option value="">Semua SMT</option>
-                      {[1,2,3,4,5,6,7].map(n => (
-                        <option key={n} value={String(n)}>Semester {n}</option>
+                      {uniqueSMT.map(s => (
+                        <option key={s} value={s}>Semester {s}</option>
                       ))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
@@ -309,8 +312,8 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                       className="w-full appearance-none bg-primary border-3 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black"
                     >
                       <option value="">Semua Kelas</option>
-                      {['A','B','C','D','E'].map(k => (
-                        <option key={k} value={k}>Kelas {k}</option>
+                      {uniqueKelas.map(k => (
+                        <option key={k} value={k}>{k}</option>
                       ))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
