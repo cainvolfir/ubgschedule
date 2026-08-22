@@ -30,7 +30,11 @@ dist-ssr
 *.png
 !public/mainpage.png
 !public/favicon.png
+!public/favicon-32.png
 !public/ubg-logo.png
+!public/logo-ubg.png
+!public/icon-192.png
+!public/icon-512.png
 .env
 test-*.mjs
 
