@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import {
   Clock, MapPin, UserCircle, Copy, Image, Prohibit,
   CheckCircle, Warning, ArrowLeft, Trash, PencilSimple,
@@ -224,16 +225,22 @@ export default function ResultStep({ onBack }: ResultProps) {
                     <h2 className="text-2xl font-black uppercase tracking-wide">{hari}</h2>
                     <div className="h-1 bg-black flex-1 rounded-full opacity-10" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <motion.div
+                    className="grid grid-cols-1 md:grid-cols-2 gap-5"
+                  >
                     {items.sort((a: UnifiedClass, b: UnifiedClass) => (parseTimeToMinutes(a.jam)?.start ?? 0) - (parseTimeToMinutes(b.jam)?.start ?? 0)).map((c: UnifiedClass) => {
                       const isCollided = collisions.has(c.id);
                       const cardBg = isCollided ? 'bg-[#FFD13B]' : c.isPraktikum ? 'bg-secondary' : 'bg-white';
                       return (
-                        <div key={c.id} className={"relative border-4 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000000] hover:-translate-y-1 transition-transform group " + cardBg}>
+                        <motion.div key={c.id} className={"relative border-4 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000000] hover:-translate-y-1 transition-transform group " + cardBg}>
                           {isCollided && (
-                            <div className="absolute -top-4 -right-2 bg-error text-white border-3 border-black px-3 py-1 font-black text-sm rounded-full shadow-[2px_2px_0px_#000000] flex items-center gap-1 z-10 animate-bounce">
+                            <motion.div
+                              className="absolute -top-4 -right-2 bg-error text-white border-3 border-black px-3 py-1 font-black text-sm rounded-full shadow-[2px_2px_0px_#000000] flex items-center gap-1 z-10"
+                              animate={{ x: [-3, 3, -3, 3, 0] }}
+                              transition={{ duration: 0.25, repeat: Infinity, repeatDelay: 3 }}
+                            >
                               <Warning weight="bold" /> Bentrok!
-                            </div>
+                            </motion.div>
                           )}
                           {c.isPraktikum && !isCollided && (
                             <div className="absolute top-4 right-4 bg-black text-white px-2 py-1 text-[10px] font-black uppercase rounded">Praktikum</div>
@@ -255,11 +262,11 @@ export default function ResultStep({ onBack }: ResultProps) {
                             <div className="flex items-center gap-2"><Clock weight="bold" className={"text-lg " + (isCollided ? 'text-error' : '')} /> {c.jam}</div>
                             <div className="flex items-center gap-2"><MapPin weight="bold" className="text-lg text-tertiary" /> {c.ruang}</div>
                             <div className="flex items-center gap-2 truncate"><UserCircle weight="bold" className="text-lg text-tertiary" /> {c.dosen}</div>
-                          </div>
-                        </div>
+                            </div>
+                          </motion.div>
                       );
                     })}
-                  </div>
+                  </motion.div>
                 </section>
               );
             })}

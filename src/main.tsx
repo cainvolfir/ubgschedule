@@ -1,6 +1,7 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
+import Lenis from 'lenis';
 import TheoryStep from './components/TheoryStep';
 import PraktikumStep from './components/PraktikumStep';
 import ResultStep from './components/ResultStep';
@@ -18,6 +19,23 @@ navigator.serviceWorker?.addEventListener('controllerchange', () => {
 
 function App() {
   const { wizardStep, setWizardStep } = useJadwalStore();
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      touchMultiplier: 2,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => lenis.destroy();
+  }, [wizardStep]);
 
   return (
     <StrictMode>

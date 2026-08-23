@@ -16,17 +16,18 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
   const {
     selectedCandidateIds, toggleCandidateId,
     setSelectedCandidateIds, setPraktikumRoomPrefixes, setSelectedRoomPrefix,
-    setPraktikumCandidates, praktikumCandidates, praktikumRoomPrefixes,
+    setPraktikumCandidates, praktikumCandidates, praktikumRoomPrefixes, selectedRoomPrefix,
+    praktikumFileData, setPraktikumFileData,
   } = useJadwalStore();
 
-  const [phase, setPhase] = useState<Phase>('upload');
+  const [phase, setPhase] = useState<Phase>(() => praktikumCandidates.length > 0 ? 'selecting' : 'upload');
   const [loadingLog, setLoadingLog] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterKelas, setFilterKelas] = useState('');
   const [filterSmt, setFilterSmt] = useState('');
   const [fileName, setFileName] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
-  const [selectedPrefix, setSelectedPrefixLocal] = useState('');
+  const [selectedPrefix, setSelectedPrefixLocal] = useState(() => selectedRoomPrefix || '');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -36,7 +37,13 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [loadingLog]);
-  useEffect(() => () => { workerRef.current?.terminate(); }, []);
+ useEffect(() => () => { workerRef.current?.terminate(); }, []);
+
+  useEffect(() => {
+    if (praktikumFileData.length > 0 && !fileBufferRef.current) {
+      fileBufferRef.current = new Uint8Array(praktikumFileData).buffer;
+    }
+  }, [praktikumFileData]);
 
   const spawnWorker = useCallback(() => {
     const w = new Worker(new URL('../workers/praktikum.worker.ts', import.meta.url), { type: 'module' });
@@ -46,6 +53,9 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
 
   /* Phase 2: PARSE_PRAKTIKUM with selected prefix */
   const parseWithPrefix = useCallback((prefix: string) => {
+    if (!fileBufferRef.current && praktikumFileData.length > 0) {
+      fileBufferRef.current = new Uint8Array(praktikumFileData).buffer;
+    }
     if (!fileBufferRef.current) return;
     setPhase('loading');
     setLoadingLog(prev => prev + '\n> Parsing dengan prefix: ' + prefix + '...\n');
@@ -108,6 +118,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
     };
     file.arrayBuffer().then(buf => {
       fileBufferRef.current = buf;
+      setPraktikumFileData(Array.from(new Uint8Array(buf)));
       worker.postMessage({ type: 'SCAN_XLSX', file: buf });
     });
   }, [spawnWorker, setPraktikumRoomPrefixes, setSelectedRoomPrefix, setSelectedCandidateIds, setPraktikumCandidates, parseWithPrefix]);
@@ -132,7 +143,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
     workerRef.current?.terminate(); workerRef.current = null; fileBufferRef.current = null;
     setPhase('upload'); setLoadingLog(''); setSearchQuery(''); setFilterKelas(''); setFilterSmt('');
     setFileName(''); setSelectedPrefixLocal('');
-    setSelectedCandidateIds([]); setPraktikumCandidates([]);
+    setSelectedCandidateIds([]); setPraktikumCandidates([]); setPraktikumFileData([]);
   }, [setSelectedCandidateIds, setPraktikumCandidates]);
 
   /* FIX #2: semester filter */

@@ -44,10 +44,12 @@ interface JadwalState {
   selectedRoomPrefix: string;
   praktikumCandidates: PraktikumCandidate[];
   selectedCandidateIds: string[];
+  praktikumFileData: number[];
   isScanning: boolean;
   isParsing: boolean;
 
   setWizardStep: (step: 1 | 2 | 3) => void;
+  setPraktikumFileData: (data: number[]) => void;
   setDataTeoriMentah: (data: DataTeoriMentah[]) => void;
   setSelectedTheoryRowIds: (ids: string[]) => void;
   toggleTheoryRowId: (id: string) => void;
@@ -80,6 +82,7 @@ const initialState = {
   selectedRoomPrefix: '',
   praktikumCandidates: [],
   selectedCandidateIds: [],
+  praktikumFileData: [] as number[],
   isScanning: false,
   isParsing: false,
 };
@@ -90,6 +93,8 @@ export const useJadwalStore = create<JadwalState>()(
       ...initialState,
 
       setWizardStep: (step) => set({ wizardStep: step }),
+
+      setPraktikumFileData: (data) => set({ praktikumFileData: data }),
 
       setDataTeoriMentah: (data) => set({ dataTeoriMentah: data }),
 
@@ -165,6 +170,7 @@ export const useJadwalStore = create<JadwalState>()(
         selectedRoomPrefix: state.selectedRoomPrefix,
         praktikumCandidates: state.praktikumCandidates,
         selectedCandidateIds: state.selectedCandidateIds,
+        praktikumFileData: state.praktikumFileData,
       }),
     },
   ),

@@ -21,7 +21,7 @@ export default function ClassCard({ item, isSelected, onToggle }: ClassCardProps
   return (
     <div
       onClick={() => onToggle(item.id)}
-      className={`p-4 border-3 border-black rounded-xl flex gap-4 transition-all duration-200 cursor-pointer select-none ${
+      className={`p-4 border-3 border-black rounded-xl flex gap-4 cursor-pointer select-none transition-all duration-150 ${
         isSelected
           ? 'bg-white shadow-[6px_6px_0px_#000000] -translate-y-1'
           : 'bg-white/50 shadow-[0px_0px_0px_#000000] hover:bg-white hover:shadow-[4px_4px_0px_#000000]'
