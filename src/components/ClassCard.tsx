@@ -4,6 +4,7 @@ export interface ClassDisplayItem {
   id: string;
   nama: string;
   kelas: string;
+  keterangan?: string;
   hari: string;
   jam: string;
   ruang: string;
@@ -40,7 +41,7 @@ export default function ClassCard({ item, isSelected, onToggle }: ClassCardProps
         <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
           <h4 className="font-extrabold text-lg leading-tight uppercase">{item.nama}</h4>
           <span className="bg-black text-white px-2 py-0.5 text-xs font-bold rounded-full">
-            {item.kelas}
+            {item.kelas}{item.keterangan ? ` ${item.keterangan}` : ''}
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-sm font-semibold mb-3">

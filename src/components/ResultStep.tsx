@@ -10,8 +10,46 @@ import { useJadwalStore, type DataTeoriMentah, type PraktikumCandidate } from '.
 interface ResultProps { onBack?: () => void; }
 
 interface UnifiedClass {
-  id: string; kode: string; nama: string; kelas: string; sks: string;
+  id: string; kode: string; nama: string; kelas: string; keterangan: string; sks: string;
   hari: string; jam: string; ruang: string; dosen: string; isPraktikum: boolean;
+}
+
+function mergeSequentialSlots(classes: UnifiedClass[]): UnifiedClass[] {
+  const prakOnly = classes.filter(c => c.isPraktikum);
+  const theoryOnly = classes.filter(c => !c.isPraktikum);
+  const groups = new Map<string, UnifiedClass[]>();
+  for (const c of prakOnly) {
+    const key = [c.hari, c.nama, c.kelas, c.keterangan, c.ruang, c.dosen].join('|');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(c);
+  }
+  const merged: UnifiedClass[] = [];
+  for (const group of groups.values()) {
+    group.sort((a, b) => {
+      const ta = parseTimeToMinutes(a.jam), tb = parseTimeToMinutes(b.jam);
+      return (ta?.start ?? 0) - (tb?.start ?? 0);
+    });
+    let current = { ...group[0] };
+    let totalSKS = parseInt(current.sks) || 1;
+    for (let i = 1; i < group.length; i++) {
+      const prevEnd = parseTimeToMinutes(current.jam);
+      const nextStart = parseTimeToMinutes(group[i].jam);
+      if (prevEnd && nextStart && prevEnd.end === nextStart.start) {
+        const sm = String(Math.floor(prevEnd.start / 60)).padStart(2, '0') + '.' + String(prevEnd.start % 60).padStart(2, '0');
+        const em = String(Math.floor(nextStart.end / 60)).padStart(2, '0') + '.' + String(nextStart.end % 60).padStart(2, '0');
+        current.jam = sm + '-' + em;
+        totalSKS += parseInt(group[i].sks) || 1;
+      } else {
+        current.sks = String(totalSKS);
+        merged.push(current);
+        current = { ...group[i] };
+        totalSKS = parseInt(current.sks) || 1;
+      }
+    }
+    current.sks = String(totalSKS);
+    merged.push(current);
+  }
+  return [...theoryOnly, ...merged];
 }
 
 const HARI_ORDER = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
@@ -54,16 +92,16 @@ export default function ResultStep({ onBack }: ResultProps) {
 
   const unified: UnifiedClass[] = useMemo(() => {
     const theory: UnifiedClass[] = jadwalTeoriTerpilih.map((r: DataTeoriMentah) => ({
-      id: r.id, kode: r.KodeMK, nama: r.MataKuliah, kelas: r.Kelas,
+      id: r.id, kode: r.KodeMK, nama: r.MataKuliah, kelas: r.Kelas, keterangan: r.Keterangan || '',
       sks: r.SKS, hari: r.Hari, jam: r.Jam, ruang: r.Ruang, dosen: r.DosenPengampuh, isPraktikum: false,
     }));
     const prak: UnifiedClass[] = praktikumCandidates
       .filter((c: PraktikumCandidate) => selectedCandidateIds.includes(c.id))
       .map((c: PraktikumCandidate) => ({
-        id: c.id, kode: c.courseName, nama: c.courseName, kelas: c.kelas,
+        id: c.id, kode: c.courseName, nama: c.courseName, kelas: c.kelas, keterangan: c.keterangan || '',
         sks: '1', hari: c.hari, jam: c.jam, ruang: c.ruang, dosen: c.dosen, isPraktikum: true,
       }));
-    return [...theory, ...prak];
+    return mergeSequentialSlots([...theory, ...prak]);
   }, [jadwalTeoriTerpilih, selectedCandidateIds, praktikumCandidates]);
 
   const collisions = useMemo(() => findCollisions(unified), [unified]);
@@ -103,17 +141,17 @@ export default function ResultStep({ onBack }: ResultProps) {
     const headerRowH = 50;
     const titleH = 90;
     const dayH = 42;
-    const colW = [130, 180, 200, 80, 60, 100, 190];
-    const colH = ['Hari', 'Jam', 'Mata Kuliah', 'Kelas', 'SKS', 'Ruang', 'Dosen'];
+    const colW = [120, 160, 180, 60, 60, 50, 100, 190];
+    const colH = ['Hari', 'Jam', 'Mata Kuliah', 'Kelas', 'Seksi', 'SKS', 'Ruang', 'Dosen'];
     const tableW = colW.reduce((a, b) => a + b, 0);
     const tableX = (W - tableW) / 2;
-    const tblRows: { hari: string; jam: string; nama: string; kelas: string; sks: string; ruang: string; dosen: string; collided: boolean; praktikum: boolean }[] = [];
+    const tblRows: { hari: string; jam: string; nama: string; kelas: string; keterangan: string; sks: string; ruang: string; dosen: string; collided: boolean; praktikum: boolean }[] = [];
     for (const hari of HARI_ORDER) {
       const items = grouped.get(hari);
       if (!items || items.length === 0) continue;
       const sorted = items.sort((a: UnifiedClass, b: UnifiedClass) => (parseTimeToMinutes(a.jam)?.start ?? 0) - (parseTimeToMinutes(b.jam)?.start ?? 0));
       for (const c of sorted) {
-        tblRows.push({ hari, jam: c.jam, nama: c.nama, kelas: c.kelas, sks: c.sks, ruang: c.ruang, dosen: c.dosen, collided: collisions.has(c.id), praktikum: c.isPraktikum });
+        tblRows.push({ hari, jam: c.jam, nama: c.nama, kelas: c.kelas, keterangan: c.keterangan || '', sks: c.sks, ruang: c.ruang, dosen: c.dosen, collided: collisions.has(c.id), praktikum: c.isPraktikum });
       }
     }
     const daySec = new Map<string, number>();
@@ -153,7 +191,7 @@ export default function ResultStep({ onBack }: ResultProps) {
       }
       const bg = r.collided ? '#FFD13B' : r.praktikum ? '#FF90E8' : '#FFFFFF';
       bx(tableX, curY, tableW, rowH, bg);
-      const vals = [r.jam, r.nama, r.kelas, r.sks, r.ruang, r.dosen];
+      const vals = [r.jam, r.nama, r.kelas, r.keterangan || '', r.sks, r.ruang, r.dosen];
       let cx2 = tableX + colW[0];
       ctx.font = '12px "Space Grotesk", system-ui, sans-serif'; ctx.fillStyle = '#000';
       for (let i = 0; i < vals.length; i++) {

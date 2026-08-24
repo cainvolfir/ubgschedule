@@ -71,7 +71,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
           id: String(c.id), courseName: String(c.courseName), kelas: String(c.kelas),
           keterangan: String(c.keterangan || ''), dosen: String(c.dosen || ''),
           semester: String(c.semester || ''), hari: String(c.hari || ''),
-          jam: String(c.jam || ''), ruang: String(c.ruang || ''),
+          jam: String(c.jam || ''), ruang: String(c.ruang || ''), sks: String(c.sks || '1'),
         }));
         setPraktikumCandidates(cands);
         setSelectedCandidateIds([]); /* FIX #1: no default selections */
@@ -290,7 +290,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                 </div>
                 <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-background flex flex-col gap-4">
                   {filteredClasses.map(c => {
-                    const displayItem: ClassDisplayItem = { id: c.id, nama: c.courseName, kelas: c.kelas, hari: c.hari, jam: c.jam, ruang: c.ruang, sks: '1', dosen: c.dosen };
+                    const displayItem: ClassDisplayItem = { id: c.id, nama: c.courseName, kelas: c.kelas, keterangan: c.keterangan || '', hari: c.hari, jam: c.jam, ruang: c.ruang, sks: '1', dosen: c.dosen };
                     return (<ClassCard key={c.id} item={displayItem} isSelected={selectedCandidateIds.includes(c.id)} onToggle={toggleSelect} />);
                   })}
                   {filteredClasses.length === 0 && (<div className="text-center py-8 font-bold text-gray-500">Tidak ada kelas yang cocok.</div>)}
