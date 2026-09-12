@@ -20,14 +20,14 @@ export default function WizardHeader({ currentStep }: WizardHeaderProps) {
       {/* Top Bar: Logo + Help */}
       <header className="bg-background border-b-2 border-black p-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white border-3 border-black shadow-[2px_2px_0px_#000000] rounded-md flex items-center justify-center p-1 shrink-0">
+          <div className="w-10 h-10 bg-white border-2 border-black shadow-none rounded-none flex items-center justify-center p-1 shrink-0">
             <img src="/logo-ubg.png" alt="UBG" className="w-full h-full object-contain" />
           </div>
           <span className="font-extrabold text-lg tracking-tight uppercase">UBG Schedule</span>
         </div>
         <button
           onClick={() => setIsHelpOpen(true)}
-          className="flex items-center gap-2 bg-white px-3 py-1.5 border-3 border-black shadow-[2px_2px_0px_#000000] rounded-lg font-bold text-sm hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[1px_1px_0px_#000000] transition-all"
+          className="flex items-center gap-2 bg-white px-3 py-1.5 border-2 border-black rounded-none shadow-none font-bold text-sm hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all"
         >
           <Question weight="bold" />
           <span className="hidden sm:inline">Bantuan</span>
@@ -35,7 +35,7 @@ export default function WizardHeader({ currentStep }: WizardHeaderProps) {
       </header>
 
       {/* Progress Bar */}
-      <div className="bg-white border-b-3 border-black px-4 py-3 flex justify-center items-center gap-2 md:gap-4 sticky top-0 z-50">
+      <div className="bg-white border-b-2 border-black px-4 py-3 flex justify-center items-center gap-2 md:gap-4 sticky top-0 z-50">
         {steps.map((step, i) => {
           const isCompleted = step.num < currentStep;
           const isCurrent = step.num === currentStep;
@@ -43,22 +43,24 @@ export default function WizardHeader({ currentStep }: WizardHeaderProps) {
           return (
             <div key={step.num} className="flex items-center gap-2 md:gap-4">
               <div
-                className={`flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 border-3 border-black rounded-full transition-all ${
-                  isCurrent
-                    ? 'bg-tertiary text-white shadow-[3px_3px_0px_#000000]'
-                    : isCompleted
-                      ? 'bg-white text-black'
-                      : 'bg-white text-gray-400 border-gray-400'
-                }`}
+className={`flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 border-2 border-black rounded-none transition-all ${
+                    isCurrent
+                      ? 'bg-tertiary text-white shadow-[3px_3px_0px_#000000] -translate-x-0.5 -translate-y-0.5'
+                      : isCompleted
+                        ? 'bg-white text-black'
+                        : 'bg-white text-gray-400 border-slate-400 shadow-none translate-x-0 translate-y-0'
+                    }`}
               >
                 {isCompleted ? (
                   <CheckCircle weight="fill" className="text-tertiary text-xl" />
                 ) : (
                   <span
-                    className={`rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center text-xs ${
+                    className={`rounded-none w-5 h-5 md:w-6 md:h-6 flex items-center justify-center text-xs border-2 border-black ${
                       isCurrent
-                        ? 'bg-black text-white border-2 border-black'
-                        : 'border-2 border-gray-400 text-gray-400'
+                        ? 'bg-black text-white'
+                        : isCompleted
+                          ? 'bg-white text-gray-800'
+                          : 'bg-transparent text-gray-400'
                     }`}
                   >
                     {step.num}

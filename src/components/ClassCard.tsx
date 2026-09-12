@@ -22,16 +22,16 @@ export default function ClassCard({ item, isSelected, onToggle }: ClassCardProps
   return (
     <div
       onClick={() => onToggle(item.id)}
-      className={`p-4 border-3 border-black rounded-xl flex gap-4 cursor-pointer select-none transition-all duration-150 ${
+      className={`p-4 border-2 border-black rounded-none flex gap-4 cursor-pointer select-none transition-all duration-150 ${
         isSelected
-          ? 'bg-white shadow-[6px_6px_0px_#000000] -translate-y-1'
-          : 'bg-white/50 shadow-[0px_0px_0px_#000000] hover:bg-white hover:shadow-[4px_4px_0px_#000000]'
+          ? 'bg-white shadow-[4px_4px_0px_#000000] -translate-x-1 -translate-y-1 active:translate-x-0 active:translate-y-0 active:shadow-none'
+          : 'bg-white/70 shadow-none translate-x-0 translate-y-0 hover:bg-white hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none'
       }`}
     >
       <div className="pt-1">
         <input
           type="checkbox"
-          className="brutalist-checkbox"
+          className="brutalist-checkbox rounded-none"
           checked={isSelected}
           readOnly
           style={{ pointerEvents: 'none' }}
@@ -40,7 +40,7 @@ export default function ClassCard({ item, isSelected, onToggle }: ClassCardProps
       <div className="flex-1 text-black">
         <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
           <h4 className="font-extrabold text-lg leading-tight uppercase">{item.nama}</h4>
-          <span className="bg-black text-white px-2 py-0.5 text-xs font-bold rounded-full">
+          <span className="bg-black text-white px-2 py-0.5 text-xs font-bold rounded-none border-2 border-black">
             {item.kelas}{item.keterangan ? ` ${item.keterangan}` : ''}
           </span>
         </div>

@@ -162,11 +162,11 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
 
   const footerButtons = (
     <>
-      <button onClick={onBack} className="bg-white border-4 border-black px-4 md:px-6 py-3 font-bold transition-all inline-flex items-center gap-2 shadow-[3px_3px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_#000000]">
+      <button onClick={onBack} className="bg-white rounded-none border-2 border-black px-4 md:px-6 py-3 font-bold transition-all inline-flex items-center gap-2 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none">
         <ArrowLeft weight="bold" /><span className="hidden md:inline">Kembali</span>
       </button>
       <div className="flex items-center gap-3">
-        <button onClick={onNext} className="bg-white border-4 border-black px-4 md:px-6 py-3 font-bold transition-all inline-flex items-center gap-2 shadow-[3px_3px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_#000000]">
+        <button onClick={onNext} className="bg-white rounded-none border-2 border-black px-4 md:px-6 py-3 font-bold transition-all inline-flex items-center gap-2 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none">
           Lewati Praktikum
         </button>
       </div>
@@ -186,32 +186,32 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                 <div className="mb-8 text-center md:text-left">
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold uppercase leading-tight mb-4 tracking-tight">
                     Lanjut ke<br />
-                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-4 border-black inline-block mt-2 shadow-[4px_4px_0px_#000000] rotate-[-2deg]">Jadwal Praktikum</span>
+                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-2 border-black inline-block mt-2 shadow-[4px_4px_0px_#000000] rotate-[-2deg] rounded-none">Jadwal Praktikum</span>
                   </h1>
                   <p className="font-semibold text-lg max-w-md mx-auto md:mx-0">Upload file Spreadsheet (XLSX / CSV) jadwal praktikum.</p>
                 </div>
                 {isLoading ? (
-                  <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_#000000] flex flex-col items-center justify-center text-center gap-4">
-                    <div className="w-20 h-20 bg-background border-4 border-black rounded-full flex items-center justify-center"><FileXls weight="bold" className="text-success text-3xl" /></div>
+                  <div className="bg-white border-2 border-black p-8 shadow-[8px_8px_0px_#000000] flex flex-col items-center justify-center text-center gap-4">
+                    <div className="w-20 h-20 bg-background border-2 border-black rounded-none flex items-center justify-center"><FileXls weight="bold" className="text-success text-3xl" /></div>
                     <h3 className="font-extrabold text-xl animate-pulse">Memindai Spreadsheet...</h3>
-                    <div className="w-full h-8 bg-white border-3 border-black p-1"><div className="w-full h-full bg-success loading-stripes border-r-3 border-black" /></div>
+                    <div className="w-full h-8 bg-white border-2 border-black p-1"><div className="w-full h-full bg-success loading-stripes border-r-2 border-black" /></div>
                     <div ref={logRef} className="font-medium text-sm mt-2 text-left w-full h-20 overflow-y-auto bg-gray-100 border-2 border-black p-2 font-mono text-xs whitespace-pre-wrap">{loadingLog}</div>
                   </div>
                 ) : (
                   <>
-                    <div className={"bg-white border-4 border-black p-8 " + (isDragOver ? 'bg-[#DBEAFE] shadow-[6px_6px_0px_#000000]' : 'shadow-[8px_8px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[6px_6px_0px_#000000]') + " transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-4 group"}
+                    <div className={"bg-white rounded-none border-2 border-black p-8 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-4 group hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none " + (isDragOver ? 'bg-[#DBEAFE]' : 'shadow-none')}
                       onClick={() => fileInputRef.current?.click()}
                       onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
                       onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop}>
-                      <div className="w-20 h-20 bg-background border-4 border-black rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"><FileXls weight="bold" className="text-success text-3xl" /></div>
+                      <div className="w-20 h-20 bg-background border-2 border-black rounded-none flex items-center justify-center group-hover:scale-110 transition-transform"><FileXls weight="bold" className="text-success text-3xl" /></div>
                       <h3 className="font-extrabold text-xl mb-1">Tarik sini</h3>
                       <p className="font-medium text-gray-600">Mendukung .xlsx, .xls, .csv</p>
                       <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileChange} />
-                      <button type="button" className="mt-2 bg-[#60A5FA] w-full py-3 border-4 border-black shadow-[4px_4px_0px_#000000] font-bold text-lg text-black group-hover:bg-tertiary group-hover:text-white transition-colors" onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                      <button type="button" className="mt-2 bg-[#60A5FA] w-full py-3 border-2 border-black rounded-none shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none font-bold text-lg text-black transition-colors" onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}>
                         <UploadSimple weight="bold" className="inline mr-2" />Pilih File Spreadsheet
                       </button>
                     </div>
-                    <div className="mt-8 bg-background border-4 border-black rounded-xl p-4 shadow-[4px_4px_0px_#000000] flex items-center gap-3">
+                    <div className="mt-8 bg-background border-2 border-black rounded-none shadow-none p-4 flex items-center gap-3">
                       <Sparkle weight="fill" className="text-tertiary text-2xl shrink-0" />
                       <p className="font-medium text-sm leading-relaxed">Aplikasi akan mengekstrak jadwal praktikum dari file spreadsheet dan mendeteksi prefix ruangan.</p>
                     </div>
@@ -225,30 +225,30 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                 <div className="mb-6 text-center lg:text-left">
                   <h1 className="text-4xl lg:text-5xl font-extrabold uppercase leading-tight mb-2 tracking-tight">
                     Mulai dari<br />
-                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-4 border-black inline-block shadow-[4px_4px_0px_#000000] rotate-[-2deg]">Pilih Kelas</span>
+                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-2 border-black inline-block shadow-[4px_4px_0px_#000000] rotate-[-2deg] rounded-none">Pilih Kelas</span>
                   </h1>
                   <p className="font-semibold text-lg max-w-md mx-auto lg:mx-0 mt-4">Pilih jadwal kelas praktikum yang ingin Anda ikuti.</p>
                 </div>
-                <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[8px_8px_0px_#000000] flex flex-col items-center justify-center text-center gap-4">
-                  <div className="w-20 h-20 bg-[#DBEAFE] border-4 border-black rounded-full flex items-center justify-center"><CheckCircle weight="fill" className="text-tertiary text-4xl" /></div>
+                <div className="bg-white border-2 border-black rounded-none shadow-none p-6 flex flex-col items-center justify-center text-center gap-4">
+                  <div className="w-20 h-20 bg-[#DBEAFE] border-2 border-black rounded-none flex items-center justify-center"><CheckCircle weight="fill" className="text-tertiary text-4xl" /></div>
                   <h3 className="font-extrabold text-lg mb-1 truncate w-48 mx-auto" title={fileName}>{fileName || 'praktikum.xlsx'}</h3>
                   <div className="font-bold text-success flex items-center justify-center gap-1"><Sparkle weight="bold" />Berhasil diproses</div>
-                  <div className="w-full bg-background border-2 border-black p-3 text-sm font-bold flex justify-between items-center rounded-lg">
+                  <div className="w-full bg-background border-2 border-black p-3 text-sm font-bold flex justify-between items-center rounded-none">
                     Ditemukan:<span className="bg-black text-white px-2 rounded">{praktikumCandidates.length} Kelas</span>
                   </div>
                   {praktikumRoomPrefixes.length > 0 && (
-                    <div className="w-full text-left mt-2 border-t-4 border-black pt-4">
+                    <div className="w-full text-left mt-2 border-t-2 border-black pt-4">
                       <label className="block font-bold text-sm uppercase mb-1">Pilih Prefix Ruangan</label>
                       <p className="text-xs font-semibold text-gray-600 mb-2">Pilih kata awalan yang menandakan Ruang Praktikum di Excel.</p>
                       <div className="relative w-full">
-                        <select value={selectedPrefix} onChange={e => handlePrefixChange(e.target.value)} className="w-full appearance-none bg-secondary border-3 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none focus:shadow-[2px_2px_0px_#000000] hover:shadow-[2px_2px_0px_#000000] transition-shadow text-black rounded-md">
+                        <select value={selectedPrefix} onChange={e => handlePrefixChange(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none focus:shadow-[2px_2px_0px_#000000] hover:shadow-[2px_2px_0px_#000000] transition-shadow text-black">
                           {praktikumRoomPrefixes.map(p => (<option key={p} value={p}>{p}</option>))}
                         </select>
                         <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                       </div>
                     </div>
                   )}
-                  <button onClick={handleReset} className="mt-2 bg-white w-full py-3 border-4 border-black shadow-[4px_4px_0px_#000000] font-bold text-lg text-black hover:bg-red-50 hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#000000] transition-all flex justify-center items-center gap-2">
+                  <button onClick={handleReset} className="mt-2 bg-white w-full py-3 rounded-none border-2 border-black shadow-none font-bold text-lg text-black hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex justify-center items-center gap-2">
                     <Trash weight="bold" />Ganti File
                   </button>
                 </div>
@@ -259,18 +259,18 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
           {/* RIGHT COLUMN */}
           {isSelecting && (
             <section className="w-full lg:col-span-8 transition-all duration-300">
-              <div className="bg-white border-4 border-black shadow-[8px_8px_0px_#000000] h-full flex flex-col rounded-2xl overflow-hidden">
-                <div className="border-b-4 border-black p-4 bg-tertiary text-white rounded-t-xl flex flex-col sm:flex-row gap-4 justify-between items-center">
+              <div className="bg-white border-2 border-black shadow-none h-full flex flex-col rounded-none overflow-hidden">
+                <div className="border-b-2 border-black p-4 bg-tertiary text-white rounded-none flex flex-col sm:flex-row gap-4 justify-between items-center">
                   <div className="font-extrabold text-xl uppercase">Pilih Kelas Praktikum</div>
                   <div className="relative w-full sm:w-auto text-black">
                     <MagnifyingGlass weight="bold" className="absolute left-3 top-1/2 -translate-y-1/2 text-xl" />
-                    <input type="text" placeholder="Cari praktikum atau lab..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full sm:w-64 pl-10 pr-4 py-2 border-3 border-black font-medium focus:outline-none focus:shadow-[4px_4px_0px_#000000] transition-shadow" />
+                    <input type="text" placeholder="Cari praktikum atau lab..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-none border-2 border-black font-medium focus:outline-none focus:shadow-[4px_4px_0px_#000000] transition-shadow" />
                   </div>
                 </div>
                 {/* FIX #2: Semester filter + Kelas filter side by side */}
-                <div className="border-b-4 border-black p-4 bg-white flex flex-col md:flex-row gap-3">
+                <div className="border-b-2 border-black p-4 bg-white flex flex-col md:flex-row gap-3">
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary border-3 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
+                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
                       <option value="">Semua SMT</option>
                       {uniqueSmt.map(s => (
                         <option key={s} value={s}>Semester {s}</option>
@@ -279,7 +279,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary border-3 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
+                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
                       <option value="">Semua Kelas</option>
                       {uniqueKelasPrak.map(k => (
                         <option key={k} value={k}>{k}</option>
@@ -303,22 +303,22 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
 
       {/* FIXED BOTTOM NAV BAR */}
       {isSelecting && (
-        <div className="fixed bottom-0 left-0 w-full z-[100] bg-white border-t-2 border-black p-4 flex justify-between items-center shadow-[0px_-2px_0px_rgba(0,0,0,1)]">
+        <div className="fixed bottom-0 left-0 w-full z-[100] bg-white rounded-none border-t-2 border-black p-4 flex justify-between items-center shadow-[0px_-2px_0px_rgba(0,0,0,1)]">
           <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <button onClick={onBack} className="bg-white border-3 border-black px-3 py-2 font-bold transition-all inline-flex items-center gap-2 shadow-[2px_2px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[1px_1px_0px_#000000] text-sm">
+              <button onClick={onBack} className="bg-white rounded-none border-2 border-black px-3 py-2 font-bold transition-all inline-flex items-center gap-2 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none text-sm">
                 <ArrowLeft weight="bold" /><span className="hidden md:inline">Kembali</span>
               </button>
               <div className="font-bold text-black">Terpilih: <span className="text-xl px-2 bg-[#60A5FA] border-2 border-black ml-1">{selectedCount}</span></div>
             </div>
             <div className="flex items-center gap-3">
               {selectedCount === 0 && (
-                <button onClick={onNext} className="bg-white border-4 border-black px-4 py-3 font-bold transition-all inline-flex items-center justify-center gap-2 shadow-[3px_3px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_#000000] text-sm whitespace-nowrap">
+                <button onClick={onNext} className="bg-white rounded-none border-2 border-black px-4 py-3 font-bold transition-all inline-flex items-center justify-center gap-2 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none text-sm whitespace-nowrap">
                   SKIP
                 </button>
               )}
               <button disabled={selectedCount === 0} onClick={onNext}
-                className={"border-4 border-black px-4 py-3 font-extrabold uppercase transition-all inline-flex items-center justify-center gap-2 " + (selectedCount > 0 ? 'bg-tertiary text-white shadow-[4px_4px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#000000]' : 'bg-gray-300 text-gray-500 cursor-not-allowed') + " text-sm whitespace-nowrap"}>
+                className={"rounded-none border-2 border-black px-4 py-3 font-extrabold uppercase transition-all inline-flex items-center justify-center gap-2 " + (selectedCount > 0 ? 'bg-tertiary text-white shadow-[4px_4px_0px_#000000] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000]' : 'bg-gray-300 text-gray-500 cursor-not-allowed') + " text-sm whitespace-nowrap"}>
                 <span className="hidden md:inline">Lihat Hasil</span><span className="md:hidden">Next</span><MagicWand weight="bold" />
               </button>
             </div>

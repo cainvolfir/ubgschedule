@@ -236,18 +236,18 @@ export default function ResultStep({ onBack }: ResultProps) {
         <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
           {/* LEFT: Schedule List */}
           <div className="flex-1 flex flex-col gap-8 order-2 lg:order-1">
-            <div className="flex items-end justify-between border-b-4 border-black pb-4">
+            <div className="flex items-end justify-between border-b-2 border-black pb-4">
               <div>
                 <h1 className="text-3xl md:text-4xl font-extrabold uppercase tracking-tight">Jadwal Akhir</h1>
                 <p className="font-semibold text-lg mt-2 text-gray-800">Periksa kembali jadwalmu. Siap untuk diekspor!</p>
               </div>
-              <button onClick={onBack} className="bg-white border-3 border-black px-3 py-2 font-bold transition-all inline-flex items-center gap-2 shadow-[2px_2px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[1px_1px_0px_#000000] text-sm shrink-0">
+              <button onClick={onBack} className="bg-white rounded-none border-2 border-black px-3 py-2 font-bold transition-all inline-flex items-center gap-2 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none text-sm shrink-0">
                 <ArrowLeft weight="bold" /><span className="hidden md:inline">Kembali</span>
               </button>
             </div>
 
             {unified.length === 0 && (
-              <div className="text-center py-16 bg-white border-4 border-black rounded-xl shadow-[4px_4px_0px_#000000]">
+              <div className="text-center py-16 bg-white border-2 border-black rounded-none shadow-[4px_4px_0px_#000000]">
                 <p className="font-bold text-xl text-gray-500">Belum ada jadwal dipilih.</p>
                 <p className="font-medium text-gray-400 mt-2">Kembali ke langkah sebelumnya untuk memilih kelas.</p>
               </div>
@@ -259,9 +259,9 @@ export default function ResultStep({ onBack }: ResultProps) {
               return (
                 <section key={hari} className="flex flex-col gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-black rounded-full" />
+                    <div className="w-3 h-3 bg-black rounded-none" />
                     <h2 className="text-2xl font-black uppercase tracking-wide">{hari}</h2>
-                    <div className="h-1 bg-black flex-1 rounded-full opacity-10" />
+                    <div className="h-1 bg-black rounded-none opacity-10" />
                   </div>
                   <motion.div
                     className="grid grid-cols-1 md:grid-cols-2 gap-5"
@@ -270,10 +270,10 @@ export default function ResultStep({ onBack }: ResultProps) {
                       const isCollided = collisions.has(c.id);
                       const cardBg = isCollided ? 'bg-[#FFD13B]' : c.isPraktikum ? 'bg-secondary' : 'bg-white';
                       return (
-                        <motion.div key={c.id} className={"relative border-4 border-black rounded-xl p-5 shadow-[4px_4px_0px_#000000] hover:-translate-y-1 transition-transform group " + cardBg}>
+                        <motion.div key={c.id} className={"relative border-2 border-black rounded-none p-5 shadow-[4px_4px_0px_#000000] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-[4px_4px_0px_#000000] transition-transform group " + cardBg}>
                           {isCollided && (
                             <motion.div
-                              className="absolute -top-4 -right-2 bg-error text-white border-3 border-black px-3 py-1 font-black text-sm rounded-full shadow-[2px_2px_0px_#000000] flex items-center gap-1 z-10"
+                              className="absolute -top-4 -right-2 bg-error text-white border-2 border-black px-3 py-1 font-black text-sm rounded-none shadow-[2px_2px_0px_#000000] flex items-center gap-1 z-10"
                               animate={{ x: [-3, 3, -3, 3, 0] }}
                               transition={{ duration: 0.25, repeat: Infinity, repeatDelay: 3 }}
                             >
@@ -281,22 +281,22 @@ export default function ResultStep({ onBack }: ResultProps) {
                             </motion.div>
                           )}
                           {c.isPraktikum && !isCollided && (
-                            <div className="absolute top-4 right-4 bg-black text-white px-2 py-1 text-[10px] font-black uppercase rounded">Praktikum</div>
+                            <div className="absolute top-4 right-4 bg-black text-white px-2 py-1 text-[10px] font-black uppercase rounded-none">Praktikum</div>
                           )}
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex gap-2">
-                              <span className={(c.isPraktikum ? 'bg-white text-black' : 'bg-tertiary text-white') + " px-2 py-0.5 text-xs font-extrabold border-2 border-black rounded-full uppercase"}>{c.kode}</span>
-                              <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-full">{c.sks} SKS</span>
+                              <span className={(c.isPraktikum ? 'bg-white text-black' : 'bg-tertiary text-white') + " px-2 py-0.5 text-xs font-extrabold border-2 border-black rounded-none uppercase"}>{c.kode}</span>
+                              <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-none">{c.sks} SKS</span>
                             </div>
                             {!c.isPraktikum && (
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="w-8 h-8 flex items-center justify-center bg-[#DBEAFE] border-2 border-black rounded-md hover:bg-tertiary hover:text-white transition-colors"><PencilSimple weight="bold" /></button>
-                                <button className="w-8 h-8 flex items-center justify-center bg-red-100 border-2 border-black rounded-md hover:bg-error hover:text-white transition-colors"><Trash weight="bold" /></button>
+                                <button className="w-8 h-8 flex items-center justify-center bg-[#DBEAFE] border-2 border-black rounded-none hover:bg-tertiary hover:text-white transition-colors"><PencilSimple weight="bold" /></button>
+                                <button className="w-8 h-8 flex items-center justify-center bg-red-100 border-2 border-black rounded-none hover:bg-error hover:text-white transition-colors"><Trash weight="bold" /></button>
                               </div>
                             )}
                           </div>
                           <h3 className={"text-xl font-black leading-tight mb-4 uppercase " + (c.isPraktikum && !isCollided ? 'pr-16' : '')}>{c.nama}</h3>
-                          <div className={"space-y-2 text-sm font-bold border-2 border-black rounded-lg p-3 " + (isCollided ? 'bg-white/70' : c.isPraktikum ? 'bg-white/70 backdrop-blur-sm' : 'bg-background')}>
+                          <div className={"space-y-2 text-sm font-bold border-2 border-black rounded-none p-3 " + (isCollided ? 'bg-white/70' : c.isPraktikum ? 'bg-white/70 backdrop-blur-sm' : 'bg-background')}>
                             <div className="flex items-center gap-2"><Clock weight="bold" className={"text-lg " + (isCollided ? 'text-error' : '')} /> {c.jam}</div>
                             <div className="flex items-center gap-2"><MapPin weight="bold" className="text-lg text-tertiary" /> {c.ruang}</div>
                             <div className="flex items-center gap-2 truncate"><UserCircle weight="bold" className="text-lg text-tertiary" /> {c.dosen}</div>
@@ -312,34 +312,34 @@ export default function ResultStep({ onBack }: ResultProps) {
 
           {/* RIGHT: Sidebar */}
           <aside className="w-full lg:w-80 shrink-0 order-1 lg:order-2">
-            <div className="lg:sticky lg:top-28 bg-white border-4 border-black p-6 shadow-[4px_4px_0px_#000000] flex flex-col gap-6">
-              <h3 className="text-xl font-black border-b-4 border-black pb-2">Ringkasan</h3>
+            <div className="lg:sticky lg:top-28 bg-white rounded-none border-2 border-black p-6 shadow-none flex flex-col gap-6">
+              <h3 className="text-xl font-black border-b-2 border-black pb-2">Ringkasan</h3>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-gray-600">Total SKS</span>
-                <span className="font-black bg-primary px-3 py-1 border-3 border-black rounded-lg shadow-[2px_2px_0px_#000000]">{totalSKS}</span>
+                <span className="font-black bg-primary px-3 py-1 border-2 border-black rounded-none shadow-[2px_2px_0px_#000000]">{totalSKS}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-gray-600">Total Kelas</span>
-                <span className="font-black bg-secondary px-3 py-1 border-3 border-black rounded-lg shadow-[2px_2px_0px_#000000]">{totalKelas}</span>
+                <span className="font-black bg-secondary px-3 py-1 border-2 border-black rounded-none shadow-[2px_2px_0px_#000000]">{totalKelas}</span>
               </div>
 
               {collisionCount > 0 && (
-                <div className="bg-red-100 border-3 border-error rounded-xl p-3 flex gap-3">
+                <div className="bg-red-100 border-2 border-error rounded-none p-3 flex gap-3">
                   <Warning weight="fill" className="text-error shrink-0 text-lg" />
                   <p className="text-sm font-bold leading-snug">Ada <strong>{collisionCount}</strong> kelas yang memiliki jadwal bertabrakan!</p>
                 </div>
               )}
 
-              <div className="h-1 bg-black rounded-full opacity-10" />
+              <div className="h-1 bg-black rounded-none opacity-10" />
 
               <div className="flex flex-col gap-3">
-                <button onClick={copyToClipboard} className={"w-full flex items-center justify-between border-3 border-black p-3 rounded-xl shadow-[4px_4px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#000000] transition-all group font-bold " + (exportSuccess === 'copy' ? 'bg-green-100 border-green-500 text-green-600' : 'bg-white')}>
+                <button onClick={copyToClipboard} className={"w-full flex items-center justify-between rounded-none border-2 border-black p-3 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group font-bold " + (exportSuccess === 'copy' ? 'bg-green-100 border-green-500 text-green-600' : 'bg-white')}>
                   {exportSuccess === 'copy' ? (<><CheckCircle weight="bold" className="text-xl text-green-600" /> Tersalin!</>) : (<><Copy weight="bold" className="text-xl" /> <span>Salin Teks</span> <span className="opacity-0 group-hover:opacity-100 transition-opacity">{'\u2192'}</span></>)}
                 </button>
-                <button onClick={downloadImage} className={"w-full flex items-center justify-between border-3 border-black p-3 rounded-xl shadow-[4px_4px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#000000] transition-all group font-bold " + (exportSuccess === 'image' ? 'bg-green-100 border-green-500 text-green-600' : 'bg-white')}>
+                <button onClick={downloadImage} className={"w-full flex items-center justify-between rounded-none border-2 border-black p-3 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group font-bold " + (exportSuccess === 'image' ? 'bg-green-100 border-green-500 text-green-600' : 'bg-white')}>
                   {exportSuccess === 'image' ? (<><CheckCircle weight="bold" className="text-xl text-green-600" /> Terunduh!</>) : (<><Image weight="bold" className="text-xl text-error" /> <span>Unduh Gambar</span> <span className="opacity-0 group-hover:opacity-100 transition-opacity">{'\u2192'}</span></>)}
                 </button>
-                <button onClick={handleReset} className="w-full flex items-center justify-center bg-error text-white border-3 border-black p-3 rounded-xl shadow-[4px_4px_0px_#000000] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#000000] transition-all group font-extrabold uppercase mt-2">
+                <button onClick={handleReset} className="w-full flex items-center justify-center bg-error text-white rounded-none border-2 border-black p-3 shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group font-extrabold uppercase mt-2">
                   <div className="flex items-center gap-2"><Prohibit weight="bold" className="text-xl" /> <span>Reset Semua</span></div>
                 </button>
               </div>
