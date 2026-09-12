@@ -55,13 +55,13 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
       setLoadingLog(p => p + '[FATAL] ' + err.message + '\n');
       setIsLoading(false); worker.terminate(); workerRef.current = null;
     };
-    file.arrayBuffer().then(buf => { worker.postMessage({ type: 'PARSE_THEORY', fileBuffer: buf }); });
+    file.arrayBuffer().then(buf => { worker.postMessage({ type: 'PARSE_THEORY', fileBuffer: buf, fileName: file.name }); });
   }, [setDataTeoriMentah]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setIsDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type === 'application/pdf') startParsing(file);
+    if (file && (file.type === 'application/pdf' || /\.(xlsx|xls)$/i.test(file.name))) startParsing(file);
   }, [startParsing]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +102,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                     Mulai dari<br />
                     <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-4 border-black inline-block mt-2 shadow-[4px_4px_0px_#000000] rotate-[-2deg]">Jadwal Teori</span>
                   </h1>
-                  <p className="font-semibold text-lg max-w-md mx-auto md:mx-0">Unggah file PDF jadwal kuliah teori.</p>
+                  <p className="font-semibold text-lg max-w-md mx-auto md:mx-0">Unggah file PDF atau XLSX jadwal kuliah teori.</p>
                 </div>
                 {isLoading ? (
                   <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_#000000] flex flex-col items-center justify-center text-center gap-4">
@@ -120,16 +120,16 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                       onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop}
                     >
                       <div className="w-20 h-20 bg-background border-4 border-black rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"><FilePdf weight="bold" className="text-tertiary text-3xl" /></div>
-                      <h3 className="font-extrabold text-xl mb-1">Drag & Drop file PDF</h3>
+                      <h3 className="font-extrabold text-xl mb-1">Drag & Drop file PDF atau XLSX</h3>
                       <p className="font-medium text-gray-600">atau klik untuk memilih</p>
-                      <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+                      <input ref={fileInputRef} type="file" accept=".pdf,.xlsx,.xls" className="hidden" onChange={handleFileChange} />
                       <button type="button" className="mt-2 bg-[#60A5FA] w-full py-3 border-4 border-black shadow-[4px_4px_0px_#000000] font-bold text-lg text-black group-hover:bg-tertiary group-hover:text-white transition-colors" onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}>
-                        <UploadSimple weight="bold" className="inline mr-2" />Pilih File PDF
+                        <UploadSimple weight="bold" className="inline mr-2" />Pilih File PDF atau XLSX
                       </button>
                     </div>
                     <div className="mt-8 bg-background border-4 border-black rounded-xl p-4 shadow-[4px_4px_0px_#000000] flex items-center gap-3">
                       <Sparkle weight="fill" className="text-tertiary text-2xl shrink-0" />
-                      <p className="font-medium text-sm leading-relaxed">Aplikasi akan otomatis mengekstrak <strong>Kode MK</strong>, <strong>Mata Kuliah</strong>, <strong>Kelas</strong>, <strong>Jam</strong>, <strong>Ruang</strong>, dan <strong>Dosen</strong> dari PDF.</p>
+                      <p className="font-medium text-sm leading-relaxed">Aplikasi akan otomatis mengekstrak <strong>Kode MK</strong>, <strong>Mata Kuliah</strong>, <strong>Kelas</strong>, <strong>Jam</strong>, <strong>Ruang</strong>, dan <strong>Dosen</strong> dari PDF atau XLSX.</p>
                     </div>
                   </>
                 )}
