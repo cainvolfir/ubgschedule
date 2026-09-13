@@ -45,8 +45,13 @@ test-*.mjs
 
 .vercel
 
-# Playwright MCP test artifacts
+# AI agent artifacts & docs (local only, not for repo)
 .playwright-mcp/
+.hallmark/
+.opencode/
+AGENTS.md
+ANIMATION_RULES.md
+design.md
 
 # Design experiments
 /design/
