@@ -8,8 +8,6 @@
 
 Upload PDF jadwal teori → Upload Excel jadwal praktikum → Lihat & ekspor jadwal lengkap.
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-ubgschedule.vercel.app-black?style=for-the-badge&labelColor=000&color=fff&logoColor=white)](https://uni-schedule.vercel.app)
-[![PWA](https://img.shields.io/badge/PWA-Ready-black?style=for-the-badge&logo=pwa&logoColor=white&labelColor=000)](https://uni-schedule.vercel.app)
 [![React](https://img.shields.io/badge/React_19-black?style=for-the-badge&logo=react&logoColor=61DAFB&labelColor=000)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-black?style=for-the-badge&logo=typescript&logoColor=3178C6&labelColor=000)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-black?style=for-the-badge&logo=vite&logoColor=646CFF&labelColor=000)](https://vite.dev)
