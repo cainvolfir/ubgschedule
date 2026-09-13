@@ -1,11 +1,15 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
-  FilePdf, UploadSimple, Sparkle, CheckCircle,
-  Trash, MagnifyingGlass, CaretDown, ArrowRight,
+  FilePdf, Sparkle,
+  MagnifyingGlass, CaretDown, ArrowRight,
 } from '@phosphor-icons/react';
 import WizardHeader from './WizardHeader';
 import ClassCard, { type ClassDisplayItem } from './ClassCard';
 import { useJadwalStore, type DataTeoriMentah } from '../store/useJadwalStore';
+import FileDropZone from './shared/FileDropZone';
+import LoadingState from './shared/LoadingState';
+import FileSummaryCard from './shared/FileSummaryCard';
+import BottomNav from './shared/BottomNav';
 
 type WorkerMsg = { type: string; step?: string; data?: unknown };
 
@@ -27,13 +31,8 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   const [fileName, setFileName] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const logRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
 
-  useEffect(() => {
-    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
-  }, [loadingLog]);
   useEffect(() => () => { workerRef.current?.terminate(); }, []);
 
   const startParsing = useCallback((file: File) => {
@@ -64,8 +63,8 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
     if (file && (file.type === 'application/pdf' || /\.(xlsx|xls)$/i.test(file.name))) startParsing(file);
   }, [startParsing]);
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (file) startParsing(file);
+  const handleFileChange = useCallback((file: File) => {
+    startParsing(file);
   }, [startParsing]);
 
   const toggleSelect = useCallback((id: string) => { toggleTheoryRowId(id); }, [toggleTheoryRowId]);
@@ -100,33 +99,31 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                 <div className="mb-8 text-center md:text-left">
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold uppercase leading-tight mb-4 tracking-tight">
                     Mulai dari<br />
-                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-2 border-black inline-block mt-2 shadow-[4px_4px_0px_#000000] rotate-[-2deg] rounded-none">Jadwal Teori</span>
+                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-2 border-black inline-block mt-2 shadow-brutal rotate-[-2deg] rounded-none">Jadwal Teori</span>
                   </h1>
                   <p className="font-semibold text-lg max-w-md mx-auto md:mx-0">Unggah file PDF atau XLSX jadwal kuliah teori.</p>
                 </div>
                 {isLoading ? (
-                  <div className="bg-white border-2 border-black p-8 rounded-none shadow-[8px_8px_0px_#000000] flex flex-col items-center justify-center text-center gap-4">
-                    <div className="w-20 h-20 bg-background border-2 border-black rounded-none flex items-center justify-center"><FilePdf weight="bold" className="text-tertiary text-3xl" /></div>
-                    <h3 className="font-extrabold text-xl animate-pulse">Memproses PDF...</h3>
-                    <div className="w-full h-8 bg-white border-2 border-black p-1"><div className="w-full h-full bg-tertiary loading-stripes border-r-2 border-black" /></div>
-                    <div ref={logRef} className="font-medium text-sm mt-2 text-left w-full h-20 overflow-y-auto bg-gray-100 border-2 border-black p-2 font-mono text-xs whitespace-pre-wrap">{loadingLog}</div>
-                  </div>
+                  <LoadingState
+                    icon={<FilePdf weight="bold" className="text-tertiary text-3xl" />}
+                    title="Memproses PDF..."
+                    stripeColor="bg-tertiary"
+                    log={loadingLog}
+                  />
                 ) : (
                   <>
-                    <div
-                      className={'bg-white rounded-none border-2 border-black p-8 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-4 group hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000000] ' + (isDragOver ? 'bg-[#DBEAFE]' : 'shadow-none')}
-                      onClick={() => fileInputRef.current?.click()}
+                    <FileDropZone
+                      icon={<FilePdf weight="bold" className="text-tertiary text-3xl" />}
+                      title="Drag & Drop file PDF atau XLSX"
+                      subtitle="atau klik untuk memilih"
+                      buttonLabel="Pilih File PDF atau XLSX"
+                      accept=".pdf,.xlsx,.xls"
+                      isDragOver={isDragOver}
                       onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
-                      onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop}
-                    >
-                      <div className="w-20 h-20 bg-background border-2 border-black rounded-none flex items-center justify-center group-hover:scale-110 transition-transform"><FilePdf weight="bold" className="text-tertiary text-3xl" /></div>
-                      <h3 className="font-extrabold text-xl mb-1">Drag & Drop file PDF atau XLSX</h3>
-                      <p className="font-medium text-gray-600">atau klik untuk memilih</p>
-                      <input ref={fileInputRef} type="file" accept=".pdf,.xlsx,.xls" className="hidden" onChange={handleFileChange} />
-                      <button type="button" className="mt-2 bg-[#60A5FA] w-full py-3 border-2 border-black rounded-none shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none group flex items-center justify-center text-black transition-colors" onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}>
-                        <UploadSimple weight="bold" className="inline mr-2" />Pilih File PDF atau XLSX
-                      </button>
-                    </div>
+                      onDragLeave={() => setIsDragOver(false)}
+                      onDrop={handleDrop}
+                      onFileSelect={handleFileChange}
+                    />
                     <div className="mt-8 bg-background border-2 border-black rounded-none shadow-none p-4 flex items-center gap-3">
                       <Sparkle weight="fill" className="text-tertiary text-2xl shrink-0" />
                       <p className="font-medium text-sm leading-relaxed">Aplikasi akan otomatis mengekstrak <strong>Kode MK</strong>, <strong>Mata Kuliah</strong>, <strong>Kelas</strong>, <strong>Jam</strong>, <strong>Ruang</strong>, dan <strong>Dosen</strong> dari PDF atau XLSX.</p>
@@ -139,21 +136,19 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                 <div className="mb-6 text-center lg:text-left">
                   <h1 className="text-4xl lg:text-5xl font-extrabold uppercase leading-tight mb-2 tracking-tight">
                     Mulai dari<br />
-                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-2 border-black inline-block shadow-[4px_4px_0px_#000000] rotate-[-2deg] rounded-none">Pilih Kelas</span>
+                    <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-2 border-black inline-block shadow-brutal rotate-[-2deg] rounded-none">Pilih Kelas</span>
                   </h1>
                   <p className="font-semibold text-lg max-w-md mx-auto lg:mx-0 mt-4">Tandai kelas-kelas yang ingin Anda masukkan ke jadwal.</p>
                 </div>
-                <div className="rounded-none border-2 border-black shadow-none p-4 bg-background flex flex-col items-center justify-center text-center gap-4">
-                  <div className="w-20 h-20 bg-[#DBEAFE] border-2 border-black rounded-none flex items-center justify-center"><CheckCircle weight="fill" className="text-tertiary text-4xl" /></div>
-                  <h3 className="font-extrabold text-lg mb-1 truncate w-48 mx-auto" title={fileName}>{fileName || 'jadwal.pdf'}</h3>
-                  <div className="font-bold flex items-center justify-center gap-1"><Sparkle weight="bold" />Berhasil diproses!</div>
-                  <div className="w-full bg-background border-2 border-black p-3 text-sm font-bold flex justify-between items-center rounded-none">
-                    Ditemukan:<span className="bg-black text-white px-2 rounded">{dataTeoriMentah.length} Kelas</span>
-                  </div>
-                  <button onClick={handleReset} className="mt-2 w-full py-3 rounded-none border-2 border-black shadow-none hover:bg-red-50 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex justify-center items-center gap-2">
-                    <Trash weight="bold" />Upload Ulang
-                  </button>
-                </div>
+                <FileSummaryCard
+                  fileName={fileName}
+                  defaultFileName="jadwal.pdf"
+                  totalCount={dataTeoriMentah.length}
+                  statusText="Berhasil diproses!"
+                  resetLabel="Upload Ulang"
+                  resetClassName="hover:bg-red-50"
+                  onReset={handleReset}
+                />
               </>
             )}
           </section>
@@ -166,26 +161,26 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                   <div className="font-extrabold text-xl uppercase">Pilih Kelas Anda</div>
                   <div className="relative w-full sm:w-auto text-black">
                     <MagnifyingGlass weight="bold" className="absolute left-3 top-1/2 -translate-y-1/2 text-xl" />
-                    <input type="text" placeholder="Cari mata kuliah..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-none border-2 border-black font-medium focus:outline-none focus:shadow-[4px_4px_0px_#000000] transition-shadow" />
+                    <input type="text" placeholder="Cari mata kuliah..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-none border-2 border-black font-medium focus:outline-none focus:shadow-brutal transition-shadow" />
                   </div>
                 </div>
                 <div className="border-b-2 border-black p-4 bg-white flex flex-col md:flex-row gap-3">
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
+                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-brutal hover:shadow-brutal transition-shadow text-black">
                       <option value="">Semua SMT</option>
                       {uniqueSMT.map(s => (<option key={s} value={s}>Semester {s}</option>))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-[4px_4px_0px_#000000] hover:shadow-[4px_4px_0px_#000000] transition-shadow text-black">
+                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-brutal hover:shadow-brutal transition-shadow text-black">
                       <option value="">Semua Kelas</option>
                       {uniqueKelas.map(k => (<option key={k} value={k}>{k}</option>))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                 </div>
-                <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-background flex flex-col gap-4">
+                <div className="pb-36 scroll-pb-32 p-4 md:p-6 flex-1 overflow-y-auto bg-background flex flex-col gap-4">
                   {filteredClasses.map(c => {
                     const displayItem: ClassDisplayItem = {
                       id: c.id, nama: c.MataKuliah, kelas: c.Kelas, hari: c.Hari, jam: c.Jam, ruang: c.Ruang, sks: c.SKS, dosen: c.DosenPengampuh,
@@ -202,17 +197,16 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
 
       {/* FIXED BOTTOM NAV BAR */}
       {isParsed && (
-        <div className="fixed bottom-0 left-0 w-full z-[100] bg-white rounded-none border-t-2 border-black p-4 flex justify-between items-center shadow-[0px_-2px_0px_rgba(0,0,0,1)]">
-          <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-            <div className="font-bold text-black">Terpilih: <span className="text-xl px-2 bg-[#60A5FA] border-2 border-black ml-1">{selectedCount}</span></div>
-            <button disabled={selectedCount === 0} onClick={() => {
-              const chosen = dataTeoriMentah.filter(r => selectedTheoryRowIds.includes(r.id));
-              setJadwalTeoriTerpilih(chosen); onNext?.();
-            }} className={"rounded-none border-2 border-black px-4 md:px-6 py-3 font-extrabold transition-all inline-flex items-center gap-2 " + (selectedCount > 0 ? 'bg-tertiary text-white shadow-[4px_4px_0px_#000000] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000]' : 'bg-gray-300 text-gray-500 cursor-not-allowed')}>
-              <span className="hidden md:inline">Praktikum</span><ArrowRight weight="bold" />
-            </button>
-          </div>
-        </div>
+        <BottomNav
+          selectedCount={selectedCount}
+          nextLabel="Praktikum"
+          nextIcon={<ArrowRight weight="bold" />}
+          onNext={() => {
+            const chosen = dataTeoriMentah.filter(r => selectedTheoryRowIds.includes(r.id));
+            setJadwalTeoriTerpilih(chosen); onNext?.();
+          }}
+          nextDisabled={selectedCount === 0}
+        />
       )}
     </div>
   );

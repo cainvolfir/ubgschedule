@@ -8,7 +8,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-white border-2 border-black rounded-none shadow-[8px_8px_0px_#000000] w-full max-w-md overflow-hidden"
+        className="bg-white border-2 border-black rounded-none shadow-brutal-xl w-full max-w-md overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -24,7 +24,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
 
         {/* Modal Body */}
         <div className="p-6 flex flex-col gap-4">
-          <a href="https://drive.google.com/drive/folders/1y-BktyEAzQEKGoNV_Dyy3nqyK437TFv1?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-background border-2 border-black rounded-none shadow-none translate-x-0 translate-y-0 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group">
+          <a href="https://drive.google.com/drive/folders/1y-BktyEAzQEKGoNV_Dyy3nqyK437TFv1?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-background border-2 border-black rounded-none shadow-none translate-x-0 translate-y-0 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group">
             <div className="flex items-center gap-3">
               <div className="bg-tertiary text-white p-2 rounded-none border-2 border-black">
                 <FilePdf weight="bold" className="text-xl" />
@@ -34,7 +34,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
             <ArrowRight weight="bold" className="text-xl opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1 text-black" />
           </a>
 
-          <a href="https://drive.google.com/drive/folders/1Ry1ml2bsC4ME8df6ppXmV21rRz3Jjvmv?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-background border-2 border-black rounded-none shadow-none translate-x-0 translate-y-0 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group">
+          <a href="https://drive.google.com/drive/folders/1Ry1ml2bsC4ME8df6ppXmV21rRz3Jjvmv?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-background border-2 border-black rounded-none shadow-none translate-x-0 translate-y-0 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group">
             <div className="flex items-center gap-3">
               <div className="bg-white text-black p-2 rounded-none border-2 border-black">
                 <FileXls weight="bold" className="text-xl" />
@@ -46,7 +46,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
 
           <div className="w-full h-1 bg-black rounded-none" />
 
-          <a href="https://wa.me/62895383507673" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-error text-white border-2 border-black rounded-none shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group">
+          <a href="https://wa.me/62895383507673" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-error text-white border-2 border-black rounded-none shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal active:translate-x-0 active:translate-y-0 active:shadow-none transition-all group">
             <div className="flex items-center gap-3">
               <div className="bg-white text-black p-2 rounded-none border-2 border-black">
                 <PaperPlaneTilt weight="bold" className="text-xl" />

@@ -61,6 +61,9 @@ interface JadwalState {
   setPraktikumCandidates: (candidates: PraktikumCandidate[]) => void;
   setSelectedCandidateIds: (ids: string[]) => void;
   toggleCandidateId: (id: string) => void;
+  removeJadwalTeoriRow: (id: string) => void;
+  updateJadwalTeoriRow: (id: string, row: DataTeoriMentah) => void;
+  updatePraktikumCandidate: (id: string, candidate: PraktikumCandidate) => void;
   setIsScanning: (v: boolean) => void;
   setIsParsing: (v: boolean) => void;
   addJadwalRow: (row: Record<string, unknown>) => void;
@@ -129,6 +132,22 @@ export const useJadwalStore = create<JadwalState>()(
             : [...state.selectedCandidateIds, id];
           return { selectedCandidateIds: next };
         }),
+
+      removeJadwalTeoriRow: (id: string) =>
+        set((state) => ({
+          jadwalTeoriTerpilih: state.jadwalTeoriTerpilih.filter((r) => r.id !== id),
+          selectedTheoryRowIds: state.selectedTheoryRowIds.filter((x) => x !== id),
+        })),
+
+      updateJadwalTeoriRow: (id: string, row: DataTeoriMentah) =>
+        set((state) => ({
+          jadwalTeoriTerpilih: state.jadwalTeoriTerpilih.map((r) => r.id === id ? row : r),
+        })),
+
+      updatePraktikumCandidate: (id: string, candidate: PraktikumCandidate) =>
+        set((state) => ({
+          praktikumCandidates: state.praktikumCandidates.map((c) => c.id === id ? candidate : c),
+        })),
 
       setIsScanning: (v) => set({ isScanning: v }),
 

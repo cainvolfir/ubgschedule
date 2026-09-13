@@ -22,10 +22,19 @@ export default function ClassCard({ item, isSelected, onToggle }: ClassCardProps
   return (
     <div
       onClick={() => onToggle(item.id)}
-      className={`p-4 border-2 border-black rounded-none flex gap-4 cursor-pointer select-none transition-all duration-150 ${
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          onToggle(item.id);
+        }
+      }}
+      role="checkbox"
+      aria-checked={isSelected}
+      tabIndex={0}
+      className={`p-4 border-2 border-black rounded-none flex gap-4 cursor-pointer select-none transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-black ${
         isSelected
-          ? 'bg-white shadow-[4px_4px_0px_#000000] -translate-x-1 -translate-y-1 active:translate-x-0 active:translate-y-0 active:shadow-none'
-          : 'bg-white/70 shadow-none translate-x-0 translate-y-0 hover:bg-white hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none'
+          ? 'bg-white shadow-brutal -translate-x-1 -translate-y-1 active:translate-x-0 active:translate-y-0 active:shadow-none'
+          : 'bg-white/70 shadow-none translate-x-0 translate-y-0 hover:bg-white hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal active:translate-x-0 active:translate-y-0 active:shadow-none'
       }`}
     >
       <div className="pt-1">
