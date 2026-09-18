@@ -31,7 +31,7 @@ const HARI_INDONESIA = [
   'Sabtu', 'Minggu',
 ];
 
-const HARI_PATTERN = /^(?:\d+\.\s*)?(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)/i;
+const HARI_PATTERN = /^(?:\d+\.\s*|-\s*)?(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)/i;
 
 function isJam(s: string): boolean {
   return /^\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}$/.test(s.trim());
@@ -434,6 +434,22 @@ self.onmessage = async (e: MessageEvent) => {
     }
     log('KETERANGAN_EXTRACTED', keterangan);
 
+    // Per-row day detection: scan after jam for "N. DayName" or "- DayName" tokens
+    // This handles new PDF format where day is a column value per row, not a section header
+    let hariPerRow = '';
+    const dayRowScanStart = metodeIdx !== -1 ? metodeIdx : jamIdx + 1;
+    for (let k = dayRowScanStart; k < Math.min(dayRowScanStart + 15, tokens.length); k++) {
+      const t = tokens[k].trim();
+      const rowDayMatch = t.match(/^(?:\d+\.\s*|-\s*)(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)$/i);
+      if (rowDayMatch) {
+        hariPerRow = rowDayMatch[1];
+        break;
+      }
+    }
+    // Use per-row day if found, otherwise fall back to section header hariGlobal
+    const hariFinal = hariPerRow || hariGlobal;
+    log('HARI_FINAL', { hariPerRow, hariGlobal, hariFinal });
+
     dataTeoriMentah.push({
       id: `theory-${dataTeoriMentah.length}`,
       KodeMK: kode,
@@ -442,7 +458,7 @@ self.onmessage = async (e: MessageEvent) => {
       SKS: sks,
       SMT: smt,
       DosenPengampuh: dosen,
-      Hari: hariGlobal,
+      Hari: hariFinal,
       Jam: tokens[jamIdx].trim(),
       Ruang: ruang,
       Keterangan: keterangan,
