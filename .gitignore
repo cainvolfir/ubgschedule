@@ -1,0 +1,59 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project-specific: exclude test data files and secrets
+*.pdf
+*.xlsx
+*.csv
+*.png
+!public/mainpage.png
+!public/favicon.png
+!public/favicon-32.png
+!public/ubg-logo.png
+!public/logo-ubg.png
+!public/icon-192.png
+!public/icon-512.png
+.env
+test-*.mjs
+
+# Shadcn CLI artifact
+@/
+
+.vercel
+
+.vercel
+
+# AI agent artifacts & docs (local only, not for repo)
+.playwright-mcp/
+.hallmark/
+.opencode/
+AGENTS.md
+ANIMATION_RULES.md
+design.md
+
+# Design experiments
+/design/
+/public/design/
+.env*
