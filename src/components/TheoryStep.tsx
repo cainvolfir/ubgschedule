@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
-  FilePdf, Warning,
+  FilePdf, FileXls, Warning,
   MagnifyingGlass, CaretDown, ArrowRight, ArrowsDownUp,
+  Sparkle,
 } from '@phosphor-icons/react';
 import WizardHeader from './WizardHeader';
 import ClassCard, { type ClassDisplayItem } from './ClassCard';
@@ -80,8 +81,12 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setIsDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file && (file.type === 'application/pdf' || /\.(xlsx|xls)$/i.test(file.name))) startParsing(file);
-  }, [startParsing]);
+    if (scheduleMode === 'auto-codes') {
+      if (file && /\.(xlsx|xls)$/i.test(file.name)) startParsing(file);
+    } else {
+      if (file && (file.type === 'application/pdf' || /\.(xlsx|xls)$/i.test(file.name))) startParsing(file);
+    }
+  }, [startParsing, scheduleMode]);
 
   const handleFileChange = useCallback((file: File) => {
     startParsing(file);
@@ -151,6 +156,121 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
 
   const autoNextDisabled = scheduleMode === 'auto-codes' && !autoHasMatch;
 
+  // --- Auto-codes mode: 2-column layout from the start ---
+  if (scheduleMode === 'auto-codes') {
+    const dropIcon = <FileXls weight="bold" className="text-tertiary text-3xl" />;
+    return (
+      <div className="bg-background">
+        <WizardHeader currentStep={1} />
+        <main className={"p-4 md:p-8 " + (isParsed ? 'pb-32' : '')}>
+          <div className="w-full max-w-7xl mx-auto lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* LEFT COLUMN: Upload area / summary */}
+            <section className="w-full lg:col-span-4 mb-8 lg:mb-0">
+              {/* Distinct hero for auto-codes mode */}
+              <div className="mb-6 text-center lg:text-left">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold uppercase leading-tight mb-4 tracking-tight">
+                  Mode Cepat<br />
+                  <span className="bg-tertiary text-white px-2 md:px-3 py-1 border-2 border-black inline-block mt-2 shadow-brutal rotate-[-2deg] rounded-none">
+                    <Sparkle weight="fill" className="inline mr-1" />
+                    Jadwal KRS Otomatis
+                  </span>
+                </h1>
+                <p className="font-semibold text-lg max-w-md mx-auto lg:mx-0">
+                  Unggah file Excel jadwal lengkap dari Labkom &amp; masukkan daftar Kode MK Anda.
+                </p>
+              </div>
+
+              {errorMessage && (
+                <div className="mb-6 bg-red-100 border-3 border-error shadow-brutal rounded-none p-4 md:p-5">
+                  <div className="flex items-start gap-3">
+                    <Warning weight="fill" className="text-error shrink-0 text-2xl" />
+                    <div className="flex-1">
+                      <h2 className="font-extrabold uppercase text-lg tracking-tight text-error mb-1">Gagal Memproses File</h2>
+                      <p className="font-medium text-sm leading-relaxed mb-3">{errorMessage}</p>
+                      <button
+                        type="button"
+                        onClick={() => setErrorMessage(null)}
+                        className="bg-error text-white border-2 border-black rounded-none px-4 py-2 font-extrabold uppercase text-sm shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal active:translate-x-0 active:translate-y-0 active:shadow-none transition-all"
+                      >
+                        Tutup
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!isParsed ? (
+                isLoading ? (
+                  <LoadingState
+                    icon={dropIcon}
+                    title="Memproses Excel..."
+                    stripeColor="bg-tertiary"
+                    log={loadingLog}
+                  />
+                ) : (
+                  <FileDropZone
+                    icon={dropIcon}
+                    title="Drag & Drop file Excel"
+                    subtitle="Format .xlsx atau .xls dari Labkom"
+                    buttonLabel="Pilih File Excel"
+                    accept=".xlsx,.xls"
+                    isDragOver={isDragOver}
+                    onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
+                    onDragLeave={() => setIsDragOver(false)}
+                    onDrop={handleDrop}
+                    onFileSelect={handleFileChange}
+                  />
+                )
+              ) : (
+                <>
+                  <FileSummaryCard
+                    fileName={fileName}
+                    defaultFileName="jadwal-labkom.xlsx"
+                    totalCount={dataTeoriMentah.length}
+                    statusText="Berhasil diproses!"
+                    resetLabel="Upload Ulang"
+                    resetClassName="hover:bg-red-50"
+                    onReset={handleReset}
+                  />
+                </>
+              )}
+            </section>
+
+            {/* RIGHT COLUMN: AutoCourseCodeInput — visible IMMEDIATELY, even before upload */}
+            <section className="w-full lg:col-span-8">
+              <div className="bg-white border-2 border-black shadow-none h-full flex flex-col rounded-none overflow-hidden">
+                <div className="border-b-2 border-black p-4 bg-tertiary text-white rounded-none flex justify-between items-center">
+                  <div className="font-extrabold text-xl uppercase flex items-center gap-2">
+                    <Sparkle weight="fill" />
+                    Masukkan Kode MK
+                  </div>
+                  {!isParsed && (
+                    <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-none">
+                      Bisa diisi sebelum upload
+                    </span>
+                  )}
+                </div>
+                <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-background">
+                  <AutoCourseCodeInput />
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+
+        {/* FIXED BOTTOM NAV BAR */}
+        <BottomNav
+          selectedCount={parsedCourseCodes.length}
+          nextLabel="Pilih Kelas"
+          nextIcon={<ArrowRight weight="bold" />}
+          onNext={() => { onNext?.(); }}
+          nextDisabled={autoNextDisabled}
+        />
+      </div>
+    );
+  }
+
+  // --- Manual mode: original UI unchanged ---
   return (
     <div className="bg-background">
       <WizardHeader currentStep={1} />
@@ -230,16 +350,11 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                   resetClassName="hover:bg-red-50"
                   onReset={handleReset}
                 />
-                {scheduleMode === 'auto-codes' && (
-                  <div className="mt-6 border-t-2 border-black pt-6">
-                    <AutoCourseCodeInput />
-                  </div>
-                )}
               </>
             )}
           </section>
 
-          {/* RIGHT COLUMN */}
+          {/* RIGHT COLUMN — manual mode only */}
           {isParsed && (
             <section className="w-full lg:col-span-8 transition-all duration-300">
               <div className="bg-white border-2 border-black shadow-none h-full flex flex-col rounded-none overflow-hidden">
@@ -306,18 +421,14 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
       {/* FIXED BOTTOM NAV BAR */}
       {isParsed && (
         <BottomNav
-          selectedCount={scheduleMode === 'auto-codes' ? parsedCourseCodes.length : selectedCount}
-          nextLabel={scheduleMode === 'auto-codes' ? 'Pilih Kelas' : 'Praktikum'}
+          selectedCount={selectedCount}
+          nextLabel="Praktikum"
           nextIcon={<ArrowRight weight="bold" />}
           onNext={() => {
-            if (scheduleMode === 'auto-codes') {
-              onNext?.();
-            } else {
-              const chosen = dataTeoriMentah.filter(r => selectedTheoryRowIds.includes(r.id));
-              setJadwalTeoriTerpilih(chosen); onNext?.();
-            }
+            const chosen = dataTeoriMentah.filter(r => selectedTheoryRowIds.includes(r.id));
+            setJadwalTeoriTerpilih(chosen); onNext?.();
           }}
-          nextDisabled={scheduleMode === 'auto-codes' ? autoNextDisabled : selectedCount === 0}
+          nextDisabled={selectedCount === 0}
         />
       )}
     </div>
