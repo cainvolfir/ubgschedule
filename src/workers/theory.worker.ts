@@ -170,7 +170,6 @@ async function parseTheoryXLSX(buffer: ArrayBuffer, fileName: string): Promise<D
       // --- Combined-portal fields (Jenis / Kelas-Kelompok / compound SKS) ---
       // Jenis column (fell through colKet) or course name signals praktikum/lab rows.
       const rawJenis = String(row[colKet] ?? '').trim();
-      if (/prak|lab/i.test(rawJenis)) continue;
       const isPraktikumRow = /prak|lab/i.test(rawJenis) || /prak|lab/i.test(matkul);
 
       // Parse compound SKS "(T/PK/PT)": pick the component matching the row type.

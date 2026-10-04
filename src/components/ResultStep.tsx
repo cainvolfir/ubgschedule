@@ -15,6 +15,18 @@ interface UnifiedClass {
   hari: string; jam: string; ruang: string; dosen: string; isPraktikum: boolean;
 }
 
+function isPraktikumClass(item: { keterangan?: string; nama?: string; ruang?: string; kelas?: string; isPraktikum?: boolean }): boolean {
+  if (item.isPraktikum) return true;
+  const keterangan = item.keterangan || '';
+  const nama = item.nama || '';
+  const ruang = item.ruang || '';
+  const kelas = item.kelas || '';
+  return /prak|lab|kelompok/i.test(keterangan) ||
+         /prak|lab/i.test(nama) ||
+         /lab/i.test(ruang) ||
+         /kelompok/i.test(kelas);
+}
+
 function mergeSequentialSlots(classes: UnifiedClass[]): UnifiedClass[] {
   const prakOnly = classes.filter(c => c.isPraktikum);
   const theoryOnly = classes.filter(c => !c.isPraktikum);
@@ -114,7 +126,7 @@ export default function ResultStep({ onBack }: ResultProps) {
     const theory: UnifiedClass[] = jadwalTeoriTerpilih.map((r: DataTeoriMentah) => ({
       id: r.id, kode: r.KodeMK, nama: r.MataKuliah, kelas: r.Kelas, keterangan: r.Keterangan || '',
       sks: r.SKS, hari: r.Hari, jam: r.Jam, ruang: r.Ruang, dosen: r.DosenPengampuh,
-      isPraktikum: /prak|lab/i.test(r.Keterangan || ""),
+      isPraktikum: isPraktikumClass({ keterangan: r.Keterangan, nama: r.MataKuliah, ruang: r.Ruang, kelas: r.Kelas }),
     }));
     const prak: UnifiedClass[] = praktikumCandidates
       .filter((c: PraktikumCandidate) => selectedCandidateIds.includes(c.id))
@@ -401,7 +413,8 @@ export default function ResultStep({ onBack }: ResultProps) {
         // Status badge (final — no need to advance badgeX)
         if (isCollided) {
           drawBadge(badgeX, badgeY, '⚠ BENTROK!', '#F43F5E', '#FFFFFF', true, false);
-        } else if (isPrak) {
+        }
+        if (isPrak) {
           drawBadge(badgeX, badgeY, 'PRAKTIKUM', '#000000', '#FFFFFF', true, false);
         }
 

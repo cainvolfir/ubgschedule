@@ -96,6 +96,7 @@ export default function AutoClassCard({
         <ul className="space-y-1">
           {matches.map((row) => {
             const isSelected = effectiveKelas === row.Kelas;
+            const isLab = /prak|lab|kelompok/i.test(row.Keterangan || '') || /lab/i.test(row.Ruang || '') || /prak|lab/i.test(row.MataKuliah || '');
             return (
               <li
                 key={row.id}
@@ -109,6 +110,9 @@ export default function AutoClassCard({
                 <span>{row.Hari}</span>
                 <span>{row.Jam}</span>
                 <span className="ml-auto truncate">{row.Ruang}</span>
+                {isLab && (
+                  <span className="bg-black text-white px-1 py-0.5 text-[9px] font-black uppercase rounded-none shrink-0">Lab</span>
+                )}
               </li>
             );
           })}
