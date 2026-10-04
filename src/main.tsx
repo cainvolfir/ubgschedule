@@ -26,6 +26,10 @@ export default function App() {
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       touchMultiplier: 2,
+      prevent: (node) => {
+        const tag = node.tagName?.toLowerCase();
+        return tag === 'textarea' || tag === 'input' || tag === 'select' || node.isContentEditable || Boolean(node.closest?.('[data-lenis-prevent]'));
+      },
     });
 
     function raf(time: number) {
@@ -36,7 +40,7 @@ export default function App() {
     requestAnimationFrame(raf);
 
     return () => lenis.destroy();
-  }, [wizardStep]);
+  }, []);
 
   return (
     <StrictMode>

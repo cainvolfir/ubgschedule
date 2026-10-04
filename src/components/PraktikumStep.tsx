@@ -254,7 +254,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                       <label className="block font-bold text-sm uppercase mb-1">Pilih Prefix Ruangan</label>
                       <p className="text-xs font-semibold text-gray-600 mb-2">Pilih kata awalan yang menandakan Ruang Praktikum di Excel.</p>
                       <div className="relative w-full">
-                        <select value={selectedPrefix} onChange={e => handlePrefixChange(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none focus:shadow-brutal-sm hover:shadow-brutal-sm transition-shadow text-black">
+                        <select value={selectedPrefix} onChange={e => handlePrefixChange(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none text-black">
                           {praktikumRoomPrefixes.map(p => (<option key={p} value={p}>{p}</option>))}
                         </select>
                         <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
@@ -280,7 +280,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                 {/* FIX #2: Semester filter + Kelas filter side by side */}
                 <div className="border-b-2 border-black p-4 bg-white flex flex-col md:flex-row gap-3">
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-brutal hover:shadow-brutal transition-shadow text-black">
+                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none text-black">
                       <option value="">Semua SMT</option>
                       {uniqueSmt.map(s => (
                         <option key={s} value={s}>Semester {s}</option>
@@ -289,7 +289,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-brutal hover:shadow-brutal transition-shadow text-black">
+                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none text-black">
                       <option value="">Semua Kelas</option>
                       {uniqueKelasPrak.map(k => (
                         <option key={k} value={k}>{k}</option>

@@ -67,7 +67,7 @@ export default function AutoClassCard({
             onChange={(e) => onSelectKelas(e.target.value)}
             disabled={singleSection}
             className={
-              'w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none focus:shadow-brutal-sm hover:shadow-brutal-sm transition-shadow text-black ' +
+              'w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none text-black ' +
               (singleSection ? 'opacity-60 cursor-not-allowed' : '')
             }
           >

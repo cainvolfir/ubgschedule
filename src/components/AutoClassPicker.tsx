@@ -128,7 +128,7 @@ export default function AutoClassPicker({ onBack, onNext }: AutoClassPickerProps
                   <select
                     value={globalClassSelection}
                     onChange={(e) => handleGlobalChange(e.target.value)}
-                    className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none focus:shadow-brutal-sm hover:shadow-brutal-sm transition-shadow text-black"
+                    className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none text-black"
                   >
                     <option value="">— Tidak ada global —</option>
                     {allKelas.map((k) => (

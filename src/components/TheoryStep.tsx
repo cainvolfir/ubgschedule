@@ -367,21 +367,21 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                 </div>
                 <div className="border-b-2 border-black p-4 bg-white flex flex-col md:flex-row gap-3">
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-brutal hover:shadow-brutal transition-shadow text-black">
+                    <select value={filterSmt} onChange={e => setFilterSmt(e.target.value)} className="w-full appearance-none bg-secondary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none text-black">
                       <option value="">Semua SMT</option>
                       {uniqueSMT.map(s => (<option key={s} value={s}>Semester {s}</option>))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-brutal hover:shadow-brutal transition-shadow text-black">
+                    <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} className="w-full appearance-none bg-primary rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none text-black">
                       <option value="">Semua Kelas</option>
                       {uniqueKelas.map(k => (<option key={k} value={k}>{k}</option>))}
                     </select>
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                   <div className="relative flex-1 md:w-44">
-                    <select value={filterHari} onChange={e => setFilterHari(e.target.value)} aria-label="Filter hari" className="w-full appearance-none bg-background rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none focus:shadow-brutal hover:shadow-brutal transition-shadow text-black">
+                    <select value={filterHari} onChange={e => setFilterHari(e.target.value)} aria-label="Filter hari" className="w-full appearance-none bg-background rounded-none border-2 border-black pl-4 pr-10 py-2.5 font-bold cursor-pointer focus:outline-none text-black">
                       <option value="">Semua Hari</option>
                       {uniqueHari.map(h => (<option key={h} value={h}>{h}</option>))}
                     </select>
