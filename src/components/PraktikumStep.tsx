@@ -190,7 +190,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
   return (
     <div className="bg-background">
       <WizardHeader currentStep={2} />
-      <main className={"p-4 md:p-8 " + (isSelecting ? 'pb-32' : '')}>
+      <main className={"p-4 md:px-8 md:pt-8 " + (isSelecting ? 'pb-40 md:pb-48' : '')}>
         <div className={"w-full mx-auto transition-all duration-300 " + (isSelecting ? 'max-w-7xl lg:grid lg:grid-cols-12 gap-8 lg:gap-12' : 'max-w-2xl')}>
 
           {/* LEFT / CENTER */}
@@ -298,7 +298,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                 </div>
-                <div className="pb-36 p-4 md:p-6 bg-background flex flex-col gap-4">
+                <div className="p-4 md:px-6 md:pt-6 pb-40 md:pb-48 bg-background flex flex-col gap-4">
                   {filteredClasses.map(c => {
                     const displayItem: ClassDisplayItem = { id: c.id, nama: c.courseName, kelas: c.kelas, keterangan: c.keterangan || '', hari: c.hari, jam: c.jam, ruang: c.ruang, sks: '1', dosen: c.dosen };
                     return (<ClassCard key={c.id} item={displayItem} isSelected={selectedCandidateIds.includes(c.id)} onToggle={toggleSelect} />);

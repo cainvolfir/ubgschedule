@@ -162,7 +162,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
     return (
       <div className="bg-background">
         <WizardHeader currentStep={1} />
-        <main className="p-4 md:p-8 pb-36 md:pb-40">
+        <main className="p-4 md:px-8 md:pt-8 pb-40 md:pb-48">
           <div className="w-full max-w-7xl mx-auto lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
             {/* LEFT COLUMN: Upload area / summary */}
             <section className="w-full lg:col-span-4 mb-8 lg:mb-0">
@@ -274,7 +274,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   return (
     <div className="bg-background">
       <WizardHeader currentStep={1} />
-      <main className={"p-4 md:p-8 " + (isParsed ? 'pb-32' : '')}>
+      <main className={"p-4 md:px-8 md:pt-8 " + (isParsed ? 'pb-40 md:pb-48' : '')}>
         <div
           className={"w-full mx-auto transition-all duration-300 " + (isParsed ? 'max-w-7xl lg:grid lg:grid-cols-12 gap-8 lg:gap-12' : 'max-w-2xl')}
         >
@@ -402,7 +402,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                     </span>
                   </button>
                 </div>
-                <div className="pb-36 p-4 md:p-6 bg-background flex flex-col gap-4">
+                <div className="p-4 md:px-6 md:pt-6 pb-40 md:pb-48 bg-background flex flex-col gap-4">
                   {filteredClasses.map(c => {
                     const displayItem: ClassDisplayItem = {
                       id: c.id, nama: c.MataKuliah, kelas: c.Kelas, hari: c.Hari, jam: c.Jam, ruang: c.Ruang, sks: c.SKS, dosen: c.DosenPengampuh,

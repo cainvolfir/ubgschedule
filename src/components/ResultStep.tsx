@@ -485,7 +485,7 @@ export default function ResultStep({ onBack }: ResultProps) {
   return (
     <div className="bg-background">
       <WizardHeader currentStep={3} />
-      <main className="p-4 md:p-8 pb-32">
+      <main className="p-4 md:px-8 md:pt-8 pb-40 md:pb-48">
         <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
           {/* LEFT: Schedule List */}
           <div className="flex-1 flex flex-col gap-8 order-2 lg:order-1">
