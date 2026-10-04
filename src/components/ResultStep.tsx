@@ -17,14 +17,19 @@ interface UnifiedClass {
 
 function isPraktikumClass(item: { keterangan?: string; nama?: string; ruang?: string; kelas?: string; isPraktikum?: boolean }): boolean {
   if (item.isPraktikum) return true;
-  const keterangan = item.keterangan || '';
-  const nama = item.nama || '';
-  const ruang = item.ruang || '';
-  const kelas = item.kelas || '';
-  return /prak|lab|kelompok/i.test(keterangan) ||
-         /prak|lab/i.test(nama) ||
-         /lab/i.test(ruang) ||
-         /kelompok/i.test(kelas);
+  const keterangan = (item.keterangan || '').trim();
+  const nama = (item.nama || '').trim();
+  const ruang = (item.ruang || '').trim();
+  const kelas = (item.kelas || '').trim();
+  // Only mark as praktikum when explicitly a lab/praktikum.
+  // 1) Room is explicitly a lab (lab-1, Lab Komputer, Laboratorium X) — must be the whole-word token "lab" or "laboratorium".
+  // 2) Course title contains whole word "praktikum" or "prak" (with optional dot).
+  // 3) Group/kelas is literally "kelompok A" / "kelompok 1" etc.
+  // 4) Keterangan is strictly "praktikum" at the start of the string.
+  return /^lab\b|^laboratorium\b|\blab\b/i.test(ruang) ||
+         /\bpraktikum\b|\bprak\.?\b/i.test(nama) ||
+         /kelompok\s*[A-Z0-9]/i.test(kelas) ||
+         /^praktikum\b/i.test(keterangan);
 }
 
 function mergeSequentialSlots(classes: UnifiedClass[]): UnifiedClass[] {
@@ -105,19 +110,23 @@ export default function ResultStep({ onBack }: ResultProps) {
   }, []);
 
   const handleDelete = useCallback((item: UnifiedClass) => {
-    if (item.isPraktikum) {
+    // Remove from theory selection (covers both manual and auto-mode courses) regardless of isPraktikum.
+    setJadwalTeoriTerpilih(jadwalTeoriTerpilih.filter((t) => t.id !== item.id));
+    setSelectedTheoryRowIds(selectedTheoryRowIds.filter((id) => id !== item.id));
+    // If it's a praktikum candidate, also deselect it.
+    if (selectedCandidateIds.includes(item.id)) {
       toggleCandidateId(item.id);
-    } else {
-      setJadwalTeoriTerpilih(jadwalTeoriTerpilih.filter((t) => t.id !== item.id));
-      setSelectedTheoryRowIds(selectedTheoryRowIds.filter((id) => id !== item.id));
     }
-  }, [toggleCandidateId, setJadwalTeoriTerpilih, setSelectedTheoryRowIds, jadwalTeoriTerpilih, selectedTheoryRowIds]);
+  }, [toggleCandidateId, setJadwalTeoriTerpilih, setSelectedTheoryRowIds, jadwalTeoriTerpilih, selectedTheoryRowIds, selectedCandidateIds]);
 
   const handleSaveEdit = useCallback((updated: UnifiedClass) => {
-    if (updated.isPraktikum) {
-      setPraktikumCandidates(praktikumCandidates.map(p => p.id === updated.id ? { ...p, courseName: updated.nama, kelas: updated.kelas, keterangan: updated.keterangan, dosen: updated.dosen, hari: updated.hari, jam: updated.jam, ruang: updated.ruang } : p));
-    } else {
+    // Update theory row if present (covers both manual and auto-mode courses).
+    if (jadwalTeoriTerpilih.some((t) => t.id === updated.id)) {
       setJadwalTeoriTerpilih(jadwalTeoriTerpilih.map(t => t.id === updated.id ? { ...t, MataKuliah: updated.nama, Kelas: updated.kelas, SKS: updated.sks, DosenPengampuh: updated.dosen, Hari: updated.hari, Jam: updated.jam, Ruang: updated.ruang } : t));
+    }
+    // Update praktikum candidate if present.
+    if (praktikumCandidates.some((p) => p.id === updated.id)) {
+      setPraktikumCandidates(praktikumCandidates.map(p => p.id === updated.id ? { ...p, courseName: updated.nama, kelas: updated.kelas, keterangan: updated.keterangan, dosen: updated.dosen, hari: updated.hari, jam: updated.jam, ruang: updated.ruang } : p));
     }
     setEditingClass(null);
   }, [praktikumCandidates, setPraktikumCandidates, jadwalTeoriTerpilih, setJadwalTeoriTerpilih]);

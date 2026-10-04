@@ -54,7 +54,6 @@ export default function AutoCourseCodeInput() {
           onChange={(e) => setCourseCodeInput(e.target.value)}
           placeholder={'MI2113\nIF2104\nEK2201'}
           rows={6}
-          data-lenis-prevent
           className="w-full border-2 border-black rounded-none p-3 font-mono text-sm bg-white focus:outline-none focus:shadow-brutal transition-shadow resize-y"
         />
       </div>

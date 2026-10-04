@@ -39,7 +39,7 @@ export default function AutoClassCard({
   }
 
   return (
-    <div className="border-2 border-black rounded-none p-4 bg-white shadow-brutal hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-brutal transition-transform">
+    <div className="border-2 border-black rounded-none p-4 bg-white shadow-brutal">
       {/* Header: code + section count */}
       <div className="flex items-center gap-2 mb-3">
         <CheckCircle weight="fill" className="text-green-600 shrink-0" />
@@ -67,13 +67,13 @@ export default function AutoClassCard({
             onChange={(e) => onSelectKelas(e.target.value)}
             disabled={singleSection}
             className={
-              'w-full appearance-none bg-secondary rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none text-black ' +
+              'w-full appearance-none bg-white text-black rounded-none border-2 border-black pl-3 pr-8 py-2 font-bold text-sm cursor-pointer focus:outline-none ' +
               (singleSection ? 'opacity-60 cursor-not-allowed' : '')
             }
           >
-            <option value="">— Pilih Kelas —</option>
+            <option value="" className="bg-white text-black">— Pilih Kelas —</option>
             {uniqueKelas.map((k) => (
-              <option key={k} value={k}>
+              <option key={k} value={k} className="bg-white text-black">
                 {k}
               </option>
             ))}
