@@ -168,16 +168,14 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
             <section className="w-full lg:col-span-4 mb-8 lg:mb-0">
               {/* Distinct hero for auto-codes mode */}
               <div className="mb-6 text-center lg:text-left">
-                <div className="inline-flex items-center gap-1.5 bg-black text-white text-xs font-black uppercase px-2.5 py-1 border-2 border-black rounded-none mb-2">
-                  <Sparkle weight="fill" className="text-secondary" />
-                  Mode Cepat
-                </div>
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase leading-tight mb-2 tracking-tight flex flex-wrap items-center gap-2">
-                  <span className="bg-tertiary text-white px-3 py-1 border-2 border-black shadow-brutal rounded-none inline-flex items-center gap-2 text-xl md:text-2xl lg:text-3xl">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase leading-tight tracking-tight">
+                  Mode Cepat<br />
+                  <span className="bg-tertiary text-white px-2.5 md:px-3 py-1 border-2 border-black inline-block mt-2 shadow-brutal rotate-[-2deg] rounded-none text-2xl sm:text-3xl lg:text-4xl">
+                    <Sparkle weight="fill" className="inline mr-1" />
                     Jadwal KRS Otomatis
                   </span>
                 </h1>
-                <p className="font-semibold text-base md:text-lg max-w-md mx-auto lg:mx-0">
+                <p className="font-semibold text-base md:text-lg max-w-md mx-auto lg:mx-0 mt-3">
                   Unggah file Excel jadwal lengkap dari Labkom &amp; masukkan daftar Kode MK Anda.
                 </p>
               </div>
