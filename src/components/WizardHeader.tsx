@@ -34,12 +34,11 @@ export default function WizardHeader({ currentStep }: WizardHeaderProps) {
         </div>
       </header>
 
-      {/* Mode Switcher — between logo bar and progress bar, hidden on step 3 */}
-      {currentStep !== 3 && <ModeSwitcher />}
-
-      {/* Progress Bar */}
-      <div className="bg-white border-b-2 border-black px-4 py-3 flex justify-center items-center gap-2 md:gap-4 sticky top-0 z-50">
-        {steps.map((step, i) => {
+      {/* Combined sticky header: ModeSwitcher + Progress Bar */}
+      <div className="bg-white border-b-2 border-black px-4 py-3 flex flex-col items-center gap-3 sticky top-0 z-50">
+        {currentStep !== 3 && <ModeSwitcher />}
+        <div className="flex justify-center items-center gap-2 md:gap-4">
+          {steps.map((step, i) => {
           const isCompleted = step.num < currentStep;
           const isCurrent = step.num === currentStep;
 
@@ -81,6 +80,7 @@ className={`flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 border-2 border-
             </div>
           );
         })}
+        </div>
       </div>
     </>
   );

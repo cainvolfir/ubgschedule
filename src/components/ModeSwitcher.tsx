@@ -18,7 +18,7 @@ export default function ModeSwitcher({ hidden }: ModeSwitcherProps) {
   if (hidden) return null;
 
   return (
-    <div className="bg-white border-b-2 border-black px-4 py-3 flex justify-center">
+    <div className="flex justify-center">
       <div className="inline-flex border-2 border-black rounded-none overflow-hidden">
         {MODES.map((mode, i) => {
           const isActive = scheduleMode === mode.value;
