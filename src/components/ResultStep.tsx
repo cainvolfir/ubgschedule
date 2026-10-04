@@ -533,20 +533,20 @@ export default function ResultStep({ onBack }: ResultProps) {
                               <Warning weight="bold" /> Bentrok!
                             </motion.div>
                           )}
-                          {c.isPraktikum && !isCollided && (
-                            <div className="absolute top-4 right-4 bg-black text-white px-2 py-1 text-[10px] font-black uppercase rounded-none">Praktikum</div>
-                          )}
                           <div className="flex justify-between items-start mb-3">
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               <span className={(c.isPraktikum ? 'bg-white text-black' : 'bg-tertiary text-white') + " px-2 py-0.5 text-xs font-extrabold border-2 border-black rounded-none uppercase"}>{c.kode}</span>
                               <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-none">{c.sks} SKS</span>
+                              {c.isPraktikum && (
+                                <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-none uppercase">Praktikum</span>
+                              )}
                             </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 shrink-0">
                               <button className="w-8 h-8 flex items-center justify-center bg-[#DBEAFE] border-2 border-black rounded-none hover:bg-tertiary hover:text-white transition-colors" onClick={() => setEditingClass(c)}><PencilSimple weight="bold" /></button>
                               <button className="w-8 h-8 flex items-center justify-center bg-red-100 border-2 border-black rounded-none hover:bg-error hover:text-white transition-colors" onClick={() => handleDelete(c)}><Trash weight="bold" /></button>
                             </div>
                           </div>
-                          <h3 className={"text-xl font-black leading-tight mb-4 uppercase " + (c.isPraktikum && !isCollided ? 'pr-16' : '')}>{c.nama}</h3>
+                          <h3 className="text-xl font-black leading-tight mb-4 uppercase">{c.nama}</h3>
                           <div className={"space-y-2 text-sm font-bold border-2 border-black rounded-none p-3 " + (isCollided ? 'bg-white/70' : c.isPraktikum ? 'bg-white/70 backdrop-blur-sm' : 'bg-background')}>
                             <div className="flex items-center gap-2"><Clock weight="bold" className={"text-lg " + (isCollided ? 'text-error' : '')} /> {c.jam}</div>
                             <div className="flex items-center gap-2"><MapPin weight="bold" className="text-lg text-tertiary" /> {c.ruang}</div>
