@@ -31,6 +31,8 @@ interface CourseColor {
   [courseName: string]: string; // hex color
 }
 
+export type ScheduleMode = 'manual' | 'auto-codes';
+
 interface JadwalState {
   wizardStep: 1 | 2 | 3;
   dataTeoriMentah: DataTeoriMentah[];
@@ -47,6 +49,13 @@ interface JadwalState {
   praktikumFileData: number[];
   isScanning: boolean;
   isParsing: boolean;
+
+  // --- Auto-codes mode state ---
+  scheduleMode: ScheduleMode;
+  courseCodeInput: string;
+  parsedCourseCodes: string[];
+  courseClassSelections: Record<string, string>;
+  globalClassSelection: string;
 
   setWizardStep: (step: 1 | 2 | 3) => void;
   setPraktikumFileData: (data: number[]) => void;
@@ -66,6 +75,14 @@ interface JadwalState {
   updatePraktikumCandidate: (id: string, candidate: PraktikumCandidate) => void;
   setIsScanning: (v: boolean) => void;
   setIsParsing: (v: boolean) => void;
+  setScheduleMode: (mode: ScheduleMode) => void;
+  setCourseCodeInput: (input: string) => void;
+  setParsedCourseCodes: (codes: string[]) => void;
+  setCourseClassSelection: (kode: string, kelas: string) => void;
+  setGlobalClassSelection: (kelas: string) => void;
+  applyGlobalToAll: () => void;
+  clearAutoCodesState: () => void;
+  clearCourseClassSelections: () => void;
   addJadwalRow: (row: Record<string, unknown>) => void;
   updateJadwalRow: (index: number, row: Record<string, unknown>) => void;
   removeJadwalRow: (index: number) => void;
@@ -88,6 +105,11 @@ const initialState = {
   praktikumFileData: [] as number[],
   isScanning: false,
   isParsing: false,
+  scheduleMode: 'manual' as ScheduleMode,
+  courseCodeInput: '',
+  parsedCourseCodes: [],
+  courseClassSelections: {},
+  globalClassSelection: '',
 };
 
 export const useJadwalStore = create<JadwalState>()(
@@ -153,6 +175,55 @@ export const useJadwalStore = create<JadwalState>()(
 
       setIsParsing: (v) => set({ isParsing: v }),
 
+      setScheduleMode: (mode) =>
+        set((state) => {
+          if (mode === 'manual') {
+            return {
+              scheduleMode: 'manual',
+              courseClassSelections: {},
+              globalClassSelection: '',
+              selectedTheoryRowIds: [],
+            };
+          }
+          // Switching to auto-codes: clear manual selection state
+          return {
+            scheduleMode: 'auto-codes',
+            selectedTheoryRowIds: [],
+            wizardStep: state.wizardStep === 3 ? 1 : state.wizardStep,
+          };
+        }),
+
+      setCourseCodeInput: (input) => set({ courseCodeInput: input }),
+
+      setParsedCourseCodes: (codes) => set({ parsedCourseCodes: codes }),
+
+      setCourseClassSelection: (kode, kelas) =>
+        set((state) => ({
+          courseClassSelections: { ...state.courseClassSelections, [kode]: kelas },
+        })),
+
+      setGlobalClassSelection: (kelas) => set({ globalClassSelection: kelas }),
+
+      applyGlobalToAll: () =>
+        set((state) => {
+          if (!state.globalClassSelection) return {};
+          const next: Record<string, string> = {};
+          for (const code of state.parsedCourseCodes) {
+            next[code] = state.globalClassSelection;
+          }
+          return { courseClassSelections: next };
+        }),
+
+      clearAutoCodesState: () =>
+        set({
+          courseCodeInput: '',
+          parsedCourseCodes: [],
+          courseClassSelections: {},
+          globalClassSelection: '',
+        }),
+
+      clearCourseClassSelections: () => set({ courseClassSelections: {} }),
+
       addJadwalRow: (row) =>
         set((state) => ({ jadwalFinal: [...state.jadwalFinal, row] })),
 
@@ -177,7 +248,7 @@ export const useJadwalStore = create<JadwalState>()(
     }),
     {
       name: 'ubg-schedule-storage',
-      version: 1,
+      version: 2,
       partialize: (state) => ({
         wizardStep: state.wizardStep,
         dataTeoriMentah: state.dataTeoriMentah,
@@ -190,6 +261,11 @@ export const useJadwalStore = create<JadwalState>()(
         praktikumCandidates: state.praktikumCandidates,
         selectedCandidateIds: state.selectedCandidateIds,
         praktikumFileData: state.praktikumFileData,
+        scheduleMode: state.scheduleMode,
+        courseCodeInput: state.courseCodeInput,
+        parsedCourseCodes: state.parsedCourseCodes,
+        courseClassSelections: state.courseClassSelections,
+        globalClassSelection: state.globalClassSelection,
       }),
     },
   ),

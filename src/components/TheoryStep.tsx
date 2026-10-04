@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
-  FilePdf, Sparkle, Warning,
+  FilePdf, Warning,
   MagnifyingGlass, CaretDown, ArrowRight, ArrowsDownUp,
 } from '@phosphor-icons/react';
 import WizardHeader from './WizardHeader';
@@ -10,6 +10,7 @@ import FileDropZone from './shared/FileDropZone';
 import LoadingState from './shared/LoadingState';
 import FileSummaryCard from './shared/FileSummaryCard';
 import BottomNav from './shared/BottomNav';
+import AutoCourseCodeInput from './AutoCourseCodeInput';
 
 const HARI_ORDER = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as const;
 type HariOrderKey = (typeof HARI_ORDER)[number];
@@ -27,6 +28,8 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
     dataTeoriMentah, setDataTeoriMentah,
     selectedTheoryRowIds, toggleTheoryRowId,
     setJadwalTeoriTerpilih, reset,
+    scheduleMode, parsedCourseCodes,
+    clearCourseClassSelections,
   } = useJadwalStore();
 
   const [isParsed, setIsParsed] = useState(() => dataTeoriMentah.length > 0);
@@ -46,6 +49,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   useEffect(() => () => { workerRef.current?.terminate(); }, []);
 
   const startParsing = useCallback((file: File) => {
+    clearCourseClassSelections();
     setFileName(file.name); setIsLoading(true); setLoadingLog(''); setErrorMessage(null);
     const worker = new Worker(new URL('../workers/theory.worker.ts', import.meta.url), { type: 'module' });
     workerRef.current = worker;
@@ -71,7 +75,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
       setIsLoading(false); worker.terminate(); workerRef.current = null;
     };
     file.arrayBuffer().then(buf => { worker.postMessage({ type: 'PARSE_THEORY', fileBuffer: buf, fileName: file.name }); });
-  }, [setDataTeoriMentah]);
+  }, [setDataTeoriMentah, clearCourseClassSelections]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setIsDragOver(false);
@@ -90,7 +94,8 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
     setSearchQuery(''); setFilterSmt(''); setFilterKelas(''); setFileName('');
     setFilterHari(''); setSortHariOrder('asc');
     setErrorMessage(null);
-  }, [reset]);
+    clearCourseClassSelections();
+  }, [reset, clearCourseClassSelections]);
 
   const uniqueHari = useMemo(() => {
     const set = new Set<string>();
@@ -132,6 +137,19 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   const uniqueSMT = useMemo(() => [...new Set(dataTeoriMentah.map(c => c.SMT).filter(Boolean))].sort(), [dataTeoriMentah]);
   const uniqueKelas = useMemo(() => [...new Set(dataTeoriMentah.map(c => c.Kelas).filter(Boolean))].sort(), [dataTeoriMentah]);
   const selectedCount = selectedTheoryRowIds.length;
+
+  // Auto-mode: check if at least one parsed code has a match
+  const autoHasMatch = useMemo(
+    () => {
+      if (scheduleMode !== 'auto-codes' || parsedCourseCodes.length === 0 || dataTeoriMentah.length === 0) return false;
+      return dataTeoriMentah.some((r) =>
+        parsedCourseCodes.some((c) => c === r.KodeMK.trim().toUpperCase().replace(/\s+/g, ''))
+      );
+    },
+    [scheduleMode, parsedCourseCodes, dataTeoriMentah]
+  );
+
+  const autoNextDisabled = scheduleMode === 'auto-codes' && !autoHasMatch;
 
   return (
     <div className="bg-background">
@@ -191,35 +209,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                       onDrop={handleDrop}
                       onFileSelect={handleFileChange}
                     />
-                    <div className="mt-8 bg-background border-2 border-black rounded-none shadow-none p-4 flex flex-col gap-3">
-                      <div className="flex items-center gap-3">
-                        <Sparkle weight="fill" className="text-tertiary text-2xl shrink-0" />
-                        <h2 className="font-extrabold uppercase text-lg tracking-tight">Cara Mendapatkan File Jadwal Teori</h2>
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm uppercase tracking-wide mb-1">Opsi 1: Google Drive</p>
-                        <p className="font-medium text-sm leading-relaxed">
-                          Ambil dari Google Drive berikut:{' '}
-                          <a href="https://drive.google.com/drive/folders/1s0LK_6YYMkmem3MdGg1NFrxX2jPIZMcz?usp=drive_link" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline break-all">https://drive.google.com/drive/folders/1s0LK_6YYMkmem3MdGg1NFrxX2jPIZMcz?usp=drive_link</a>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm uppercase tracking-wide mb-1">Opsi 2: Portal Web Labkom</p>
-                        <ol className="list-decimal list-inside space-y-2 font-medium text-sm leading-relaxed">
-                          <li>
-                            Kunjungi halaman{' '}
-                            <a href="https://labkom.ubg.ac.id" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline break-all">labkom.ubg.ac.id</a>
-                          </li>
-                          <li>Pilih Program Studi</li>
-                          <li>Jangan pilih Semester dan kelas, biarkan kosong alias semua semester dan semua kelas.</li>
-                          <li>Pilih Tipe perkuliahan ke <strong>'Kuliah Teori Kelas'</strong></li>
-                          <li>Pilih hari ke <strong>'Semua Hari'</strong></li>
-                          <li>Tekan tombol Excel (.xlsx) untuk dapat file jadwalnya.</li>
-                          <li>Upload filenya di atas</li>
-                        </ol>
-                      </div>
-                    </div>
-                  </>
+                    </>
                 )}
               </>
             ) : (
@@ -240,6 +230,11 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                   resetClassName="hover:bg-red-50"
                   onReset={handleReset}
                 />
+                {scheduleMode === 'auto-codes' && (
+                  <div className="mt-6 border-t-2 border-black pt-6">
+                    <AutoCourseCodeInput />
+                  </div>
+                )}
               </>
             )}
           </section>
@@ -311,14 +306,18 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
       {/* FIXED BOTTOM NAV BAR */}
       {isParsed && (
         <BottomNav
-          selectedCount={selectedCount}
-          nextLabel="Praktikum"
+          selectedCount={scheduleMode === 'auto-codes' ? parsedCourseCodes.length : selectedCount}
+          nextLabel={scheduleMode === 'auto-codes' ? 'Pilih Kelas' : 'Praktikum'}
           nextIcon={<ArrowRight weight="bold" />}
           onNext={() => {
-            const chosen = dataTeoriMentah.filter(r => selectedTheoryRowIds.includes(r.id));
-            setJadwalTeoriTerpilih(chosen); onNext?.();
+            if (scheduleMode === 'auto-codes') {
+              onNext?.();
+            } else {
+              const chosen = dataTeoriMentah.filter(r => selectedTheoryRowIds.includes(r.id));
+              setJadwalTeoriTerpilih(chosen); onNext?.();
+            }
           }}
-          nextDisabled={selectedCount === 0}
+          nextDisabled={scheduleMode === 'auto-codes' ? autoNextDisabled : selectedCount === 0}
         />
       )}
     </div>
