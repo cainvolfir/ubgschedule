@@ -141,7 +141,9 @@ export default function InstructionAccordion() {
                   — Klik link
                   instalasi userscript UBG KRS Helper
                   <a
-                    href="#"
+                    href="/userscripts/ubg-krs-helper.user.js"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="font-black bg-secondary text-black px-2 py-0.5 border-2 border-black rounded-none text-xs inline-flex items-center gap-1 ml-1 align-middle"
                   >
                     Userscript <ArrowSquareOut size={10} weight="bold" />
@@ -205,7 +207,7 @@ export default function InstructionAccordion() {
                 </span>
                 <div className="flex-1 text-sm leading-relaxed">
                   <span className="font-extrabold">Tempel Kode MK</span> — Paste daftar kode MK ke
-                  dalam textarea input di sebelah kanan, lalu klik &apos;Parse Kode&apos;.
+                  dalam textarea input, lalu klik &apos;Parse Kode&apos;.
                 </div>
               </li>
 
