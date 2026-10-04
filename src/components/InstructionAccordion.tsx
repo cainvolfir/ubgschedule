@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, CaretDown, ArrowSquareOut } from '@phosphor-icons/react';
+import { BookOpen, CaretDown, ArrowSquareOut, Info } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function InstructionAccordion() {
@@ -99,7 +99,11 @@ export default function InstructionAccordion() {
                   5
                 </span>
                 <div className="flex-1 text-sm leading-relaxed">
-                  <span className="font-extrabold">Pasang Ekstensi Tampermonkey</span> — Link ke
+                  <span className="font-extrabold">Pasang Ekstensi Tampermonkey</span>
+                  <span className="bg-secondary text-black text-[10px] font-black uppercase px-1.5 py-0.5 border border-black rounded-none ml-1.5 align-middle">
+                    Opsional
+                  </span>
+                  — Link ke
                   Chrome Web Store dan Firefox Add-ons:{' '}
                   <span className="flex flex-wrap gap-x-3 gap-y-1">
                     <a
@@ -130,7 +134,11 @@ export default function InstructionAccordion() {
                   6
                 </span>
                 <div className="flex-1 text-sm leading-relaxed">
-                  <span className="font-extrabold">Pasang Userscript KRS</span> — Klik link
+                  <span className="font-extrabold">Pasang Userscript KRS</span>
+                  <span className="bg-secondary text-black text-[10px] font-black uppercase px-1.5 py-0.5 border border-black rounded-none ml-1.5 align-middle">
+                    Opsional
+                  </span>
+                  — Klik link
                   instalasi userscript UBG KRS Helper
                   <a
                     href="#"
@@ -138,6 +146,22 @@ export default function InstructionAccordion() {
                   >
                     Userscript <ArrowSquareOut size={10} weight="bold" />
                   </a>
+                </div>
+              </li>
+
+              {/* Tips callout — Tanpa Userscript */}
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 shrink-0" aria-hidden="true" />
+                <div className="flex-1">
+                  <div className="bg-blue-50 border-2 border-black p-3 text-xs leading-relaxed font-bold text-gray-800 flex items-start gap-2">
+                    <Info size={16} weight="bold" className="text-tertiary shrink-0 mt-0.5" />
+                    <span>
+                      <span className="font-black uppercase">Tips (Tanpa Userscript):</span>{' '}
+                      Langkah 5 &amp; 6 bersifat opsional untuk memudahkan dan mempercepat. Anda tetap
+                      bisa langsung membuka KRS di SISKA lalu menyalin (copy-paste) satu per satu
+                      Kode MK Anda secara manual ke kolom input.
+                    </span>
+                  </div>
                 </div>
               </li>
 
@@ -167,8 +191,10 @@ export default function InstructionAccordion() {
                   8
                 </span>
                 <div className="flex-1 text-sm leading-relaxed">
-                  <span className="font-extrabold">Salin Kode MK Otomatis</span> — Di halaman KRS
-                  SISKA, klik tombol &apos;Salin Semua Kode MK&apos; yang dibuat oleh userscript.
+                  <span className="font-extrabold">Salin Kode MK Otomatis</span> — Jika userscript
+                  terpasang, klik tombol &apos;Salin Semua Kode MK&apos; yang dibuat oleh userscript. Atau
+                  tanpa userscript, Anda dapat menyalin (copy) kode MK satu per satu secara manual
+                  dari tabel KRS di SISKA.
                 </div>
               </li>
 
