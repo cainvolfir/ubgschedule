@@ -162,7 +162,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
     return (
       <div className="bg-background">
         <WizardHeader currentStep={1} />
-        <main className={"p-4 md:p-8 " + (isParsed ? 'pb-32' : '')}>
+        <main className="p-4 md:p-8 pb-36 md:pb-40">
           <div className="w-full max-w-7xl mx-auto lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
             {/* LEFT COLUMN: Upload area / summary */}
             <section className="w-full lg:col-span-4 mb-8 lg:mb-0">
@@ -238,7 +238,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
 
             {/* RIGHT COLUMN: AutoCourseCodeInput — visible IMMEDIATELY, even before upload */}
             <section className="w-full lg:col-span-8">
-              <div className="bg-white border-2 border-black shadow-none h-full flex flex-col rounded-none overflow-hidden">
+              <div className="bg-white border-2 border-black shadow-none h-fit flex flex-col rounded-none">
                 <div className="border-b-2 border-black p-4 bg-tertiary text-white rounded-none flex justify-between items-center">
                   <div className="font-extrabold text-xl uppercase flex items-center gap-2">
                     <Sparkle weight="fill" />
@@ -250,7 +250,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                     </span>
                   )}
                 </div>
-                <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-background">
+                <div className="p-4 md:p-6 bg-background">
                   <AutoCourseCodeInput />
                 </div>
               </div>

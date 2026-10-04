@@ -84,7 +84,7 @@ export default function AutoClassPicker({ onBack, onNext }: AutoClassPickerProps
   return (
     <div className="bg-background">
       <WizardHeader currentStep={2} />
-      <main className="p-4 md:p-8 pb-32">
+      <main className="p-4 md:p-8 pb-36">
         <div className="w-full max-w-7xl mx-auto lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
           {/* LEFT: Summary + Global dropdown */}
           <section className="w-full lg:col-span-4 mb-8 lg:mb-0">
