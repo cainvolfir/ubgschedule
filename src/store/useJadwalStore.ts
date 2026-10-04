@@ -105,7 +105,7 @@ const initialState = {
   praktikumFileData: [] as number[],
   isScanning: false,
   isParsing: false,
-  scheduleMode: 'manual' as ScheduleMode,
+  scheduleMode: 'auto-codes' as ScheduleMode,
   courseCodeInput: '',
   parsedCourseCodes: [],
   courseClassSelections: {},
@@ -248,7 +248,13 @@ export const useJadwalStore = create<JadwalState>()(
     }),
     {
       name: 'ubg-schedule-storage',
-      version: 2,
+      version: 3,
+      migrate: (persistedState: any, version: number) => {
+        if (version < 3) {
+          return { ...persistedState, scheduleMode: 'auto-codes' };
+        }
+        return persistedState;
+      },
       partialize: (state) => ({
         wizardStep: state.wizardStep,
         dataTeoriMentah: state.dataTeoriMentah,
