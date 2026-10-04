@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { CheckCircle, XCircle, Warning, ListChecks } from '@phosphor-icons/react';
 import { useJadwalStore } from '../store/useJadwalStore';
 import { normalizeCourseCodes, findMatchingRows } from '../utils/courseCode';
+import InstructionAccordion from './InstructionAccordion';
 
 export default function AutoCourseCodeInput() {
   const {
@@ -41,6 +42,9 @@ export default function AutoCourseCodeInput() {
 
   return (
     <div className="w-full space-y-4">
+      {/* Instruction accordion — panduan langkah demi langkah */}
+      <InstructionAccordion />
+
       {/* Textarea */}
       <div>
         <label className="block font-extrabold text-sm uppercase mb-2 tracking-tight">
