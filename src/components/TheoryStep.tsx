@@ -357,7 +357,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
           {/* RIGHT COLUMN — manual mode only */}
           {isParsed && (
             <section className="w-full lg:col-span-8 transition-all duration-300">
-              <div className="bg-white border-2 border-black shadow-none h-full flex flex-col rounded-none overflow-hidden">
+              <div className="bg-white border-2 border-black shadow-none h-fit flex flex-col rounded-none">
                 <div className="border-b-2 border-black p-4 bg-tertiary text-white rounded-none flex flex-col sm:flex-row gap-4 justify-between items-center">
                   <div className="font-extrabold text-xl uppercase">Pilih Kelas Anda</div>
                   <div className="relative w-full sm:w-auto text-black">
@@ -402,7 +402,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                     </span>
                   </button>
                 </div>
-                <div className="pb-36 scroll-pb-32 p-4 md:p-6 flex-1 overflow-y-auto bg-background flex flex-col gap-4">
+                <div className="pb-36 p-4 md:p-6 bg-background flex flex-col gap-4">
                   {filteredClasses.map(c => {
                     const displayItem: ClassDisplayItem = {
                       id: c.id, nama: c.MataKuliah, kelas: c.Kelas, hari: c.Hari, jam: c.Jam, ruang: c.Ruang, sks: c.SKS, dosen: c.DosenPengampuh,

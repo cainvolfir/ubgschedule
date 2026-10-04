@@ -5,7 +5,6 @@ import Lenis from 'lenis';
 import TheoryStep from './components/TheoryStep';
 import PraktikumStep from './components/PraktikumStep';
 import ResultStep from './components/ResultStep';
-import ModeSwitcher from './components/ModeSwitcher';
 import AutoClassPicker from './components/AutoClassPicker';
 import { useJadwalStore } from './store/useJadwalStore';
 import './index.css';
@@ -41,7 +40,6 @@ export default function App() {
 
   return (
     <StrictMode>
-      {wizardStep !== 3 && <ModeSwitcher />}
       {wizardStep === 1 && <TheoryStep onNext={() => setWizardStep(2)} />}
       {wizardStep === 2 && scheduleMode === 'auto-codes' && (
         <AutoClassPicker onBack={() => setWizardStep(1)} onNext={() => setWizardStep(3)} />

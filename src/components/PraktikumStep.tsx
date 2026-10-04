@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
-  FileXls, Sparkle,
+  FileXls,
   MagnifyingGlass, CaretDown, MagicWand, ArrowLeft,
 } from '@phosphor-icons/react';
 import WizardHeader from './WizardHeader';
@@ -225,34 +225,6 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                       onDrop={handleDrop}
                       onFileSelect={handleFileChange}
                     />
-                    <div className="mt-8 bg-background border-2 border-black rounded-none shadow-none p-4 flex flex-col gap-3">
-                      <div className="flex items-center gap-3">
-                        <Sparkle weight="fill" className="text-tertiary text-2xl shrink-0" />
-                        <h2 className="font-extrabold uppercase text-lg tracking-tight">Cara Mendapatkan File Jadwal Praktikum</h2>
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm uppercase tracking-wide mb-1">Opsi 1: Google Drive</p>
-                        <p className="font-medium text-sm leading-relaxed">
-                          Atau ambil dari Google Drive berikut:{' '}
-                          <a href="https://drive.google.com/drive/folders/1PzWEws3FRo6DvaTN_DDnbFN_1yEizYEF?usp=drive_link" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline break-all">https://drive.google.com/drive/folders/1PzWEws3FRo6DvaTN_DDnbFN_1yEizYEF?usp=drive_link</a>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm uppercase tracking-wide mb-1">Opsi 2: Portal Web Labkom</p>
-                        <ol className="list-decimal list-inside space-y-2 font-medium text-sm leading-relaxed">
-                          <li>
-                            Kunjungi halaman{' '}
-                            <a href="https://labkom.ubg.ac.id" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline break-all">labkom.ubg.ac.id</a>
-                          </li>
-                          <li>Pilih Program Studi</li>
-                          <li>Jangan pilih Semester dan kelas, biarkan kosong alias semua semester dan semua kelas.</li>
-                          <li>Pilih Tipe perkuliahan ke <strong>'Praktikum Lab'</strong></li>
-                          <li>Pilih hari ke <strong>'Semua Hari'</strong></li>
-                          <li>Tekan tombol Excel (.xlsx) untuk dapat file jadwalnya.</li>
-                          <li>Upload filenya di atas</li>
-                        </ol>
-                      </div>
-                    </div>
                     {/* FIX #4: Back button + FIX #3: Skip button for upload state */}
                     <div className="mt-8 flex justify-between items-center">{footerButtons}</div>
                   </>
@@ -297,7 +269,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
           {/* RIGHT COLUMN */}
           {isSelecting && (
             <section className="w-full lg:col-span-8 transition-all duration-300">
-              <div className="bg-white border-2 border-black shadow-none h-full flex flex-col rounded-none overflow-hidden">
+              <div className="bg-white border-2 border-black shadow-none h-fit flex flex-col rounded-none">
                 <div className="border-b-2 border-black p-4 bg-tertiary text-white rounded-none flex flex-col sm:flex-row gap-4 justify-between items-center">
                   <div className="font-extrabold text-xl uppercase">Pilih Kelas Praktikum</div>
                   <div className="relative w-full sm:w-auto text-black">
@@ -326,7 +298,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
                     <CaretDown weight="bold" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg" />
                   </div>
                 </div>
-                <div className="pb-36 scroll-pb-32 p-4 md:p-6 flex-1 overflow-y-auto bg-background flex flex-col gap-4">
+                <div className="pb-36 p-4 md:p-6 bg-background flex flex-col gap-4">
                   {filteredClasses.map(c => {
                     const displayItem: ClassDisplayItem = { id: c.id, nama: c.courseName, kelas: c.kelas, keterangan: c.keterangan || '', hari: c.hari, jam: c.jam, ruang: c.ruang, sks: '1', dosen: c.dosen };
                     return (<ClassCard key={c.id} item={displayItem} isSelected={selectedCandidateIds.includes(c.id)} onToggle={toggleSelect} />);
