@@ -6,6 +6,7 @@ interface FileSummaryCardProps {
   totalCount: number;
   statusText: string;
   statusTextClass?: string;
+  countLabel?: string;
   resetLabel: string;
   resetClassName?: string;
   onReset: () => void;
@@ -13,7 +14,7 @@ interface FileSummaryCardProps {
 }
 
 export default function FileSummaryCard({
-  fileName, defaultFileName, totalCount, statusText, statusTextClass,
+  fileName, defaultFileName, totalCount, statusText, statusTextClass, countLabel,
   resetLabel, resetClassName, onReset, children,
 }: FileSummaryCardProps) {
   return (
@@ -28,7 +29,7 @@ export default function FileSummaryCard({
         <Sparkle weight="bold" />{statusText}
       </div>
       <div className="w-full bg-background border-2 border-black p-3 text-sm font-bold flex justify-between items-center rounded-none">
-        Ditemukan:<span className="bg-black text-white px-2 rounded">{totalCount} Kelas</span>
+        Ditemukan:<span className="bg-black text-white px-2 rounded">{totalCount} {countLabel || 'Kelas'}</span>
       </div>
       {children}
       <button
