@@ -128,6 +128,36 @@ test('matchPraktikumForCourse matches by KodeMK when available', () => {
   assert.equal(matched[0].id, 'p-10');
 });
 
+test('matchPraktikumForCourse strictly rejects same-name practical candidates with different KodeMK', () => {
+  const theory = {
+    id: 't-ilkom',
+    KodeMK: 'IK1IW33005',
+    MataKuliah: 'Jaringan Komputer',
+    Kelas: 'A',
+  };
+
+  const praktikumCandidates = [
+    {
+      id: 'p-pti',
+      kodeMk: 'PTKP350235', // PTI course code
+      courseName: 'Jaringan Komputer',
+      kelas: 'A',
+      keterangan: 'Kelompok A1',
+    },
+    {
+      id: 'p-ilkom',
+      kodeMk: 'IK1IW33005', // ILKOM course code
+      courseName: 'Jaringan Komputer',
+      kelas: 'A',
+      keterangan: 'Kelompok A1',
+    },
+  ];
+
+  const matched = matchPraktikumForCourse(theory, praktikumCandidates);
+  assert.equal(matched.length, 1);
+  assert.equal(matched[0].id, 'p-ilkom');
+});
+
 test('isLabRow detects embedded praktikum rows across keterangan, ruang and name', () => {
   assert.equal(isLabRow({ MataKuliah: 'Pemrograman Web', Ruang: 'R.301', Keterangan: '-' }), false);
   assert.equal(isLabRow({ MataKuliah: 'Pemrograman Web', Ruang: 'R.301', Keterangan: 'Praktikum - Kelompok A1' }), true);

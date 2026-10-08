@@ -182,20 +182,24 @@ export function matchPraktikumForCourse(
 
     if (!classMatches) return false;
 
-    // 2. Course identity check (KodeMK if available, or course name similarity)
-    const candCode =
+    // 2. Course identity check:
+    // If BOTH theory and practical candidate have KodeMK, they MUST match by code!
+    // NEVER fall back to course name if both have codes and the codes differ.
+    const rawCandCode =
       cand.kodeMk ||
       (cand as unknown as { KodeMK?: string }).KodeMK;
+    const candCode = rawCandCode ? normalizeCode(rawCandCode) : '';
 
     if (candCode && normTheoryCode) {
-      if (normalizeCode(candCode) === normTheoryCode) {
-        return true;
-      }
+      return candCode === normTheoryCode;
     }
 
-    const normCandName = normalizeCourseName(cand.courseName || '');
-    if (normTheoryName && normCandName && normTheoryName === normCandName) {
-      return true;
+    // Only if at least one side lacks a course code, fall back to normalized name similarity:
+    if (!candCode || !normTheoryCode) {
+      const normCandName = normalizeCourseName(cand.courseName || '');
+      if (normTheoryName && normCandName && normTheoryName === normCandName) {
+        return true;
+      }
     }
 
     return false;

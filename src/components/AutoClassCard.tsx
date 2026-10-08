@@ -171,6 +171,11 @@ export default function AutoClassCard({
                 <span className="font-mono font-bold text-center px-1 border border-black bg-white">
                   {selectedLab.kelas}
                 </span>
+                {selectedLab.kodeMk && (
+                  <span className="font-mono text-[10px] font-black bg-black text-white px-1.5 py-0.5 border border-black rounded-none">
+                    {selectedLab.kodeMk}
+                  </span>
+                )}
                 {selectedLab.keterangan && (
                   <span className="italic text-gray-700">{selectedLab.keterangan}</span>
                 )}
@@ -218,6 +223,11 @@ export default function AutoClassCard({
                     <span className="font-mono font-bold text-center px-1 border border-black bg-white">
                       {selectedLab.kelas}
                     </span>
+                    {selectedLab.kodeMk && (
+                      <span className="font-mono text-[10px] font-black bg-black text-white px-1.5 py-0.5 border border-black rounded-none">
+                        {selectedLab.kodeMk}
+                      </span>
+                    )}
                     <span className="ml-auto">{selectedLab.hari}</span>
                     <span>{selectedLab.jam}</span>
                     <span className="truncate">{selectedLab.ruang}</span>
