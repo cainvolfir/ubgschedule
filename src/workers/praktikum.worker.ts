@@ -225,15 +225,20 @@ self.onmessage = async (e: MessageEvent) => {
     return;
   }
 
-  const { roomPrefix } = e.data;
+  const isAuto = type === 'AUTO_PARSE_PRAKTIKUM';
+  if (!isAuto && type !== 'PARSE_PRAKTIKUM') return;
 
-  if (type !== 'PARSE_PRAKTIKUM' || !roomPrefix) return;
+  // Auto mode scans every practical row: the room-prefix filter is bypassed.
+  const roomPrefix: string = isAuto ? 'SEMUA LAB' : e.data.roomPrefix;
+  if (!roomPrefix) return;
 
-  log('PARSE', `Parsing with roomPrefix: ${roomPrefix}`);
+  log('PARSE', `${isAuto ? 'Auto-parsing' : 'Parsing'} with roomPrefix: ${roomPrefix}`);
 
   let matrix: string[][];
   try {
-    const loaded = await loadXLSX(file);
+    const source = e.data.file || e.data.fileBuffer || file;
+    if (!source) throw new Error('No file data received');
+    const loaded = await loadXLSX(source);
     matrix = loaded.matrix;
   } catch (err) {
     sendError('PARSE', err instanceof Error ? err.message : String(err));
@@ -324,7 +329,7 @@ self.onmessage = async (e: MessageEvent) => {
 
       const parts = raw.split('|').map((p) => p.trim());
       const locPart = parts.length >= 2 ? parts.slice(1).join('|') : '';
-      if (!locPart.toUpperCase().includes(roomPrefix)) continue;
+      if (roomPrefix !== 'SEMUA LAB' && !locPart.toUpperCase().includes(roomPrefix)) continue;
 
       const coursePart = parts[0];
       const { courseName, kelas, keterangan } = parseCoursePart(coursePart);

@@ -2,11 +2,11 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   FilePdf, FileXls, Warning,
   MagnifyingGlass, CaretDown, ArrowRight, ArrowsDownUp,
-  Sparkle,
+  Sparkle, Info, Flask,
 } from '@phosphor-icons/react';
 import WizardHeader from './WizardHeader';
 import ClassCard, { type ClassDisplayItem } from './ClassCard';
-import { useJadwalStore, type DataTeoriMentah } from '../store/useJadwalStore';
+import { useJadwalStore, type DataTeoriMentah, type PraktikumCandidate } from '../store/useJadwalStore';
 import FileDropZone from './shared/FileDropZone';
 import LoadingState from './shared/LoadingState';
 import FileSummaryCard from './shared/FileSummaryCard';
@@ -31,6 +31,7 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
     setJadwalTeoriTerpilih, reset,
     scheduleMode, parsedCourseCodes,
     clearCourseClassSelections,
+    autoPraktikumRaw, setAutoPraktikumRaw, clearAutoPraktikumRaw,
   } = useJadwalStore();
 
   const [isParsed, setIsParsed] = useState(() => dataTeoriMentah.length > 0);
@@ -45,9 +46,20 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const workerRef = useRef<Worker | null>(null);
+  // --- Auto mode: secondary "Jadwal Praktikum" dropzone state ---
+  const [prakFileName, setPrakFileName] = useState('');
+  const [isPrakDragOver, setIsPrakDragOver] = useState(false);
+  const [isPrakLoading, setIsPrakLoading] = useState(false);
+  const [prakLoadingLog, setPrakLoadingLog] = useState('');
+  const [prakError, setPrakError] = useState<string | null>(null);
 
-  useEffect(() => () => { workerRef.current?.terminate(); }, []);
+  const workerRef = useRef<Worker | null>(null);
+  const prakWorkerRef = useRef<Worker | null>(null);
+
+  useEffect(() => () => {
+    workerRef.current?.terminate();
+    prakWorkerRef.current?.terminate();
+  }, []);
 
   const startParsing = useCallback((file: File) => {
     clearCourseClassSelections();
@@ -81,16 +93,62 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setIsDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (scheduleMode === 'auto-codes') {
-      if (file && /\.(xlsx|xls)$/i.test(file.name)) startParsing(file);
-    } else {
-      if (file && (file.type === 'application/pdf' || /\.(xlsx|xls)$/i.test(file.name))) startParsing(file);
-    }
-  }, [startParsing, scheduleMode]);
+    if (!file) return;
+    const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+    if (isPdf || isExcel) startParsing(file);
+  }, [startParsing]);
 
   const handleFileChange = useCallback((file: File) => {
     startParsing(file);
   }, [startParsing]);
+
+  // --- Auto mode: secondary praktikum file parsing ---
+  const startParsingPraktikum = useCallback((file: File) => {
+    clearAutoPraktikumRaw();
+    setPrakFileName(file.name); setIsPrakLoading(true); setPrakLoadingLog(''); setPrakError(null);
+    const worker = new Worker(new URL('../workers/praktikum.worker.ts', import.meta.url), { type: 'module' });
+    prakWorkerRef.current = worker;
+    worker.onmessage = (e: MessageEvent<WorkerMsg>) => {
+      const { type, step, data } = e.data;
+      if (type === 'LOG') { setPrakLoadingLog(p => p + '[' + step + '] ' + (data ?? '') + '\n'); return; }
+      if (type === 'WARN') { setPrakLoadingLog(p => p + '[WARN:' + step + '] ' + (data ?? '') + '\n'); return; }
+      if (type === 'ERROR') {
+        setPrakLoadingLog(p => p + '[ERROR:' + step + '] ' + (data ?? '') + '\n');
+        setPrakError(typeof data === 'string' ? data : ((data as { message?: string } | undefined)?.message ?? 'Terjadi kesalahan saat memproses file praktikum.'));
+        setIsPrakLoading(false);
+        worker.terminate(); prakWorkerRef.current = null;
+        return;
+      }
+      if (type === 'PARSE_RESULT') {
+        const payload = data as { candidates?: PraktikumCandidate[] } | undefined;
+        setAutoPraktikumRaw(payload?.candidates ?? []);
+        setIsPrakLoading(false);
+        worker.terminate(); prakWorkerRef.current = null;
+      }
+    };
+    worker.onerror = (err) => {
+      setPrakLoadingLog(p => p + '[FATAL] ' + err.message + '\n');
+      setPrakError(err.message || 'Worker praktikum gagal dijalankan.');
+      setIsPrakLoading(false); worker.terminate(); prakWorkerRef.current = null;
+    };
+    file.arrayBuffer().then(buf => { worker.postMessage({ type: 'AUTO_PARSE_PRAKTIKUM', file: buf, fileName: file.name }); });
+  }, [setAutoPraktikumRaw, clearAutoPraktikumRaw]);
+
+  const handlePrakDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); setIsPrakDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && /\.(xlsx|xls)$/i.test(file.name)) startParsingPraktikum(file);
+  }, [startParsingPraktikum]);
+
+  const handlePrakFileChange = useCallback((file: File) => {
+    startParsingPraktikum(file);
+  }, [startParsingPraktikum]);
+
+  const handlePrakReset = useCallback(() => {
+    clearAutoPraktikumRaw();
+    setPrakFileName(''); setIsPrakLoading(false); setPrakLoadingLog(''); setPrakError(null);
+  }, [clearAutoPraktikumRaw]);
 
   const toggleSelect = useCallback((id: string) => { toggleTheoryRowId(id); }, [toggleTheoryRowId]);
 
@@ -100,7 +158,9 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
     setFilterHari(''); setSortHariOrder('asc');
     setErrorMessage(null);
     clearCourseClassSelections();
-  }, [reset, clearCourseClassSelections]);
+    clearAutoPraktikumRaw();
+    setPrakFileName(''); setIsPrakLoading(false); setPrakLoadingLog(''); setPrakError(null);
+  }, [reset, clearCourseClassSelections, clearAutoPraktikumRaw]);
 
   const uniqueHari = useMemo(() => {
     const set = new Set<string>();
@@ -155,6 +215,18 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   );
 
   const autoNextDisabled = scheduleMode === 'auto-codes' && !autoHasMatch;
+
+  // Auto-mode: detect a combined theory+lab file (lab rows embedded in the theory data).
+  const isCombinedFile = useMemo(
+    () =>
+      dataTeoriMentah.some(
+        (r) =>
+          /prak|lab|kelompok/i.test(r.Keterangan || '') ||
+          /lab/i.test(r.Ruang || '') ||
+          /prak|lab/i.test(r.MataKuliah || '')
+      ),
+    [dataTeoriMentah]
+  );
 
   // --- Auto-codes mode: 2-column layout from the start ---
   if (scheduleMode === 'auto-codes') {
@@ -211,9 +283,9 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                   <FileDropZone
                     icon={dropIcon}
                     title="Drag & Drop file Excel"
-                    subtitle="Format .xlsx atau .xls dari Labkom"
-                    buttonLabel="Pilih File Excel"
-                    accept=".xlsx,.xls"
+                    subtitle="Format .xlsx, .xls, atau .pdf lama dari Labkom"
+                    buttonLabel="Pilih File Jadwal"
+                    accept=".pdf,.xlsx,.xls"
                     isDragOver={isDragOver}
                     onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
                     onDragLeave={() => setIsDragOver(false)}
@@ -231,9 +303,79 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
                     resetLabel="Upload Ulang"
                     resetClassName="hover:bg-red-50"
                     onReset={handleReset}
-                  />
+                  >
+                    {isCombinedFile && (
+                      <div className="w-full bg-[#FEF3C7] border-2 border-black p-3 text-xs font-bold flex items-start gap-2 text-left rounded-none">
+                        <Info weight="fill" className="text-amber-600 shrink-0 text-lg" />
+                        <span>File gabungan terdeteksi (memuat jadwal teori dan lab). Slot praktikum di bawah opsional.</span>
+                      </div>
+                    )}
+                  </FileSummaryCard>
                 </>
               )}
+
+              {/* Dropzone 2 — Jadwal Praktikum (opsional) */}
+              <div className="mt-6">
+                <h2 className="font-extrabold uppercase text-lg tracking-tight mb-1 flex items-center gap-2">
+                  <Flask weight="fill" className="text-tertiary" />
+                  Jadwal Praktikum (Opsional)
+                </h2>
+                <p className="font-medium text-sm text-gray-600 mb-3">
+                  Unggah jika jadwal lab ada di file Excel terpisah.
+                </p>
+
+                {prakError && (
+                  <div className="mb-4 bg-red-100 border-3 border-error shadow-brutal rounded-none p-3">
+                    <div className="flex items-start gap-2">
+                      <Warning weight="fill" className="text-error shrink-0 text-xl" />
+                      <div className="flex-1">
+                        <p className="font-bold text-xs uppercase tracking-wide text-error mb-1">Gagal Memproses File Praktikum</p>
+                        <p className="font-medium text-sm leading-relaxed mb-2">{prakError}</p>
+                        <button
+                          type="button"
+                          onClick={() => setPrakError(null)}
+                          className="bg-error text-white border-2 border-black rounded-none px-3 py-1.5 font-extrabold uppercase text-xs shadow-none hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal active:translate-x-0 active:translate-y-0 active:shadow-none transition-all"
+                        >
+                          Tutup
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {isPrakLoading ? (
+                  <LoadingState
+                    icon={<Flask weight="bold" className="text-tertiary text-3xl" />}
+                    title="Memproses Praktikum..."
+                    stripeColor="bg-tertiary"
+                    log={prakLoadingLog}
+                  />
+                ) : autoPraktikumRaw.length > 0 ? (
+                  <FileSummaryCard
+                    fileName={prakFileName}
+                    defaultFileName="jadwal-praktikum.xlsx"
+                    totalCount={autoPraktikumRaw.length}
+                    countLabel="Praktikum"
+                    statusText="Berhasil diproses!"
+                    resetLabel="Hapus File Praktikum"
+                    resetClassName="hover:bg-red-50"
+                    onReset={handlePrakReset}
+                  />
+                ) : (
+                  <FileDropZone
+                    icon={<Flask weight="bold" className="text-tertiary text-3xl" />}
+                    title="Drag & Drop file Praktikum"
+                    subtitle="Format .xlsx atau .xls"
+                    buttonLabel="Pilih File Praktikum"
+                    accept=".xlsx,.xls"
+                    isDragOver={isPrakDragOver}
+                    onDragOver={e => { e.preventDefault(); setIsPrakDragOver(true); }}
+                    onDragLeave={() => setIsPrakDragOver(false)}
+                    onDrop={handlePrakDrop}
+                    onFileSelect={handlePrakFileChange}
+                  />
+                )}
+              </div>
             </section>
 
             {/* RIGHT COLUMN: AutoCourseCodeInput — visible IMMEDIATELY, even before upload */}
