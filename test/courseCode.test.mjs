@@ -7,6 +7,10 @@ import {
   romanToDigit,
   findMatchingRows,
   matchPraktikumForCourse,
+  isLabRow,
+  theoryRowToPraktikumCandidate,
+  filterPraktikumByKelas,
+  dedupeById,
 } from '../src/utils/courseCode.ts';
 
 test('romanToDigit maps Roman numerals to Arabic strings', () => {
@@ -122,4 +126,53 @@ test('matchPraktikumForCourse matches by KodeMK when available', () => {
   const matched = matchPraktikumForCourse(theory, praktikumCandidates);
   assert.equal(matched.length, 1);
   assert.equal(matched[0].id, 'p-10');
+});
+
+test('isLabRow detects embedded praktikum rows across keterangan, ruang and name', () => {
+  assert.equal(isLabRow({ MataKuliah: 'Pemrograman Web', Ruang: 'R.301', Keterangan: '-' }), false);
+  assert.equal(isLabRow({ MataKuliah: 'Pemrograman Web', Ruang: 'R.301', Keterangan: 'Praktikum - Kelompok A1' }), true);
+  assert.equal(isLabRow({ MataKuliah: 'Pemrograman Web', Ruang: 'LAB 1', Keterangan: '-' }), true);
+  assert.equal(isLabRow({ MataKuliah: 'Praktikum Pemrograman Web', Ruang: 'R.301', Keterangan: '-' }), true);
+});
+
+test('theoryRowToPraktikumCandidate maps fields into a PraktikumCandidate', () => {
+  const row = {
+    id: 'x-1',
+    KodeMK: 'IF1234',
+    MataKuliah: 'Praktikum Pemrograman Web',
+    Kelas: 'A',
+    SKS: '1',
+    SMT: '3',
+    DosenPengampuh: 'Asisten 1',
+    Hari: 'Selasa',
+    Jam: '10.00-11.40',
+    Ruang: 'LAB 1',
+    Keterangan: 'Praktikum - Kelompok A1',
+  };
+  const cand = theoryRowToPraktikumCandidate(row);
+  assert.equal(cand.id, 'x-1');
+  assert.equal(cand.courseName, 'Praktikum Pemrograman Web');
+  assert.equal(cand.kelas, 'A');
+  assert.equal(cand.kodeMk, 'IF1234');
+  assert.equal(cand.ruang, 'LAB 1');
+  assert.equal(cand.keterangan, 'Praktikum - Kelompok A1');
+});
+
+test('filterPraktikumByKelas links a section to its sub-groups', () => {
+  const candidates = [
+    { id: 'a1', courseName: 'Praktikum X', kelas: 'A', keterangan: 'Kelompok A1' },
+    { id: 'a2', courseName: 'Praktikum X', kelas: 'A', keterangan: 'Kelompok A2' },
+    { id: 'b1', courseName: 'Praktikum X', kelas: 'B', keterangan: 'Kelompok B1' },
+    { id: 'aplain', courseName: 'Praktikum X', kelas: 'A', keterangan: 'Praktikum' },
+  ];
+  const filtered = filterPraktikumByKelas(candidates, 'A');
+  assert.deepEqual(filtered.map((c) => c.id), ['a1', 'a2', 'aplain']);
+  // 'Kelas A' prefix should normalize too.
+  assert.deepEqual(filterPraktikumByKelas(candidates, 'Kelas A').map((c) => c.id), ['a1', 'a2', 'aplain']);
+  assert.equal(filterPraktikumByKelas(candidates, '').length, 0);
+});
+
+test('dedupeById removes duplicate candidate ids preserving order', () => {
+  const items = [{ id: '1' }, { id: '2' }, { id: '1' }, { id: '3' }];
+  assert.deepEqual(dedupeById(items).map((i) => i.id), ['1', '2', '3']);
 });
