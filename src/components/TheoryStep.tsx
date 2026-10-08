@@ -84,10 +84,21 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
       }
     };
     worker.onerror = (err) => {
-      setLoadingLog(p => p + '[FATAL] ' + err.message + '\n');
+      setLoadingLog(p => p + '[FATAL] ' + (err.message || '(tanpa pesan)') + '\n');
+      setErrorMessage(
+        (err && (err.message || (err as unknown as { error?: { message?: string } })?.error?.message)) ||
+        'Worker gagal dijalankan. Refresh halaman (Ctrl+F5) untuk memperbarui cache aplikasi.'
+      );
       setIsLoading(false); worker.terminate(); workerRef.current = null;
     };
-    file.arrayBuffer().then(buf => { worker.postMessage({ type: 'PARSE_THEORY', fileBuffer: buf, fileName: file.name }); });
+    file.arrayBuffer()
+      .then(buf => { worker.postMessage({ type: 'PARSE_THEORY', fileBuffer: buf, fileName: file.name }); })
+      .catch(err => {
+        const msg = err instanceof Error ? err.message : String(err);
+        setLoadingLog(p => p + '[FATAL] ' + msg + '\n');
+        setErrorMessage('Gagal membaca file: ' + msg);
+        setIsLoading(false); worker.terminate(); workerRef.current = null;
+      });
   }, [setDataTeoriMentah, clearCourseClassSelections]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -128,11 +139,21 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
       }
     };
     worker.onerror = (err) => {
-      setPrakLoadingLog(p => p + '[FATAL] ' + err.message + '\n');
-      setPrakError(err.message || 'Worker praktikum gagal dijalankan.');
+      setPrakLoadingLog(p => p + '[FATAL] ' + (err.message || '(tanpa pesan)') + '\n');
+      setPrakError(
+        (err && (err.message || (err as unknown as { error?: { message?: string } })?.error?.message)) ||
+        'Worker praktikum gagal dijalankan. Refresh halaman (Ctrl+F5) untuk memperbarui cache aplikasi atau pastikan format Excel sesuai.'
+      );
       setIsPrakLoading(false); worker.terminate(); prakWorkerRef.current = null;
     };
-    file.arrayBuffer().then(buf => { worker.postMessage({ type: 'AUTO_PARSE_PRAKTIKUM', file: buf, fileName: file.name }); });
+    file.arrayBuffer()
+      .then(buf => { worker.postMessage({ type: 'AUTO_PARSE_PRAKTIKUM', file: buf, fileName: file.name }); })
+      .catch(err => {
+        const msg = err instanceof Error ? err.message : String(err);
+        setPrakLoadingLog(p => p + '[FATAL] ' + msg + '\n');
+        setPrakError('Gagal membaca file praktikum: ' + msg);
+        setIsPrakLoading(false); worker.terminate(); prakWorkerRef.current = null;
+      });
   }, [setAutoPraktikumRaw, clearAutoPraktikumRaw]);
 
   const handlePrakDrop = useCallback((e: React.DragEvent) => {
