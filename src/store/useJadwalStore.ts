@@ -25,6 +25,7 @@ export interface PraktikumCandidate {
   hari: string;
   jam: string;
   ruang: string;
+  kodeMk?: string;
 }
 
 interface CourseColor {
@@ -56,6 +57,8 @@ interface JadwalState {
   parsedCourseCodes: string[];
   courseClassSelections: Record<string, string>;
   globalClassSelection: string;
+  autoPraktikumRaw: PraktikumCandidate[];
+  courseLabGroupSelections: Record<string, string>;
 
   setWizardStep: (step: 1 | 2 | 3) => void;
   setPraktikumFileData: (data: number[]) => void;
@@ -83,6 +86,9 @@ interface JadwalState {
   applyGlobalToAll: () => void;
   clearAutoCodesState: () => void;
   clearCourseClassSelections: () => void;
+  setAutoPraktikumRaw: (candidates: PraktikumCandidate[]) => void;
+  setCourseLabGroupSelection: (kode: string, groupId: string) => void;
+  clearAutoPraktikumRaw: () => void;
   addJadwalRow: (row: Record<string, unknown>) => void;
   updateJadwalRow: (index: number, row: Record<string, unknown>) => void;
   removeJadwalRow: (index: number) => void;
@@ -110,6 +116,8 @@ const initialState = {
   parsedCourseCodes: [],
   courseClassSelections: {},
   globalClassSelection: '',
+  autoPraktikumRaw: [] as PraktikumCandidate[],
+  courseLabGroupSelections: {} as Record<string, string>,
 };
 
 export const useJadwalStore = create<JadwalState>()(
@@ -182,6 +190,8 @@ export const useJadwalStore = create<JadwalState>()(
               scheduleMode: 'manual',
               courseClassSelections: {},
               globalClassSelection: '',
+              autoPraktikumRaw: [],
+              courseLabGroupSelections: {},
               selectedTheoryRowIds: [],
             };
           }
@@ -220,9 +230,24 @@ export const useJadwalStore = create<JadwalState>()(
           parsedCourseCodes: [],
           courseClassSelections: {},
           globalClassSelection: '',
+          autoPraktikumRaw: [],
+          courseLabGroupSelections: {},
         }),
 
       clearCourseClassSelections: () => set({ courseClassSelections: {} }),
+
+      setAutoPraktikumRaw: (candidates) => set({ autoPraktikumRaw: candidates }),
+
+      setCourseLabGroupSelection: (kode, groupId) =>
+        set((state) => ({
+          courseLabGroupSelections: { ...state.courseLabGroupSelections, [kode]: groupId },
+        })),
+
+      clearAutoPraktikumRaw: () =>
+        set({
+          autoPraktikumRaw: [],
+          courseLabGroupSelections: {},
+        }),
 
       addJadwalRow: (row) =>
         set((state) => ({ jadwalFinal: [...state.jadwalFinal, row] })),
@@ -249,9 +274,9 @@ export const useJadwalStore = create<JadwalState>()(
     {
       name: 'ubg-schedule-storage',
       version: 3,
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number) => {
         if (version < 3) {
-          return { ...persistedState, scheduleMode: 'auto-codes' };
+          return { ...(persistedState as Record<string, unknown>), scheduleMode: 'auto-codes' };
         }
         return persistedState;
       },
@@ -272,6 +297,8 @@ export const useJadwalStore = create<JadwalState>()(
         parsedCourseCodes: state.parsedCourseCodes,
         courseClassSelections: state.courseClassSelections,
         globalClassSelection: state.globalClassSelection,
+        autoPraktikumRaw: state.autoPraktikumRaw,
+        courseLabGroupSelections: state.courseLabGroupSelections,
       }),
     },
   ),
