@@ -72,10 +72,18 @@ function parseSemester(prodiSmt: string): string {
 
 async function loadXLSX(file: Uint8Array | ArrayBuffer): Promise<{ XLSX: typeof import('xlsx'); matrix: string[][] }> {
   const XLSX = await import('xlsx');
+  if (!file) throw new Error('Tidak ada data file yang diterima.');
   const data = new Uint8Array(file);
+  if (data.byteLength === 0) throw new Error('File kosong (0 byte). Pastikan file Excel valid dan tidak rusak.');
   const workbook = XLSX.read(data, { type: 'array' });
+  if (!workbook || !Array.isArray(workbook.SheetNames) || workbook.SheetNames.length === 0) {
+    throw new Error('Workbook tidak memiliki sheet apa pun. Format Excel tidak dikenali.');
+  }
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
+  if (!sheet) {
+    throw new Error(`Sheet "${sheetName}" tidak ditemukan di dalam workbook.`);
+  }
   const matrix: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
   return { XLSX, matrix };
 }
@@ -190,8 +198,19 @@ function spatialHari(matrix: string[][], row: number, col: number): { hari: stri
   return { hari: '', stepsUp };
 }
 
-self.onmessage = async (e: MessageEvent) => {
-  const { type, file } = e.data;
+self.addEventListener('error', (event: ErrorEvent) => {
+  const msg = event?.message || (event?.error instanceof Error ? event.error.message : '') || 'Unknown worker error';
+  sendError('WORKER_ERROR', msg);
+});
+
+self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  const reason = event?.reason;
+  const msg = reason instanceof Error ? reason.message : String(reason ?? 'Unhandled worker rejection');
+  sendError('WORKER_REJECTION', msg);
+});
+
+async function handleMessage(e: MessageEvent) {
+  const { type, file } = e.data ?? {};
 
   if (type === 'SCAN_XLSX') {
     log('SCAN', 'Scanning for room prefixes');
@@ -259,6 +278,7 @@ self.onmessage = async (e: MessageEvent) => {
       hari: string;
       jam: string;
       ruang: string;
+      kodeMk: string;
       sks: string;
     }[] = [];
 
@@ -273,6 +293,7 @@ self.onmessage = async (e: MessageEvent) => {
       if (roomPrefix !== 'SEMUA LAB' && !ruangan.toLowerCase().includes(roomPrefix.toLowerCase())) continue;
 
       const kelasKelompok = String(row[8] || '');
+      const kodeMk = String(row[5] || '').trim();
       portalCandidates.push({
         id: 'praktikum-portal-' + r,
         courseName: mataKuliah,
@@ -283,6 +304,7 @@ self.onmessage = async (e: MessageEvent) => {
         hari: titleCaseIdDay(String(row[1] || '')),
         jam: String(row[2] || '').trim(),
         ruang: ruangan,
+        kodeMk,
         sks: '1',
       });
     }
@@ -422,4 +444,14 @@ self.onmessage = async (e: MessageEvent) => {
     type: 'PARSE_RESULT',
     data: { candidates: merged, matrix, roomPrefix },
   });
+}
+
+self.onmessage = (e: MessageEvent) => {
+  Promise.resolve()
+    .then(() => handleMessage(e))
+    .catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      log('FATAL', msg);
+      sendError('PARSE', msg);
+    });
 };
