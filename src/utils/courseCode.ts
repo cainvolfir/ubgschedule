@@ -89,6 +89,75 @@ export function selectByKodeAndKelas(
 }
 
 /**
+ * Detect whether a raw theory row is actually an embedded praktikum/lab row.
+ * Combined portal exports interleave theory and lab rows in one file; lab rows are
+ * identifiable via the Jenis/Keterangan label, a lab room, or a course title keyword.
+ */
+export function isLabRow(
+  row: Pick<DataTeoriMentah, 'Keterangan' | 'Ruang' | 'MataKuliah'>
+): boolean {
+  return (
+    /prak|lab|kelompok/i.test(row.Keterangan || '') ||
+    /\blab\b|laboratorium/i.test(row.Ruang || '') ||
+    /prak|lab/i.test(row.MataKuliah || '')
+  );
+}
+
+/**
+ * Convert an embedded lab row (stored in DataTeoriMentah) into a PraktikumCandidate
+ * so it can flow through the same praktikum selection/result pipeline as a
+ * separately-uploaded praktikum file.
+ */
+export function theoryRowToPraktikumCandidate(row: DataTeoriMentah): PraktikumCandidate {
+  return {
+    id: row.id,
+    courseName: row.MataKuliah,
+    kelas: row.Kelas,
+    keterangan: row.Keterangan || '',
+    dosen: row.DosenPengampuh,
+    semester: row.SMT,
+    hari: row.Hari,
+    jam: row.Jam,
+    ruang: row.Ruang,
+    kodeMk: row.KodeMK,
+  };
+}
+
+function normalizeKelasLabel(kelas: string): string {
+  return (kelas || '').replace(/^(kelas|kelompok)\s*/i, '').trim().toUpperCase();
+}
+
+/**
+ * Filter practical candidates down to a single theory class selection.
+ * Accepts both exact section letters ('A') and sub-group labels ('A1', 'A2'),
+ * so a theory class 'A' links to every lab sub-group belonging to that section.
+ */
+export function filterPraktikumByKelas(
+  candidates: PraktikumCandidate[],
+  kelas: string
+): PraktikumCandidate[] {
+  const target = normalizeKelasLabel(kelas);
+  if (!target) return [];
+  const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const exact = new RegExp(`^${escaped}$`);
+  const subGroup = new RegExp(`^${escaped}[-\\s.]?\\d+$`);
+  return candidates.filter((c) => {
+    const label = normalizeKelasLabel(c.kelas);
+    return exact.test(label) || subGroup.test(label);
+  });
+}
+
+/** Deduplicate candidates by id, preserving first-seen order. */
+export function dedupeById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
+/**
  * Match practical candidates for a given theory row.
  * Matches by KodeMK (if available in candidate) or normalized course name similarity,
  * and verifies class letter compatibility (e.g. Kelas 'A' links to 'A', 'A1', 'A2').

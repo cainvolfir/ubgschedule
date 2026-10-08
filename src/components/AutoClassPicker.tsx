@@ -2,8 +2,16 @@ import { useMemo, useCallback } from 'react';
 import { ArrowLeft, CaretDown, MagicWand } from '@phosphor-icons/react';
 import WizardHeader from './WizardHeader';
 import AutoClassCard from './AutoClassCard';
-import { useJadwalStore } from '../store/useJadwalStore';
-import { findMatchingRows, selectByKodeAndKelas } from '../utils/courseCode';
+import { useJadwalStore, type PraktikumCandidate } from '../store/useJadwalStore';
+import {
+  findMatchingRows,
+  selectByKodeAndKelas,
+  isLabRow,
+  theoryRowToPraktikumCandidate,
+  matchPraktikumForCourse,
+  filterPraktikumByKelas,
+  dedupeById,
+} from '../utils/courseCode';
 import BottomNav from './shared/BottomNav';
 
 interface AutoClassPickerProps {
@@ -19,14 +27,41 @@ export default function AutoClassPicker({ onBack, onNext }: AutoClassPickerProps
     setCourseClassSelection,
     globalClassSelection,
     setGlobalClassSelection,
+    autoPraktikumRaw,
+    courseLabGroupSelections,
+    setCourseLabGroupSelection,
     setJadwalTeoriTerpilih,
     setSelectedTheoryRowIds,
+    setPraktikumCandidates,
+    setSelectedCandidateIds,
   } = useJadwalStore();
 
   const matchMap = useMemo(
     () => findMatchingRows(parsedCourseCodes, dataTeoriMentah),
     [parsedCourseCodes, dataTeoriMentah]
   );
+
+  // Multi-source practical matching per course code.
+  // Priority: separate praktikum file (autoPraktikumRaw) when present, otherwise
+  // embedded lab rows inside the theory data (combined single-file upload).
+  const linkedPraktikumByCode = useMemo(() => {
+    const map = new Map<string, PraktikumCandidate[]>();
+    for (const code of parsedCourseCodes) {
+      const matches = matchMap.get(code) || [];
+      const theoryRows = matches.filter((r) => !isLabRow(r));
+      const pool: PraktikumCandidate[] =
+        autoPraktikumRaw.length > 0
+          ? autoPraktikumRaw
+          : matches.filter((r) => isLabRow(r)).map(theoryRowToPraktikumCandidate);
+
+      const sourceRows = theoryRows.length > 0 ? theoryRows : matches;
+      const linked = dedupeById(
+        sourceRows.flatMap((row) => matchPraktikumForCourse(row, pool))
+      );
+      map.set(code, linked);
+    }
+    return map;
+  }, [parsedCourseCodes, matchMap, autoPraktikumRaw]);
 
   // All unique kelas values across all matched rows (for the global dropdown)
   const allKelas = useMemo(() => {
@@ -66,16 +101,55 @@ export default function AutoClassPicker({ onBack, onNext }: AutoClassPickerProps
   );
 
   const handleNext = useCallback(() => {
-    const selectedIds = selectByKodeAndKelas(
+    const allMatchedIds = selectByKodeAndKelas(
       parsedCourseCodes,
       courseClassSelections,
       dataTeoriMentah
     );
-    const chosen = dataTeoriMentah.filter((r) => selectedIds.includes(r.id));
-    setJadwalTeoriTerpilih(chosen);
-    setSelectedTheoryRowIds(selectedIds);
+    const chosen = dataTeoriMentah.filter((r) => allMatchedIds.includes(r.id));
+    // Theory selection excludes embedded lab rows (those become practical candidates).
+    const selectedTheoryRows = chosen.filter((r) => !isLabRow(r));
+
+    // Every linked practical candidate across all courses goes to the store so
+    // ResultStep can render and (de)select them.
+    const allPractical: PraktikumCandidate[] = dedupeById(
+      parsedCourseCodes.flatMap((code) => linkedPraktikumByCode.get(code) || [])
+    );
+
+    // Auto-select one practical candidate per course based on the chosen section
+    // and the user's explicit lab sub-group selection (defaults to first match).
+    const selectedPracticalIds: string[] = [];
+    for (const code of parsedCourseCodes) {
+      const kelas = courseClassSelections[code];
+      if (!kelas) continue;
+      const matching = filterPraktikumByKelas(
+        linkedPraktikumByCode.get(code) || [],
+        kelas
+      );
+      if (matching.length === 0) continue;
+      const stored = courseLabGroupSelections[code];
+      const chosenId =
+        stored && matching.some((c) => c.id === stored) ? stored : matching[0].id;
+      selectedPracticalIds.push(chosenId);
+    }
+
+    setJadwalTeoriTerpilih(selectedTheoryRows);
+    setSelectedTheoryRowIds(selectedTheoryRows.map((r) => r.id));
+    setPraktikumCandidates(allPractical);
+    setSelectedCandidateIds(selectedPracticalIds);
     onNext?.();
-  }, [parsedCourseCodes, courseClassSelections, dataTeoriMentah, setJadwalTeoriTerpilih, setSelectedTheoryRowIds, onNext]);
+  }, [
+    parsedCourseCodes,
+    courseClassSelections,
+    courseLabGroupSelections,
+    linkedPraktikumByCode,
+    dataTeoriMentah,
+    setJadwalTeoriTerpilih,
+    setSelectedTheoryRowIds,
+    setPraktikumCandidates,
+    setSelectedCandidateIds,
+    onNext,
+  ]);
 
   const selectedCourseCount = Object.keys(courseClassSelections).filter(
     (k) => courseClassSelections[k]
@@ -166,6 +240,9 @@ export default function AutoClassPicker({ onBack, onNext }: AutoClassPickerProps
                       selectedKelas={courseClassSelections[code] || ''}
                       globalKelas={globalClassSelection}
                       onSelectKelas={(kelas) => setCourseClassSelection(code, kelas)}
+                      linkedPraktikum={linkedPraktikumByCode.get(code) || []}
+                      selectedLabGroup={courseLabGroupSelections[code] || ''}
+                      onSelectLabGroup={(groupId) => setCourseLabGroupSelection(code, groupId)}
                     />
                   );
                 })}

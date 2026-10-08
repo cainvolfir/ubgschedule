@@ -1,5 +1,7 @@
-import { CaretDown, CheckCircle, XCircle, Warning } from '@phosphor-icons/react';
-import type { DataTeoriMentah } from '../store/useJadwalStore';
+import { useEffect } from 'react';
+import { CaretDown, CheckCircle, XCircle, Warning, Flask } from '@phosphor-icons/react';
+import type { DataTeoriMentah, PraktikumCandidate } from '../store/useJadwalStore';
+import { filterPraktikumByKelas } from '../utils/courseCode';
 
 interface AutoClassCardProps {
   code: string;
@@ -7,6 +9,9 @@ interface AutoClassCardProps {
   selectedKelas: string;
   globalKelas: string;
   onSelectKelas: (kelas: string) => void;
+  linkedPraktikum?: PraktikumCandidate[];
+  selectedLabGroup?: string;
+  onSelectLabGroup?: (groupId: string) => void;
 }
 
 export default function AutoClassCard({
@@ -15,11 +20,40 @@ export default function AutoClassCard({
   selectedKelas,
   globalKelas,
   onSelectKelas,
+  linkedPraktikum = [],
+  selectedLabGroup = '',
+  onSelectLabGroup,
 }: AutoClassCardProps) {
   const found = matches.length > 0;
   const uniqueKelas = [...new Set(matches.map((r) => r.Kelas))].sort();
   const singleSection = uniqueKelas.length === 1;
   const effectiveKelas = selectedKelas || globalKelas;
+
+  // Practical candidates belonging to the currently selected section letter.
+  const matchingPraktikum = effectiveKelas
+    ? filterPraktikumByKelas(linkedPraktikum, effectiveKelas)
+    : [];
+
+  // The candidate the user has committed to (falls back to the first match).
+  const effectiveLabId =
+    selectedLabGroup && matchingPraktikum.some((c) => c.id === selectedLabGroup)
+      ? selectedLabGroup
+      : matchingPraktikum[0]?.id ?? '';
+
+  const selectedLab =
+    matchingPraktikum.find((c) => c.id === effectiveLabId) ?? matchingPraktikum[0];
+
+  // Auto-commit the first lab sub-group when a section is chosen but nothing is set yet.
+  useEffect(() => {
+    if (
+      matchingPraktikum.length > 0 &&
+      effectiveLabId &&
+      effectiveLabId !== selectedLabGroup
+    ) {
+      onSelectLabGroup?.(effectiveLabId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLabId, selectedLabGroup, matchingPraktikum.length]);
 
   if (!found) {
     return (
@@ -118,6 +152,87 @@ export default function AutoClassCard({
           })}
         </ul>
       </div>
+
+      {/* Practical / lab section — only when a section is chosen and lab slots exist */}
+      {effectiveKelas && matchingPraktikum.length > 0 && (
+        <div className="border-t-2 border-dashed border-gray-400 pt-3 mt-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Flask weight="fill" className="text-secondary shrink-0" />
+            <p className="text-xs font-bold uppercase text-gray-500">Jadwal Praktikum</p>
+            <span className="bg-secondary text-black px-1.5 py-0.5 text-[9px] font-black uppercase border-2 border-black rounded-none ml-auto">
+              Praktikum
+            </span>
+          </div>
+
+          {/* Single lab slot: show full details inline */}
+          {matchingPraktikum.length === 1 && selectedLab && (
+            <ul className="space-y-1">
+              <li className="flex flex-wrap items-center gap-2 text-xs font-semibold border-2 border-black rounded-none px-2 py-1.5 bg-secondary/40">
+                <span className="font-mono font-bold text-center px-1 border border-black bg-white">
+                  {selectedLab.kelas}
+                </span>
+                {selectedLab.keterangan && (
+                  <span className="italic text-gray-700">{selectedLab.keterangan}</span>
+                )}
+                <span className="ml-auto">{selectedLab.hari}</span>
+                <span>{selectedLab.jam}</span>
+                <span className="truncate">{selectedLab.ruang}</span>
+              </li>
+              {selectedLab.dosen && (
+                <li className="text-[11px] font-bold text-gray-600 px-1 truncate">
+                  Pengampu: {selectedLab.dosen}
+                </li>
+              )}
+            </ul>
+          )}
+
+          {/* Multiple sub-groups: selector pills */}
+          {matchingPraktikum.length > 1 && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase text-gray-500">
+                Pilih Kelompok Lab ({matchingPraktikum.length} kelompok)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {matchingPraktikum.map((cand) => {
+                  const isActive = cand.id === effectiveLabId;
+                  return (
+                    <button
+                      key={cand.id}
+                      type="button"
+                      onClick={() => onSelectLabGroup?.(cand.id)}
+                      className={
+                        'px-2.5 py-1 text-xs font-extrabold uppercase border-2 border-black rounded-none transition-all ' +
+                        (isActive
+                          ? 'bg-secondary text-black shadow-brutal-sm'
+                          : 'bg-white text-black hover:-translate-y-0.5 hover:shadow-brutal-sm')
+                      }
+                    >
+                      {cand.keterangan || cand.kelas}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedLab && (
+                <ul className="space-y-1 pt-1">
+                  <li className="flex flex-wrap items-center gap-2 text-xs font-semibold border-2 border-black rounded-none px-2 py-1.5 bg-secondary/40">
+                    <span className="font-mono font-bold text-center px-1 border border-black bg-white">
+                      {selectedLab.kelas}
+                    </span>
+                    <span className="ml-auto">{selectedLab.hari}</span>
+                    <span>{selectedLab.jam}</span>
+                    <span className="truncate">{selectedLab.ruang}</span>
+                  </li>
+                  {selectedLab.dosen && (
+                    <li className="text-[11px] font-bold text-gray-600 px-1 truncate">
+                      Pengampu: {selectedLab.dosen}
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
