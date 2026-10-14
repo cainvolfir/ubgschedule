@@ -7,29 +7,13 @@ import {
 import WizardHeader from './WizardHeader';
 import { EditModal } from './EditModal';
 import { useJadwalStore, type DataTeoriMentah, type PraktikumCandidate } from '../store/useJadwalStore';
+import { isPraktikumClass } from '../utils/courseCode';
 
 interface ResultProps { onBack?: () => void; }
 
 interface UnifiedClass {
   id: string; kode: string; nama: string; kelas: string; keterangan: string; sks: string;
   hari: string; jam: string; ruang: string; dosen: string; isPraktikum: boolean;
-}
-
-function isPraktikumClass(item: { keterangan?: string; nama?: string; ruang?: string; kelas?: string; isPraktikum?: boolean }): boolean {
-  if (item.isPraktikum) return true;
-  const keterangan = (item.keterangan || '').trim();
-  const nama = (item.nama || '').trim();
-  const ruang = (item.ruang || '').trim();
-  const kelas = (item.kelas || '').trim();
-  // Only mark as praktikum when explicitly a lab/praktikum.
-  // 1) Room is explicitly a lab (lab-1, Lab Komputer, Laboratorium X) — must be the whole-word token "lab" or "laboratorium".
-  // 2) Course title contains whole word "praktikum" or "prak" (with optional dot).
-  // 3) Group/kelas is literally "kelompok A" / "kelompok 1" etc.
-  // 4) Keterangan is strictly "praktikum" at the start of the string.
-  return /^lab\b|^laboratorium\b|\blab\b/i.test(ruang) ||
-         /\bpraktikum\b|\bprak\.?\b/i.test(nama) ||
-         /kelompok\s*[A-Z0-9]/i.test(kelas) ||
-         /^praktikum\b/i.test(keterangan);
 }
 
 function mergeSequentialSlots(classes: UnifiedClass[]): UnifiedClass[] {
@@ -419,12 +403,16 @@ export default function ResultStep({ onBack }: ResultProps) {
         // SKS badge
         badgeX += drawBadge(badgeX, badgeY, `${c.sks} SKS`, '#000000', '#FFFFFF', true, false) + 8;
 
-        // Status badge (final — no need to advance badgeX)
-        if (isCollided) {
-          drawBadge(badgeX, badgeY, '⚠ BENTROK!', '#F43F5E', '#FFFFFF', true, false);
-        }
+        // Type badge, then collision badge laid out side by side (measured, so
+        // they never draw on top of each other).
+        let statusX = badgeX;
         if (isPrak) {
-          drawBadge(badgeX, badgeY, 'PRAKTIKUM', '#000000', '#FFFFFF', true, false);
+          statusX += drawBadge(statusX, badgeY, 'PRAKTIKUM', '#000000', '#FFFFFF', true, false) + 6;
+        } else {
+          statusX += drawBadge(statusX, badgeY, 'TEORI', '#DBEAFE', '#000000', true, true) + 6;
+        }
+        if (isCollided) {
+          drawBadge(statusX, badgeY, '⚠ BENTROK!', '#F43F5E', '#FFFFFF', true, false);
         }
 
         // --- Course title (max 2 lines) ---
@@ -559,8 +547,10 @@ export default function ResultStep({ onBack }: ResultProps) {
                             <div className="flex gap-2 flex-wrap">
                               <span className={(c.isPraktikum ? 'bg-white text-black' : 'bg-tertiary text-white') + " px-2 py-0.5 text-xs font-extrabold border-2 border-black rounded-none uppercase"}>{c.kode}</span>
                               <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-none">{c.sks} SKS</span>
-                              {c.isPraktikum && (
+                              {c.isPraktikum ? (
                                 <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-none uppercase">Praktikum</span>
+                              ) : (
+                                <span className="bg-blue-100 text-black px-2 py-0.5 text-xs font-extrabold border-2 border-black rounded-none uppercase">Teori</span>
                               )}
                             </div>
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 shrink-0">

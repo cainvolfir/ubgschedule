@@ -1,4 +1,5 @@
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { parseTheorySheetMatrix } from '../utils/theoryXlsx';
 
 function log(step: string, data?: unknown) {
   self.postMessage({ type: 'LOG', step, data });
@@ -33,10 +34,6 @@ const HARI_INDONESIA = [
 
 const HARI_PATTERN = /^(?:\d+\.\s*|-\s*)?(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)/i;
 
-function isJam(s: string): boolean {
-  return /^\d{1,2}[:.]\d{2}\s*[-–]\s*\d{1,2}[:.]\d{2}$/.test(s.trim());
-}
-
 function isMetode(s: string): boolean {
   return ['Offline', 'Online', 'Blended'].includes(s.trim());
 }
@@ -63,6 +60,10 @@ function nextNonSpace(tokens: string[], from: number): number {
   return -1;
 }
 
+function isJam(s: string): boolean {
+  return /^\d{1,2}[:.]\d{2}\s*[-–]\s*\d{1,2}[:.]\d{2}$/.test(s.trim());
+}
+
 async function parseTheoryXLSX(buffer: ArrayBuffer, fileName: string): Promise<DataTeoriMentah[]> {
   log('XLSX_INIT', `Parsing XLSX file: ${fileName}`);
   const XLSX = await import('xlsx');
@@ -70,177 +71,13 @@ async function parseTheoryXLSX(buffer: ArrayBuffer, fileName: string): Promise<D
   const wb = XLSX.read(data, { type: 'array' });
 
   const results: DataTeoriMentah[] = [];
-
   for (const sheetName of wb.SheetNames) {
     const sheet = wb.Sheets[sheetName];
-    const matrix: (string | number | undefined)[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-
-    if (matrix.length === 0) continue;
-
-    // Find header row - look for "Kode MK" or similar
-    let headerIdx = -1;
-    for (let i = 0; i < Math.min(matrix.length, 10); i++) {
-      const row = matrix[i];
-      if (row.some(cell => typeof cell === 'string' && /kode\s*mk/i.test(cell))) {
-        headerIdx = i;
-        break;
-      }
-    }
-    if (headerIdx === -1) continue;
-
-    // Clean header names: strip leading dots, whitespace, then lowercase
-    const headers = matrix[headerIdx].map(h => String(h || '').replace(/^\.\s*/, '').trim().toLowerCase());
-
-    // Map column indices using findCol helper
-    const findCol = (...patterns: RegExp[]): number => {
-      for (const p of patterns) {
-        const idx = headers.findIndex(h => p.test(h));
-        if (idx !== -1) return idx;
-      }
-      return -1;
-    };
-
-    const colKode = findCol(/kode\s*mk/i);
-    const colMatkul = findCol(/mata\s*kuliah/i, /nama\s*mata\s*kuliah/i);
-    const colKelas = findCol(/^kelas$/i, /kelas\s*[-/]?\s*kelompok/i);
-    const colSmt = findCol(/^smt$/i, /^semester$/i, /prodi\s*&\s*smt/i, /smt/i);
-    const colSks = findCol(/^total\s*sks$/i, /^sks\s*teori$/i, /^sks\s*t&pk$/i, /^sks/i);
-    const colDosen = findCol(/^dosen\s*pengampu[h]?/i, /^dosen/i);
-    const colJam = findCol(/^jam$/i, /^waktu$/i, /^pukul$/i);
-    const colRuang = findCol(/^ruang[an]*$/i);
-    const colHari = findCol(/kd\s*hari/i, /^hari$/i, /kode\s*hari/i);
-    const colKet = findCol(/keterangan/i, /^jenis$/i, /^tipe$/i);
-
-    // Auto-detect target prodi from rows 4-10 (index 3-9)
-    let targetProdi = '';
-    for (let r = 3; r < Math.min(10, matrix.length); r++) {
-      const scanRow = matrix[r];
-      if (!scanRow) continue;
-      for (let c = 0; c < scanRow.length; c++) {
-        const cellStr = String(scanRow[c] ?? '');
-        if (/program\s*stud/i.test(cellStr)) {
-          // Try extracting after colon/dash: "Program Studi S1 Ilmu Komputer" or "Program Studi : TI"
-          const prodiMatch = cellStr.match(/program\s*studi\s*[:-]?\s*(.+)/i);
-          if (prodiMatch) {
-            targetProdi = prodiMatch[1].trim();
-          } else if (c + 1 < scanRow.length) {
-            targetProdi = String(scanRow[c + 1] ?? '').trim();
-          }
-          break;
-        }
-      }
-      if (targetProdi) break;
-    }
-    // Fallback: extract from fileName (e.g. "Perkuliahan S1 Ilmu Komputer.xlsx")
-    if (!targetProdi && fileName) {
-      const fnMatch = fileName.match(/(S[12]|D3)\s+[^.-]+/i);
-      if (fnMatch) targetProdi = fnMatch[0].trim();
-    }
-    const colProdi = findCol(/^prodi$/i, /program\s*stud/i);
-    const hasProdiFilter = !!(targetProdi && colProdi !== -1);
-    if (hasProdiFilter) log('XLSX_PRODI_FILTER', { targetProdi, colProdi });
-
-    for (let i = headerIdx + 1; i < matrix.length; i++) {
-      const row = matrix[i];
-      if (!row || row.length === 0) continue;
-
-      const rawKode = String(row[colKode] ?? '').trim();
-      if (!rawKode) continue; // skip empty rows
-
-      // Strict course code validation: must match /^[A-Z]{2,4}[0-9]{4,8}$/i
-      // Skip rows that contain "kode" or "perkuliahan" (sub-headers / section labels)
-      if (/[Kk]ode|[Pp]erkuliahan/.test(rawKode)) continue;
-      if (!/^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{7,12}$/i.test(rawKode.replace(/\s+/g, '')) && !/^[A-Z]{2,4}\s*[0-9]{4,8}$/i.test(rawKode)) continue;
-
-      // Validate matkul: skip if starts with dot or equals "mata kuliah"
-      const matkul = String(row[colMatkul] ?? '').trim();
-      if (matkul.startsWith('.') || matkul.toLowerCase() === 'mata kuliah') continue;
-      if (!matkul) continue;
-
-      // Validate jam: must be a valid time range
-      const jam = String(row[colJam] ?? '').trim();
-      if (!/^[0-9]{1,2}[.:][0-9]{2}\s*[-–]\s*[0-9]{1,2}[.:][0-9]{2}$/.test(jam)) continue;
-
-      // Filter by prodi if auto-detected
-      if (hasProdiFilter) {
-        const rowProdi = String(row[colProdi] ?? '').trim();
-        if (rowProdi && !rowProdi.toLowerCase().includes(targetProdi.toLowerCase())) continue;
-      }
-
-      // --- Combined-portal fields (Jenis / Kelas-Kelompok / compound SKS) ---
-      // Jenis column (fell through colKet) or course name signals praktikum/lab rows.
-      const rawJenis = String(row[colKet] ?? '').trim();
-      const isPraktikumRow = /prak|lab/i.test(rawJenis) || /prak|lab/i.test(matkul);
-
-      // Parse compound SKS "(T/PK/PT)": pick the component matching the row type.
-      // Theory rows take T (first), praktikum/lab rows take the last non-zero of PK/PT.
-      const rawSks = String(row[colSks] ?? '').trim().replace(/\.0+$/, '');
-      const sksNumbers = rawSks.match(/\d+/g);
-      let sks = rawSks;
-      if (sksNumbers && sksNumbers.length >= 2) {
-        const total = sksNumbers[0];
-        if (isPraktikumRow) {
-          const prakComps = sksNumbers.slice(1).map(n => parseInt(n, 10)).filter(n => n > 0);
-          sks = prakComps.length ? String(prakComps[prakComps.length - 1]) : total;
-        } else {
-          sks = total;
-        }
-      }
-
-      // Extract base class letter and optional group from "Kelas A - Kelompok A1".
-      const rawKelas = String(row[colKelas] ?? '').trim();
-      const kelasMatch = rawKelas.match(/^kelas\s+([A-Z0-9*]+)(?:\s*-\s*(.+))?/i);
-      const kelas = kelasMatch ? kelasMatch[1] : rawKelas;
-      const kelasGroup = kelasMatch && kelasMatch[2] ? kelasMatch[2].trim() : '';
-
-      // Keterangan keeps the Jenis value and appends the kelompok label when present.
-      let keterangan = rawJenis || '-';
-      if (kelasGroup) {
-        const groupLabel = /kelompok/i.test(kelasGroup) ? kelasGroup : `Kelompok ${kelasGroup}`;
-        keterangan = keterangan === '-' ? groupLabel : `${keterangan} - ${groupLabel}`;
-      }
-
-      // Clean outer quotes from dosen
-      let dosen = String(row[colDosen] ?? '').trim();
-      dosen = dosen.replace(/^["']|["']$/g, '');
-
-      // Normalize day name: extract from "1. Senin", "SENIN", "SEL", etc.
-      const rawHari = String(row[colHari] ?? '').trim();
-      const dayNameMatch = rawHari.match(/^(?:\d+\.\s*)?(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)/i);
-      let hari = dayNameMatch ? dayNameMatch[1] : rawHari;
-      if (!dayNameMatch) {
-        const dayAbbrevMap: Record<string, string> = {
-          SEN: 'Senin', SEL: 'Selasa', RAB: 'Rabu',
-          KAM: 'Kamis', JUM: 'Jumat', SAB: 'Sabtu', MIN: 'Minggu',
-          SENIN: 'Senin', SELASA: 'Selasa', RABU: 'Rabu',
-          KAMIS: 'Kamis', JUMAT: 'Jumat', SABTU: 'Sabtu', MINGGU: 'Minggu',
-        };
-        hari = dayAbbrevMap[rawHari.toUpperCase()] || rawHari;
-      }
-      // Normalize to Title Case (e.g. "SENIN" -> "Senin")
-      hari = hari.charAt(0).toUpperCase() + hari.slice(1).toLowerCase();
-      const canonicalHari = HARI_INDONESIA.find(d => d.toLowerCase() === hari.toLowerCase());
-      if (canonicalHari) hari = canonicalHari;
-
-      // Semester: prefer explicit "SMT 3" text, fall back to raw cell value.
-      const rawSmt = String(row[colSmt] ?? '').trim().replace(/\.0+$/, '');
-      const smtMatch = rawSmt.match(/smt\s*(\d+)/i);
-      const smt = smtMatch ? smtMatch[1] : rawSmt;
-
-      results.push({
-        id: `xlsx-${Date.now()}-${i}`,
-        KodeMK: rawKode,
-        MataKuliah: matkul,
-        Kelas: kelas,
-        SKS: sks,
-        SMT: smt,
-        DosenPengampuh: dosen,
-        Hari: hari,
-        Jam: jam,
-        Ruang: String(row[colRuang] ?? '').trim(),
-        Keterangan: keterangan,
-      });
-    }
+    const matrix: (string | number | undefined)[][] = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      defval: '',
+    });
+    results.push(...parseTheorySheetMatrix(matrix, fileName));
   }
   return results;
 }

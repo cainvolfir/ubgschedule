@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
 import { CheckCircle, XCircle, Warning, ListChecks } from '@phosphor-icons/react';
 import { useJadwalStore } from '../store/useJadwalStore';
-import { normalizeCourseCodes, findMatchingRows } from '../utils/courseCode';
+import {
+  normalizeCourseCodes,
+  findMatchingRows,
+  buildSingleSectionSelections,
+} from '../utils/courseCode';
 import InstructionAccordion from './InstructionAccordion';
 
 export default function AutoCourseCodeInput() {
@@ -11,22 +15,27 @@ export default function AutoCourseCodeInput() {
     parsedCourseCodes,
     setParsedCourseCodes,
     dataTeoriMentah,
+    autoPraktikumRaw,
     setCourseClassSelection,
+    selectAllCourses,
   } = useJadwalStore();
 
   const handleParse = () => {
     const codes = normalizeCourseCodes(courseCodeInput);
     setParsedCourseCodes(codes);
-    // Auto-select single-section courses
-    if (dataTeoriMentah.length > 0 && codes.length > 0) {
-      const matchMap = findMatchingRows(codes, dataTeoriMentah);
-      for (const code of codes) {
-        const matches = matchMap.get(code) || [];
-        const uniqueKelas = [...new Set(matches.map((r) => r.Kelas))];
-        if (uniqueKelas.length === 1) {
-          setCourseClassSelection(code, uniqueKelas[0]);
-        }
-      }
+    if (dataTeoriMentah.length === 0 || codes.length === 0) return;
+
+    // Auto-select every section for single-section courses so the picker opens ready.
+    const { theorySelections, labSelections } = buildSingleSectionSelections(
+      codes,
+      dataTeoriMentah,
+      autoPraktikumRaw
+    );
+    selectAllCourses({ theorySelections, labSelections });
+    for (const code of Object.keys(theorySelections)) {
+      const matches = findMatchingRows([code], dataTeoriMentah).get(code) || [];
+      const kelas = [...new Set(matches.map((r) => r.Kelas))][0];
+      if (kelas) setCourseClassSelection(code, kelas);
     }
   };
 

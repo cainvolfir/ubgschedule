@@ -7,11 +7,18 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "test": "node --test \"test/*.test.mjs\"",
+    "test:component": "esbuild test/component.check.tsx --bundle --format=cjs --platform=node --jsx=automatic --outfile=test/.component.check.cjs --log-level=error && node test/.component.check.cjs",
+    "test:kelas": "esbuild test/kelasBadge.check.tsx --bundle --format=cjs --platform=node --jsx=automatic --outfile=test/.kelasBadge.check.cjs --log-level=error && node test/.kelasBadge.check.cjs",
+    "preview": "vite preview",
+    "remotion:preview": "remotion studio src/remotion/index.ts",
+    "remotion:render": "remotion render src/remotion/index.ts UBGScheduleDemo out/demo.mp4",
+    "remotion:still": "remotion still src/remotion/index.ts UBGScheduleDemo out/preview.png"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-select": "^2.2.6",
+    "@remotion/cli": "^4.0.534",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^13.1.1",
@@ -20,6 +27,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.16.0",
+    "remotion": "^4.0.534",
     "tailwind-merge": "^3.6.0",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.14"
@@ -31,6 +39,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+    "esbuild": "^0.28.1",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

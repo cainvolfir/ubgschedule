@@ -37,6 +37,7 @@ dist-ssr
 !public/icon-512.png
 .env
 test-*.mjs
+test/.*.check.cjs
 
 # Shadcn CLI artifact
 @/
@@ -57,3 +58,6 @@ design.md
 /design/
 /public/design/
 .env*
+
+# Remotion rendered output (video, stills, clips)
+out/

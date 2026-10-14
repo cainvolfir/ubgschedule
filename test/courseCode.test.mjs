@@ -11,6 +11,8 @@ import {
   theoryRowToPraktikumCandidate,
   filterPraktikumByKelas,
   dedupeById,
+  groupRowsByKelas,
+  compareKelas,
 } from '../src/utils/courseCode.ts';
 
 test('romanToDigit maps Roman numerals to Arabic strings', () => {
@@ -205,4 +207,38 @@ test('filterPraktikumByKelas links a section to its sub-groups', () => {
 test('dedupeById removes duplicate candidate ids preserving order', () => {
   const items = [{ id: '1' }, { id: '2' }, { id: '1' }, { id: '3' }];
   assert.deepEqual(dedupeById(items).map((i) => i.id), ['1', '2', '3']);
+});
+
+test('groupRowsByKelas buckets sections in A, B, C order', () => {
+  const rows = [
+    { Kelas: 'C', id: 'c1' },
+    { Kelas: 'A', id: 'a1' },
+    { Kelas: 'B', id: 'b1' },
+    { Kelas: 'A', id: 'a2' },
+  ];
+  const groups = groupRowsByKelas(rows);
+  assert.deepEqual(groups.map((g) => g.kelas), ['A', 'B', 'C']);
+  assert.deepEqual(groups.map((g) => g.rows.map((r) => r.id)), [['a1', 'a2'], ['b1'], ['c1']]);
+});
+
+test('groupRowsByKelas sorts numerics naturally and buckets blanks last', () => {
+  const rows = [{ Kelas: 'A10' }, { Kelas: 'A2' }, { Kelas: '' }];
+  assert.deepEqual(groupRowsByKelas(rows).map((g) => g.kelas), ['A2', 'A10', 'Tanpa Kelas']);
+});
+
+test('groupRowsByKelas accepts a custom key selector for lab candidates', () => {
+  const labs = [
+    { kelas: 'B', keterangan: 'Kelompok B1' },
+    { kelas: 'A', keterangan: 'Kelompok A1' },
+  ];
+  const groups = groupRowsByKelas(labs, (c) => c.kelas);
+  assert.deepEqual(groups.map((g) => g.kelas), ['A', 'B']);
+  assert.equal(groups[0].rows[0].keterangan, 'Kelompok A1');
+});
+
+test('compareKelas orders sections and blanks deterministically', () => {
+  assert.ok(compareKelas('A', 'B') < 0);
+  assert.ok(compareKelas('A2', 'A10') < 0);
+  assert.equal(compareKelas('a', 'A'), 0);
+  assert.ok(compareKelas('', 'A') > 0);
 });

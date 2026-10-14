@@ -12,6 +12,7 @@ import LoadingState from './shared/LoadingState';
 import FileSummaryCard from './shared/FileSummaryCard';
 import BottomNav from './shared/BottomNav';
 import AutoCourseCodeInput from './AutoCourseCodeInput';
+import { isLabRow } from '../utils/courseCode';
 
 const HARI_ORDER = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as const;
 type HariOrderKey = (typeof HARI_ORDER)[number];
@@ -238,16 +239,10 @@ export default function TheoryStep({ onNext }: TheoryStepProps) {
   const autoNextDisabled = scheduleMode === 'auto-codes' && !autoHasMatch;
 
   // Auto-mode: detect a combined theory+lab file (lab rows embedded in the theory data).
-  const isCombinedFile = useMemo(
-    () =>
-      dataTeoriMentah.some(
-        (r) =>
-          /prak|lab|kelompok/i.test(r.Keterangan || '') ||
-          /lab/i.test(r.Ruang || '') ||
-          /prak|lab/i.test(r.MataKuliah || '')
-      ),
-    [dataTeoriMentah]
-  );
+    const isCombinedFile = useMemo(
+      () => dataTeoriMentah.some((r) => isLabRow(r)),
+      [dataTeoriMentah]
+    );
 
   // --- Auto-codes mode: 2-column layout from the start ---
   if (scheduleMode === 'auto-codes') {
