@@ -87,7 +87,7 @@ export function parseTheorySheetMatrix(
     }
     if (targetProdi) break;
   }
-  // Fallback: extract from fileName (e.g. "Perkuliahan S1 Ilmu Komputer.xlsx")
+  // Fallback: extract from fileName (e.g. an exported portal schedule file)
   if (!targetProdi && fileName) {
     const fnMatch = fileName.match(/(S[12]|D3)\s+[^.-]+/i);
     if (fnMatch) targetProdi = fnMatch[0].trim();
@@ -188,7 +188,7 @@ export function parseTheorySheetMatrix(
     const smt = smtMatch ? smtMatch[1] : rawSmt;
 
     results.push({
-      id: `xlsx-${Date.now()}-${i}`,
+      id: `sheet-${Date.now()}-${i}`,
       KodeMK: rawKode,
       MataKuliah: matkul,
       Kelas: kelas,

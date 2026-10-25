@@ -87,7 +87,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
     worker.postMessage({ type: 'PARSE_PRAKTIKUM', file: fileBufferRef.current, roomPrefix: prefix });
   }, [spawnWorker, setPraktikumCandidates, setSelectedCandidateIds]);
 
-  /* Phase 1: SCAN_XLSX discover prefixes, then auto-parse */
+  /* Phase 1: SCAN_SHEET discover prefixes, then auto-parse */
   const scanFile = useCallback((file: File) => {
     setFileName(file.name); setPhase('loading');
     setLoadingLog('> Memulai scan spreadsheet...\n');
@@ -120,7 +120,7 @@ export default function PraktikumStep({ onNext, onBack }: PraktikumProps) {
     file.arrayBuffer().then(buf => {
       fileBufferRef.current = buf;
       setPraktikumFileData(Array.from(new Uint8Array(buf)));
-      worker.postMessage({ type: 'SCAN_XLSX', file: buf });
+      worker.postMessage({ type: 'SCAN_SHEET', file: buf });
     });
   }, [spawnWorker, setPraktikumRoomPrefixes, setSelectedRoomPrefix, setSelectedCandidateIds, setPraktikumCandidates, parseWithPrefix]);
 

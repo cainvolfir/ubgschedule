@@ -58,6 +58,3 @@ design.md
 /design/
 /public/design/
 .env*
-
-# Remotion rendered output (video, stills, clips)
-out/

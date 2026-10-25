@@ -1,5 +1,5 @@
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import { parseTheorySheetMatrix } from '../utils/theoryXlsx';
+import { parseTheorySheetMatrix } from '../utils/theorySheet';
 
 function log(step: string, data?: unknown) {
   self.postMessage({ type: 'LOG', step, data });
@@ -91,7 +91,7 @@ self.onmessage = async (e: MessageEvent) => {
   // Detect file type and choose parser
   const isXLSX = fileName && (fileName.endsWith('.xlsx') || fileName.endsWith('.xls'));
   if (isXLSX) {
-    log('FILE_TYPE', 'Detected XLSX format, using XLSX parser');
+    log('FILE_TYPE', 'Detected spreadsheet format, using sheet parser');
     const result = await parseTheoryXLSX(fileBuffer, fileName ?? '');
     log('RESULT', { total: result.length, first3: result.slice(0, 3) });
     self.postMessage({

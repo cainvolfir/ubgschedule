@@ -10,15 +10,11 @@
     "test": "node --test \"test/*.test.mjs\"",
     "test:component": "esbuild test/component.check.tsx --bundle --format=cjs --platform=node --jsx=automatic --outfile=test/.component.check.cjs --log-level=error && node test/.component.check.cjs",
     "test:kelas": "esbuild test/kelasBadge.check.tsx --bundle --format=cjs --platform=node --jsx=automatic --outfile=test/.kelasBadge.check.cjs --log-level=error && node test/.kelasBadge.check.cjs",
-    "preview": "vite preview",
-    "remotion:preview": "remotion studio src/remotion/index.ts",
-    "remotion:render": "remotion render src/remotion/index.ts UBGScheduleDemo out/demo.mp4",
-    "remotion:still": "remotion still src/remotion/index.ts UBGScheduleDemo out/preview.png"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-select": "^2.2.6",
-    "@remotion/cli": "^4.0.534",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^13.1.1",
@@ -27,7 +23,6 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.16.0",
-    "remotion": "^4.0.534",
     "tailwind-merge": "^3.6.0",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.14"

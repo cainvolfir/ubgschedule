@@ -212,7 +212,7 @@ self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
 async function handleMessage(e: MessageEvent) {
   const { type, file } = e.data ?? {};
 
-  if (type === 'SCAN_XLSX') {
+  if (type === 'SCAN_SHEET') {
     log('SCAN', 'Scanning for room prefixes');
     try {
       const { matrix } = await loadXLSX(file);

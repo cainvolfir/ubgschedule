@@ -1,12 +1,14 @@
 <div align="center">
 
-<img src="public/ubg-logo.png" alt="UBG Logo" width="80" />
+<img src="public/ubg-logo.png" alt="Logo Universitas Bumigora" width="80" />
 
 # UBG Schedule
 
-**Pengatur jadwal kuliah tidak resmi untuk mahasiswa Universitas Bumigora**
+**Pembuat gambar jadwal kuliah untuk mahasiswa Universitas Bumigora**
 
-Upload PDF jadwal teori → Upload Excel jadwal praktikum → Lihat & ekspor jadwal lengkap.
+Aplikasi ini membaca berkas jadwal dari portal Labkom UBG, menyaring jadwal sesuai
+daftar kode mata kuliah yang Anda tempel, menandai jadwal bentrok, lalu mengunduh
+hasilnya sebagai gambar.
 
 [![React](https://img.shields.io/badge/React_19-black?style=for-the-badge&logo=react&logoColor=61DAFB&labelColor=000)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-black?style=for-the-badge&logo=typescript&logoColor=3178C6&labelColor=000)](https://www.typescriptlang.org)
@@ -14,150 +16,302 @@ Upload PDF jadwal teori → Upload Excel jadwal praktikum → Lihat & ekspor jad
 
 <br/>
 
-<img src="public/mainpage.png" alt="UBG Schedule App Screenshot" width="480" style="border: 2px solid black; border-radius: 4px;" />
+<img src="public/mainpage.png" alt="Tangkapan layar UBG Schedule" width="480" />
 
 </div>
 
 ---
 
-## ✨ Fitur Utama
+## Daftar Isi
 
-| Fitur | Deskripsi |
+- [Ringkasan](#ringkasan)
+- [Dua Mode Wizard](#dua-mode-wizard)
+- [Langkah 3: Jadwal Akhir](#langkah-3-jadwal-akhir)
+- [Alat Pendukung](#alat-pendukung)
+- [Tech Stack](#tech-stack)
+- [Menjalankan Proyek](#menjalankan-proyek)
+- [Struktur Proyek](#struktur-proyek)
+- [Format Data](#format-data)
+- [PWA dan Deploy](#pwa-dan-deploy)
+- [Catatan dan Lisensi](#catatan-dan-lisensi)
+
+---
+
+## Ringkasan
+
+UBG Schedule adalah PWA untuk mahasiswa Universitas Bumigora. Masalah yang
+diselesaikan sederhana: jadwal kuliah hanya bisa dilihat lewat portal Labkom, sehingga
+mahasiswa harus bolak-balik membuka dan memeriksa halaman portal setiap kali ingin tahu
+jadwalnya. Aplikasi ini mengubah berkas jadwal Labkom menjadi satu gambar jadwal yang
+rapi dan bisa dibuka kapan saja.
+
+Inti alurnya menyaring dan mengurutkan. Anda menempelkan daftar kode mata kuliah yang
+Anda ambil, mengunggah berkas ekspor jadwal dari portal Labkom, dan sistem mencocokkan
+kode tersebut dengan baris jadwal yang relevan. Hasilnya dikelompokkan per hari,
+diurutkan berdasarkan jam mulai, dan ditandai kalau ada jam yang bertabrakan.
+
+Semua proses berkas berjalan di Web Worker, jadi antarmuka tetap responsif saat
+memproses berkas besar.
+
+Tampilan memakai sistem visual Neubrutalism: tipografi Space Grotesk, border hitam tebal,
+sudut tajam tanpa radius, dan drop shadow solid tanpa blur.
+
+---
+
+## Dua Mode Wizard
+
+Mode dipilih lewat komponen `ModeSwitcher` di header. Pilihan mode tersimpan di store,
+dan tampilan indikator langkah ikut berubah mengikuti mode yang aktif.
+
+### Mode 1: Auto by Course Codes (mode default)
+
+Cocok kalau Anda sudah punya daftar kode mata kuliah dan ingin aplikasi memilihkan
+kelasnya.
+
+**Langkah 1: Kode MK**
+
+- Kolom teks di `AutoCourseCodeInput` untuk menempelkan daftar kode mata kuliah, satu
+  kode per baris atau dipisah koma/titik koma.
+- Tombol Parse Kode memproses daftar dan menampilkan penghitung pencocokan langsung
+  (jumlah kode cocok dibanding kode yang tidak ketemu).
+- Dropzone untuk berkas ekspor jadwal dari portal Labkom.
+- Dropzone sekunder opsional, dipakai kalau jadwal praktikum berada di berkas terpisah.
+- Tombol Panduan membuka `InstructionAccordion`, panduan langkah demi langkah untuk
+  mengunggah berkas jadwal dari portal Labkom dan memasukkan daftar kode mata kuliah.
+
+**Langkah 2: Pilih Kelas**
+
+- `AutoClassPicker` menampilkan setiap Kode MK yang cocok beserta kartunya
+  (`AutoClassCard`).
+- Panel ringkasan menampilkan Total Kode, jumlah cocok, jumlah tidak cocok, jumlah jadwal
+  teori terpilih, dan jumlah jadwal praktikum terpilih.
+- Pemilih "Pilih Kelas Cepat untuk Semua" (`globalClassSelection`) memilih huruf kelas
+  yang dipilih pada semua mata kuliah yang memilikinya sekaligus, termasuk sub-kelompok
+  praktikumnya. Memilih kelas A otomatis mencakup A1, A2, dan seterusnya.
+- Tombol "Pilih Semua Jadwal" dan "Kosongkan Semua" untuk aksi massal. Setiap kartu juga
+  punya tombol Pilih Semua dan Batal untuk mata kuliah itu sendiri.
+- Mata kuliah yang hanya punya satu kelas sudah terpilih otomatis saat kode diparsing,
+  jadi tidak perlu diklik satu per satu.
+
+### Mode 2: Manual Selection
+
+Cocok kalau Anda ingin memilih baris jadwal sendiri dari tabel.
+
+**Langkah 1: Teori**
+
+- Unggah berkas jadwal teori dari portal Labkom.
+- Tabel jadwal bisa difilter dengan pencarian nama mata kuliah, filter semester (SMT),
+  filter kelas, filter hari, dan pengurutan hari naik atau turun.
+- Pemilihan multi baris lewat checkbox.
+
+**Langkah 2: Praktikum**
+
+- Unggah berkas jadwal praktikum dari portal Labkom.
+- Aplikasi memindai dan menampilkan daftar prefix ruangan yang ditemukan, lalu memilih
+  prefix pertama secara otomatis. Prefix bisa diganti dan berkas akan diparsing ulang.
+- Kandidat jadwal bisa difilter berdasarkan pencarian nama, semester, dan kelas.
+- Tombol "Lewati Praktikum" untuk langsung ke langkah hasil tanpa memilih praktikum.
+
+---
+
+## Langkah 3: Jadwal Akhir
+
+Layar hasil (`ResultStep`) menampilkan jadwal gabungan teori dan praktikum.
+
+- Kartu dikelompokkan per hari, urut Senin sampai Minggu, dan diurutkan berdasarkan jam
+  mulai tiap hari.
+- Deteksi bentrok otomatis lewat perbandingan rentang waktu jam kuliah pada hari yang
+  sama. Kelas yang bertabrakan mendapat lencana "Bentrok!" beranimasi, warna kartu
+  berbeda, dan gaya peringatan berbeda.
+- Penggabungan sesi praktikum berurutan otomatis: sesi dengan mata kuliah, ruang, dan
+  dosen yang sama serta jam bersambung digabung jadi satu blok waktu.
+- Setiap kartu bisa diedit lewat `EditModal` (nama mata kuliah, kelas, SKS, dosen
+  pengampuh, hari, ruang, keterangan) atau dihapus.
+- Sidebar ringkasan menampilkan Total SKS, Total Kelas, dan banner peringatan berisi
+  jumlah kelas yang jadwalnya bertabrakan.
+
+Opsi ekspor yang tersedia:
+
+| Aksi | Keterangan |
 |---|---|
-| 📄 **Upload Jadwal Teori** | Parse otomatis PDF jadwal kuliah dari portal UBG |
-| 📊 **Upload Jadwal Praktikum** | Baca file Excel/CSV jadwal lab dengan deteksi ruangan otomatis |
-| 🔀 **Merge Cerdas** | Gabungkan jadwal teori + praktikum jadi satu tampilan bersih |
-| ⚠️ **Deteksi Bentrok** | Otomatis tandai jadwal yang tabrakan di hari yang sama |
-| ✏️ **Edit Manual** | Tambah, ubah, atau hapus baris jadwal langsung di tabel |
-| 🖨️ **Export Lengkap** | Ekspor ke PNG resolusi tinggi, file `.ics` (Google/Apple Calendar), atau salin sebagai teks |
-| 📱 **PWA** | Bisa diinstall di HP/laptop, bisa dipakai offline |
+| Salin Teks | Menyalin jadwal terformat ke clipboard sebagai teks biasa, dikelompokkan per hari |
+| Unduh Gambar | Menggambar ulang jadwal ke canvas HTML5 dengan gaya Neubrutalism, lebar 1200 piksel dan skala 2x, grid kartu dua kolom, lencana, serta footer kredit, lalu mengunduh PNG |
+| Reset Semua | Menghapus seluruh state dan kembali ke langkah awal |
 
 ---
 
-## 🚀 Cara Pakai
+## Alat Pendukung
 
-### Langkah 1 — Upload Jadwal Teori (PDF)
+### Userscript
 
-Ambil PDF jadwal perkuliahan dari portal UBG, lalu drop ke aplikasi. Parser akan otomatis membaca kode MK, nama mata kuliah, dosen, hari, jam, dan ruangan.
+`ubg-labkom-helper.user.js` di root repo adalah userscript Tampermonkey untuk
+`labkom.ubg.ac.id`. Userscript ini menambahkan panel filter mengambang yang bisa
+dilipat, mendukung penyaringan banyak mata kuliah dan banyak kelas sekaligus, lengkap
+dengan tombol tampilkan semua dan pencocokan kelas terhadap daftar mata kuliah yang
+disimpan. Fungsinya memudahkan saat mengunduh berkas jadwal dari portal. Userscript ini
+berdiri sendiri, tidak ikut dibundel oleh Vite.
 
-Pilih kelas yang ingin dimasukkan jadwalnya menggunakan checkbox.
+### PWA
 
-### Langkah 2 — Upload Jadwal Praktikum (Excel)
+Aplikasi bisa dipasang di ponsel maupun desktop. Caching offline ditangani Workbox lewat
+plugin `vite-plugin-pwa` dengan mode update otomatis.
 
-Upload file `.xlsx` / `.xls` / `.csv` jadwal praktikum. Pilih prefix ruangan lab (misal `LAB`, `A`), lalu aplikasi scan dan tampilkan kandidat jadwal yang cocok.
+### Web Worker
 
-### Langkah 3 — Lihat & Ekspor
+Dua worker terpisah menangani parsing berkas:
 
-Jadwal gabungan tampil dalam tabel yang bisa dicari dan diedit. Dari sini bisa:
-- **Export PNG** — gambar jadwal resolusi tinggi siap share
-- **Export .ics** — langsung masuk Google Calendar / Apple Calendar
-- **Salin teks** — format plain text / markdown
+- `src/workers/theory.worker.ts` untuk berkas jadwal teori, memakai parser teks dan
+  parser matriks di `src/utils/theorySheet.ts`.
+- `src/workers/praktikum.worker.ts` untuk berkas jadwal praktikum.
+
+Keduanya mengirim pesan berformat `{ type, step, data }` dan melakukan streaming log,
+peringatan, dan error secara real-time sehingga halaman bisa menampilkan progres tanpa
+memblokir antarmuka.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ```
-Frontend   React 19 + TypeScript + Vite 8
-Styling    Tailwind CSS v3 (Neubrutalism design system)
-Animation  Framer Motion 13 + Lenis smooth scroll
-State      Zustand 5 (persisted ke localStorage)
-Parsing    pdfjs-dist (PDF) + xlsx (Excel) — keduanya di Web Worker
-Icons      Phosphor Icons + Lucide React
-UI         Radix UI primitives
-Deploy     Vercel (PWA, auto-update service worker)
+Frontend    React 19.2 + TypeScript 6 + Vite 8
+Styling     Tailwind CSS v3 (sistem desain Neubrutalism, font Space Grotesk)
+Animasi     Framer Motion 13
+State       Zustand 5 dengan middleware persist (localStorage key ubg-schedule-storage, versi skema 5)
+Parsing     Berkas jadwal diproses di dalam Web Worker (parser teks dan parser matriks)
+Ikon        Phosphor Icons
+Deploy      Vercel (PWA dengan service worker auto-update)
 ```
+
+Store menyertakan fungsi migrasi untuk data tersimpan dari versi skema sebelumnya, jadi
+state lama tetap bisa dibuka setelah pembaruan.
 
 ---
 
-## ⚙️ Development
+## Menjalankan Proyek
 
 ```bash
-# Install dependencies
+# Pasang dependensi
 npm install
 
 # Jalankan dev server
 npm run dev
 
-# Build production
+# Build produksi (type-check lalu bundle)
 npm run build
 
-# Preview build
+# Preview hasil build
 npm run preview
 
 # Lint
 npm run lint
+
+# Uji unit dan integrasi berbasis Node
+npm test
 ```
 
-> Tidak ada test suite. Verifikasi perubahan dengan `npm run build` (type-check + bundle) dan manual test di browser.
+### Status Pengujian
+
+`npm test` menjalankan `node --test` atas seluruh berkas di `test/*.test.mjs`. Seluruh
+suite lulus, 39 dari 39 pengujian:
+
+| Suite | Cakupan | Hasil |
+|---|---|---|
+| `courseCode.test.mjs` | Normalisasi kode, pencocokan baris, parsing label kelas, klasifikasi teori/praktikum | 13 lulus |
+| `resultClassification.test.mjs` | Klasifikasi dan penggabungan kelas pada layar hasil | 14 lulus |
+| `multiSelect.test.mjs` | Pemilihan multi baris pada jadwal teori dan praktikum | 6 lulus |
+| `migration.test.mjs` | Migrasi state tersimpan antar versi skema | 4 lulus |
+| `store.test.mjs` | Perilaku dasar store Zustand | 2 lulus |
+
+Ada juga pemeriksaan komponen berbasis esbuild (`npm run test:component` dan
+`npm run test:kelas`) untuk memverifikasi render komponen tanpa browser.
+
+Perubahan pada parser sebaiknya diverifikasi dengan `npm run build` dan pengujian manual
+di browser memakai berkas jadwal asli dari portal Labkom.
 
 ---
 
-## 🏗️ Arsitektur
+## Struktur Proyek
 
 ```
 src/
-├── components/
-│   ├── TheoryStep.tsx        # Step 1: upload & pilih jadwal teori
-│   ├── PraktikumStep.tsx     # Step 2: upload & merge jadwal praktikum
-│   ├── ResultStep.tsx        # Step 3: tabel hasil + export
-│   ├── ClassCard.tsx         # Card jadwal individual
-│   ├── EditModal.tsx         # Modal tambah/edit baris jadwal
-│   ├── HelpModal.tsx         # Modal panduan penggunaan
-│   └── shared/               # Komponen reusable (BottomNav, FileDropZone, dll.)
-├── store/
-│   └── useJadwalStore.ts     # Zustand store (semua state wizard)
-├── workers/
-│   ├── theory.worker.ts      # Web Worker: parser PDF teori
-│   └── praktikum.worker.ts   # Web Worker: parser Excel praktikum
-└── features/
-    ├── schedule/             # Halaman-halaman wizard
-    └── exporter/             # ExportCanvas (PNG), ExportICS, ExportCopy
+  components/
+    TheoryStep.tsx           # Langkah 1 mode manual, upload dan filter jadwal teori
+    PraktikumStep.tsx        # Langkah 2 mode manual, upload dan filter jadwal praktikum
+    ResultStep.tsx           # Langkah 3, jadwal akhir, deteksi bentrok, ekspor gambar
+    AutoCourseCodeInput.tsx  # Input daftar Kode MK dan penghitung pencocokan
+    AutoClassPicker.tsx      # Pemilihan kelas otomatis per Kode MK
+    AutoClassCard.tsx        # Kartu mata kuliah pada mode otomatis
+    ClassCard.tsx            # Kartu jadwal individual
+    EditModal.tsx            # Modal edit data kelas
+    WizardHeader.tsx         # Header, logo, dan indikator langkah
+    ModeSwitcher.tsx         # Pengalih mode Manual dan Auto by Course Codes
+    InstructionAccordion.tsx # Panduan 10 langkah
+    shared/                  # Komponen bersama: BottomNav, FileDropZone, LoadingState, FileSummaryCard
+  store/
+    useJadwalStore.ts        # Store Zustand tunggal untuk seluruh state wizard
+  utils/
+    courseCode.ts            # Normalisasi kode, pencocokan, klasifikasi kelas, pengurutan
+    theorySheet.ts           # Parser matriks jadwal teori, dipakai worker dan pengujian
+  workers/
+    theory.worker.ts         # Worker parser jadwal teori
+    praktikum.worker.ts      # Worker parser jadwal praktikum
+  lib/
+    utils.ts                 # Helper penggabungan kelas Tailwind
+  main.tsx                   # Titik masuk aplikasi dan alur wizard
+  index.css                  # Tailwind dan gaya global
+test/                        # Pengujian Node dan pemeriksaan komponen
+public/                      # Ikon, manifest, gambar, dan userscript
 ```
-
-**Parsing berjalan di Web Worker** — UI tidak freeze saat memproses file besar. Worker stream log realtime ke halaman untuk progress bar.
 
 ---
 
-## 📦 Format Data
+## Format Data
 
-Baris jadwal final menggunakan field berikut:
+Baris jadwal teori disimpan dalam bentuk berikut:
 
 ```ts
 {
-  KodeMK: string        // Kode mata kuliah, mis. "TI123456"
-  MataKuliah: string    // Nama mata kuliah
-  Kelas: string         // Kelas, mis. "TI-3A"
-  SKS: number
-  SMT: number           // Semester
+  id: string               // ID unik baris
+  KodeMK: string           // Kode mata kuliah, mis. "TI123456"
+  MataKuliah: string       // Nama mata kuliah
+  Kelas: string            // Kelas, mis. "TI-3A"
+  SKS: string
+  SMT: string              // Semester
   DosenPengampuh: string
-  Hari: string          // "Senin" | "Selasa" | ... | "Minggu"
-  Jam: string           // Format "HH.MM-HH.MM"
+  Hari: string             // "Senin" | "Selasa" | ... | "Minggu"
+  Jam: string              // Format "HH.MM-HH.MM"
   Ruang: string
-  Keterangan: string    // "Teori" | "Praktikum" | "Jadwal Bentrok"
+  Keterangan: string       // Label kelompok teori atau praktikum
 }
 ```
 
----
-
-## 🌐 Deploy
-
-Aplikasi di-deploy ke **Vercel** dengan konfigurasi:
-- Asset JS/CSS: `Cache-Control: immutable` (cache 1 tahun)
-- Service Worker & manifest: `must-revalidate` (selalu cek update)
-- PWA `autoUpdate` — update transparan di background
+Kandidat jadwal praktikum disimpan dengan bentuk terpisah (`courseName`, `kelas`,
+`keterangan`, `dosen`, `semester`, `hari`, `jam`, `ruang`, `kodeMk`). Pada layar hasil,
+keduanya dipetakan ke satu tipe tampilan yang seragam (`UnifiedClass`) sebelum
+dikelompokkan dan diekspor.
 
 ---
 
-## 📄 Lisensi
+## PWA dan Deploy
 
-Project ini tidak resmi dan tidak berafiliasi dengan Universitas Bumigora.  
-Dibuat untuk memudahkan mahasiswa mengatur jadwal kuliah mereka.
+Aplikasi di-deploy ke Vercel. Konfigurasi caching di `vercel.json`:
+
+- Aset ber-hash di `/assets/`: `Cache-Control: public, max-age=31536000, immutable`
+- `/sw.js` dan `/manifest.json`: `public, max-age=0, must-revalidate`
+- Rute lain: `public, max-age=0, must-revalidate`
+
+Service worker memakai strategi NetworkFirst untuk navigasi, dengan batas waktu jaringan
+tiga detik dan fallback ke HTML yang terakhir di-cache saat offline. Halaman tidak
+di-precache supaya setiap kunjungan mengambil versi terbaru dari jaringan. `skipWaiting`
+dan `clientsClaim` diaktifkan bersama `registerSW({ immediate: true })` sehingga service
+worker baru langsung mengambil alih tanpa perlu refresh manual.
 
 ---
 
-<div align="center">
+## Catatan dan Lisensi
 
-Dibuat dengan ☕ oleh mahasiswa, untuk mahasiswa UBG.
+Proyek ini tidak resmi dan tidak berafiliasi dengan Universitas Bumigora. Satu-satunya
+sumber data jadwal adalah portal Labkom UBG, dan perubahan di sisi portal bisa
+memengaruhi hasil parsing.
 
-</div>
+Dibuat oleh mahasiswa untuk memudahkan mahasiswa UBG mengatur jadwal kuliah.

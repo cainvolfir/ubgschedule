@@ -2,7 +2,7 @@ import { isValidElement } from 'react';
 import { existsSync } from 'node:fs';
 import * as XLSX from 'xlsx';
 import AutoClassCard from '../src/components/AutoClassCard';
-import { parseTheorySheetMatrix } from '../src/utils/theoryXlsx';
+import { parseTheorySheetMatrix } from '../src/utils/theorySheet';
 import { collectLabCandidates, findMatchingRows } from '../src/utils/courseCode';
 import type { DataTeoriMentah } from '../src/store/useJadwalStore';
 
