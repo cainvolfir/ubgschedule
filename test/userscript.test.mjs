@@ -304,6 +304,21 @@ test('classMatches does not let a room bleed into the class', () => {
   assert.equal(us.classMatches('LAB A KELAS A', 'A'), true, 'a real class label wins over the room');
 });
 
+test('classMatches lets an explicit KELAS outrank a KELOMPOK sub-group', () => {
+  // A practical card names its section (KELAS) and its sub-group (KELOMPOK)
+  // separately. When they disagree, the KELOMPOK belongs to a different section
+  // and must not make that card look like the saved section.
+  assert.equal(
+    us.classMatches('KELAS: B KETERANGAN: Praktikum Kelompok A2', 'A'),
+    false,
+    'section B with kelompok A2 is section B, not A'
+  );
+  assert.equal(us.classMatches('KELAS: A KETERANGAN: Praktikum Kelompok A2', 'A'), true);
+  // With no explicit KELAS field, the KELOMPOK alone decides.
+  assert.equal(us.classMatches('KELOMPOK A1', 'A'), true);
+  assert.equal(us.classMatches('KELOMPOK B1', 'A'), false);
+});
+
 test('classMatches with no explicit label needs an exact standalone token', () => {
   assert.equal(us.classMatches('A', 'A'), true);
   assert.equal(us.classMatches('IF184201 A 08.00-09.40', 'A'), true);
@@ -641,6 +656,63 @@ test('buildPayloadFromCards treats a lab room as practical without a lab label',
   assert.equal(payload.theory.length, 0);
   assert.equal(payload.praktikum.length, 1);
   assert.equal(payload.praktikum[0].ruang, 'LABKOM 2');
+});
+
+test('extractCardFields reads an SKS badge written before the word', () => {
+  // The portal prints the credit count as a badge: '3 SKS' (and the glued
+  // '3SKS'), which leaves no value after the label word. The count must still
+  // be recovered from the badge.
+  assert.equal(us.extractCardFields('KODE MK: IF184201 KELAS: A 3 SKS').sks, '3');
+  assert.equal(us.extractCardFields('KODE MK: IF184201 KELAS: A 3SKS').sks, '3');
+  assert.equal(us.extractCardFields('IF184201 2 SKS HARI: Senin').sks, '2');
+  // case-insensitive, as the portal mixes casing
+  assert.equal(us.extractCardFields('IF184201 2 sks').sks, '2');
+  // An explicit 'SKS:' field still wins over the badge.
+  assert.equal(us.extractCardFields('KELAS: A SKS: 4 3 SKS').sks, '4');
+});
+
+test('extractCardFields keeps the credit count out of the class value', () => {
+  // 'KELAS: A 3 SKS' must read the class as 'A', not fold the badge into it.
+  const fields = us.extractCardFields('KODE MK: IF184201 KELAS: A 3 SKS HARI: Senin');
+  assert.equal(fields.kelas, 'A');
+  assert.equal(fields.sks, '3');
+});
+
+test('scrapeCard reads a badge SKS from a card with no SKS field', () => {
+  const row = us.scrapeCard({
+    title: 'Pemrograman Web',
+    text: 'KODE MK: IF184201 KELAS: A 3 SKS HARI: Senin JAM: 08.00-09.40 RUANG: R.301 KETERANGAN: TEORI',
+    matches: courses,
+  });
+  assert.equal(row.SKS, '3');
+  assert.equal(row.Kelas, 'A');
+});
+
+test('buildPayloadFromCards deduplicates cards that describe one session', () => {
+  // A re-rendered grid can hand the same session twice; the payload must carry
+  // it once or the result page draws two boxes and counts a phantom clash.
+  const card = (jam) => ({
+    title: 'Pemrograman Web',
+    text: `KODE MK: IF184201 KELAS: A HARI: Senin JAM: ${jam} RUANG: R.301 KETERANGAN: TEORI`,
+    matches: courses,
+  });
+  const payload = us.buildPayloadFromCards([card('08.00-09.40'), card('08.00-09.40')]);
+  assert.equal(payload.theory.length, 1, 'an exact repaint collapses to one row');
+  assert.equal(payload.theory[0].id, 'bridge-theory-0', 'ids stay contiguous');
+  // A genuinely different session (another time) is kept.
+  const two = us.buildPayloadFromCards([card('08.00-09.40'), card('10.00-11.40')]);
+  assert.equal(two.theory.length, 2);
+});
+
+test('buildPayloadFromCards keeps practical duplicates out too', () => {
+  const card = {
+    title: 'Praktikum Pemrograman Web',
+    text: 'KODE MK: IF184201 KELAS: A HARI: Rabu JAM: 10.00-11.40 RUANG: LAB 1 KETERANGAN: PRAKTIKUM - Kelompok A1',
+    matches: courses,
+  };
+  const payload = us.buildPayloadFromCards([card, card]);
+  assert.equal(payload.praktikum.length, 1);
+  assert.equal(payload.praktikum[0].id, 'bridge-lab-0');
 });
 
 test('buildPayloadFromCards mints unique ids per index in each array', () => {

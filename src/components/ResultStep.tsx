@@ -8,6 +8,7 @@ import WizardHeader from './WizardHeader';
 import { EditModal } from './EditModal';
 import { useJadwalStore, type DataTeoriMentah, type PraktikumCandidate } from '../store/useJadwalStore';
 import { isPraktikumClass } from '../utils/courseCode';
+import { findCollisions, parseTimeToMinutes } from '../utils/collision';
 
 interface ResultProps { onBack?: () => void; }
 
@@ -55,34 +56,6 @@ function mergeSequentialSlots(classes: UnifiedClass[]): UnifiedClass[] {
 }
 
 const HARI_ORDER = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
-
-function parseTimeToMinutes(jam: string): { start: number; end: number } | null {
-  const m = jam.match(/(\d{2})[.:](\d{2})\s*[-\u2013]\s*(\d{2})[.:](\d{2})/);
-  if (!m) return null;
-  return { start: parseInt(m[1])*60+parseInt(m[2]), end: parseInt(m[3])*60+parseInt(m[4]) };
-}
-
-function timesOverlap(a: string, b: string): boolean {
-  const ta = parseTimeToMinutes(a), tb = parseTimeToMinutes(b);
-  if (!ta || !tb) return false;
-  return ta.start < tb.end && tb.start < ta.end;
-}
-
-function findCollisions(classes: UnifiedClass[]): Set<string> {
-  const collided = new Set<string>();
-  const byDay: Record<string, UnifiedClass[]> = {};
-  for (const c of classes) { if (!byDay[c.hari]) byDay[c.hari] = []; byDay[c.hari].push(c); }
-  for (const dayClasses of Object.values(byDay)) {
-    for (let i = 0; i < dayClasses.length; i++) {
-      for (let j = i + 1; j < dayClasses.length; j++) {
-        if (timesOverlap(dayClasses[i].jam, dayClasses[j].jam)) {
-          collided.add(dayClasses[i].id); collided.add(dayClasses[j].id);
-        }
-      }
-    }
-  }
-  return collided;
-}
 
 export default function ResultStep({ onBack }: ResultProps) {
   const { jadwalTeoriTerpilih, selectedCandidateIds, praktikumCandidates, selectedTheoryRowIds, setJadwalTeoriTerpilih, setSelectedTheoryRowIds, setPraktikumCandidates, toggleCandidateId, reset, setWizardStep } = useJadwalStore();

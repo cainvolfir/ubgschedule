@@ -734,7 +734,12 @@
   // Words that introduce a room name. A class-shaped token sitting right after
   // one of these is a room, never a class: 'LAB A1' must not satisfy class A.
   var ROOM_WORD_RE = /^(?:LAB|LABORATORIUM|LABKOM|RUANG|RUANGAN|ROOM|R|GD|GEDUNG|LT|LANTAI)$/;
-  // Words that introduce a section label.
+  // Words that introduce a section label. KELAS/KEL name the section itself;
+  // KELOMPOK names a practical sub-group, which only speaks for the section when
+  // the card prints no explicit KELAS field (see classMatches).
+  var SECTION_WORD_RE = /^(?:KELAS|KEL)$/;
+  var GROUP_WORD_RE = /^(?:KELOMPOK)$/;
+  // Any word that introduces a section-or-group label.
   var CLASS_WORD_RE = /^(?:KELAS|KELOMPOK|KEL)$/;
   // Tokens we must never mistake for a class label or a course code.
   var NOISE_WORD_RE = /^(?:TEORI|PRAKTIKUM|PRAK|DOSEN|PENGAMPUH|SKS|SMT|SEMESTER|SEM|HARI|JAM|SESI|ONLINE|OFFLINE|BLENDED|SENIN|SELASA|RABU|KAMIS|JUMAT|SABTU|MINGGU)$/;
@@ -744,8 +749,9 @@
    * A token is a class label when it is one letter A-L plus at most two digits
    * ('A', 'C1', 'A10'), or a bare 1-2 digit group number right after a section
    * word ('KELOMPOK 1'). Each entry records whether a section word introduced
-   * it (`labelled`) and whether a room word did (`roomy`) so callers can tell a
-   * real class from a room code (#A1 in 'LAB A1').
+   * it (`labelled`), whether that word was KELOMPOK rather than KELAS (`group`),
+   * and whether a room word did (`roomy`) so callers can tell a real class from
+   * a room code (#A1 in 'LAB A1').
    */
   function collectClassLabels(upperText) {
     var tokens = segmentTokens(String(upperText || '').toUpperCase());
@@ -755,32 +761,37 @@
       if (!token) continue;
       var prev = i > 0 ? tokens[i - 1] : '';
       var labelled = CLASS_WORD_RE.test(prev);
+      // KELOMPOK names a practical sub-group, not the section itself.
+      var group = GROUP_WORD_RE.test(prev);
       var roomy = ROOM_WORD_RE.test(prev);
       var m = token.match(/^([A-Z])(\d{0,2})$/);
       if (m) {
         if (m[1] === 'S' && token === 'SKS') continue; // never a class
-        out.push({ letter: m[1], num: m[2], labelled: labelled, roomy: roomy });
+        out.push({ letter: m[1], num: m[2], labelled: labelled, group: group, roomy: roomy });
         continue;
       }
       // 'KELOMPOK 1' / 'KEL. 1' carry no letter, only a group number.
       if (labelled && /^\d{1,2}$/.test(token)) {
-        out.push({ letter: '', num: token, labelled: true, roomy: false });
+        out.push({ letter: '', num: token, labelled: true, group: group, roomy: false });
       }
     }
     return out;
   }
 
   /*
-   * Does a card's uppercased text satisfy a saved class label (#1)?
+   * Does a card's uppercased text satisfy a saved class label (#1, #4)?
    *
    * Fail-closed rules, in order:
    *   1. The saved label must itself be valid: one letter A-L plus up to two
    *      digits. 'Z', 'AA', '12' are rejected outright.
    *   2. A section label beyond L in the card ('KELAS Z') rejects the card: the
    *      portal never issues sections past L, so that card is not ours.
-   *   3. When the card carries explicit KELAS/KELOMPOK/KEL labels, only those
-   *      labelled tokens count. That keeps a room ('LAB A1') from satisfying
-   *      class A, and keeps a different section ('KELAS B') from satisfying A.
+   *   3. An explicit KELAS/KEL field is the card's own section and settles the
+   *      match on its own. A KELOMPOK label names a practical sub-group inside
+   *      that section, so when a card carries both, the KELOMPOK must never make
+   *      a different section look like the saved one ('KELAS: B ... Kelompok A2'
+   *      is section B, not section A). KELOMPOK labels only decide the match
+   *      when the card prints no explicit KELAS field.
    *   4. With no explicit label, only an exact standalone token counts: saved
    *      'A1' matches the bare token 'A1', while saved 'A' does NOT match it,
    *      because a bare 'A1' is a sub-group or a room, not section A.
@@ -804,7 +815,11 @@
       }
     }
 
-    var labelled = labels.filter(function (l) { return l.labelled && !l.roomy; });
+    var allLabelled = labels.filter(function (l) { return l.labelled && !l.roomy; });
+    // An explicit KELAS wins over any KELOMPOK: it is the card's own section.
+    var explicitSections = allLabelled.filter(function (l) { return !l.group; });
+    var labelled = explicitSections.length > 0 ? explicitSections : allLabelled;
+
     if (labelled.length > 0) {
       if (num) {
         // Saved 'A1' -> 'KELAS A1' / 'KELOMPOK A1' / 'KELOMPOK 1'.
@@ -1036,6 +1051,60 @@
     counterEl.textContent = 'Menampilkan ' + visible + ' dari ' + total + ' sesi';
   }
 
+  /*
+   * Read the CURRENT DOM once: find every card, flatten its text, and evaluate
+   * it against the active filter. No visibility changes happen here, so callers
+   * can reuse the same evaluation for filtering (reapply) and for the bridge
+   * (a fresh scrape at hand-off time).
+   */
+  function evaluateCurrentCards() {
+    var cards = findCards();
+    var filtering = state.filterOn && state.courses.length > 0;
+    var entries = [];
+    for (var i = 0; i < cards.length; i++) {
+      var el = cards[i];
+      var titleEl = el.querySelector && el.querySelector('h4');
+      entries.push({
+        el: el,
+        text: (el.textContent || '').replace(/\s+/g, ' ').trim(),
+        title: titleEl ? (titleEl.textContent || '').replace(/\s+/g, ' ').trim() : ''
+      });
+    }
+    var results = evaluateCardEntries(entries, { filtering: filtering, courses: state.courses });
+    return { entries: entries, results: results, filtering: filtering };
+  }
+
+  // Project an evaluation into the { el, text, title, time, matches } records the
+  // bridge scrapes. Only cards that MATCHED are kept.
+  function collectMatchedInfos(evaluation) {
+    var out = [];
+    for (var i = 0; i < evaluation.results.length; i++) {
+      if (!evaluation.results[i].matched) continue;
+      out.push({
+        el: evaluation.entries[i].el,
+        text: evaluation.entries[i].text,
+        title: evaluation.entries[i].title,
+        time: evaluation.results[i].time,
+        matches: evaluation.results[i].matches
+      });
+    }
+    return out;
+  }
+
+  /*
+   * Re-scan the live view and refresh `matchedInfos`.
+   *
+   * The grid can repaint between the last reapply() and a bridge click (day tab,
+   * pagination, the site re-rendering after 'Tampilkan Semua'), which leaves the
+   * cached element references pointing at detached nodes. Re-running the scan at
+   * hand-off time is what keeps the payload equal to what the user actually sees.
+   */
+  function refreshMatchedInfos() {
+    if (!document || !document.body) return matchedInfos;
+    matchedInfos = collectMatchedInfos(evaluateCurrentCards());
+    return matchedInfos;
+  }
+
   // Main pass: parse cards -> filter -> counter.
   //
   // Fail closed (Requirement 1): a card is shown ONLY when it was parsed
@@ -1047,28 +1116,15 @@
   function reapply() {
     if (!panelReady || !document.body) return;
 
-    var cards = findCards();
-    var filtering = state.filterOn && state.courses.length > 0;
-
-    // One entry per card. The DOM reads happen here; every decision after this
-    // point is the pure evaluateCardEntries() call below.
-    var entries = [];
-    for (var i = 0; i < cards.length; i++) {
-      var el = cards[i];
-      var titleEl = el.querySelector && el.querySelector('h4');
-      entries.push({
-        el: el,
-        text: (el.textContent || '').replace(/\s+/g, ' ').trim(),
-        title: titleEl ? (titleEl.textContent || '').replace(/\s+/g, ' ').trim() : ''
-      });
-    }
-
-    var results = evaluateCardEntries(entries, { filtering: filtering, courses: state.courses });
+    var evaluation = evaluateCurrentCards();
+    var entries = evaluation.entries;
+    var results = evaluation.results;
+    var filtering = evaluation.filtering;
 
     var visibleCount = 0;
     var matchedCount = 0;
-    matchedInfos = [];
-    for (i = 0; i < results.length; i++) {
+    matchedInfos = collectMatchedInfos(evaluation);
+    for (var i = 0; i < results.length; i++) {
       var result = results[i];
       var card = entries[i].el;
       if (result.matched) matchedCount++;
@@ -1077,15 +1133,6 @@
         visibleCount++;
       } else {
         hideCard(card);
-      }
-      if (result.matched) {
-        matchedInfos.push({
-          el: card,
-          text: entries[i].text,
-          title: entries[i].title,
-          time: result.time,
-          matches: result.matches
-        });
       }
     }
 
@@ -1128,6 +1175,12 @@
     RUANG: 'ruang', RUANGAN: 'ruang', LOKASI: 'ruang',
     KETERANGAN: 'keterangan', KET: 'keterangan', JENIS: 'keterangan', TIPE: 'keterangan'
   };
+
+  // SKS badge shape: the portal prints the credit count BEFORE the word, e.g.
+  // '3 SKS' or '3SKS'. CARD_LABEL_RE reads the value AFTER 'SKS', so a bare
+  // badge leaves the field empty; this pattern recovers the count from the
+  // badge itself. Case-insensitive to match the portal's mixed casing.
+  var SKS_BADGE_RE = /(\d+)\s*SKS\b/i;
   // Label words that introduce the same field but read differently. The
   // semester is the case that matters: the portal prints a 'Semester 3' badge
   // next to the code AND an explicit 'SMT: 3' field. Either can appear alone, so
@@ -1208,7 +1261,23 @@
       if (accepted[i].claimed) continue;
       // The semester reads as a bare digit; the badge is spaced, the field colon'd.
       if (accepted[i].key === 'smt') value = (value.match(/\d+/) || [''])[0];
+      // SKS likewise reduces to its count: on 'KELAS: A 3 SKS' the value after
+      // the label word runs on to the next label ('HARI: Senin'), which carries
+      // no count, so the field reads empty and the badge below supplies it.
+      if (accepted[i].key === 'sks') value = (value.match(/\d+/) || [''])[0];
+      // The class is a single section token; a trailing SKS badge ('3 SKS')
+      // often trails the value when the card prints them adjacent, so keep only
+      // the first token and never fold the credit count into the class.
+      if (accepted[i].key === 'kelas') value = value.split(/\s+/)[0] || '';
       out[accepted[i].key] = value;
+    }
+
+    // SKS badge fallback: a card that prints '3 SKS' (or '3SKS') rather than an
+    // explicit 'SKS: 3' field carries no value after the label, so read the
+    // count from the badge. An explicit 'SKS:' field still wins.
+    if (!out.sks) {
+      var badge = SKS_BADGE_RE.exec(text);
+      if (badge) out.sks = badge[1];
     }
     return out;
   }
@@ -1400,13 +1469,25 @@
 
   // Same as buildBridgePayload() but over an explicit card list. The card list
   // is the only input, so this is what the tests drive.
+  //
+  // Cards are deduplicated by CONTENT before ids are minted. The portal renders
+  // the same session twice whenever the filter is re-applied over a re-rendered
+  // grid, and a duplicated card would otherwise become two rows: two identical
+  // boxes on the result page and an inflated 'bertabrakan' count. The key is the
+  // session's identity (code + class + day + time + room), so two genuinely
+  // distinct meetings are never merged while an exact repaint is.
   function buildPayloadFromCards(cards) {
     var theory = [];
     var praktikum = [];
+    var seenTheory = {};
+    var seenLab = {};
     for (var i = 0; i < (cards || []).length; i++) {
       var d = scrapeCard(cards[i]);
       if (!d.MataKuliah) continue;
       if (isPraktikumCard(d.Ruang, d.Keterangan, d.MataKuliah)) {
+        var labKey = [d.KodeMK, d.Kelas, d.Hari, d.Jam, d.Ruang].join('|');
+        if (seenLab[labKey]) continue;
+        seenLab[labKey] = true;
         praktikum.push({
           id: 'bridge-lab-' + praktikum.length,
           courseName: d.MataKuliah,
@@ -1420,6 +1501,9 @@
           kodeMk: d.KodeMK
         });
       } else {
+        var theoryKey = [d.KodeMK, d.Kelas, d.Hari, d.Jam, d.Ruang].join('|');
+        if (seenTheory[theoryKey]) continue;
+        seenTheory[theoryKey] = true;
         theory.push({
           id: 'bridge-theory-' + theory.length,
           KodeMK: d.KodeMK,
@@ -1484,7 +1568,13 @@
   }
 
   // Send the scraped rows to the app and open it on the result step.
+  //
+  // The DOM is re-scanned here rather than trusting the last cached pass: a day
+  // tab click or a re-render between the last reapply() and this click would
+  // otherwise send rows scraped from detached nodes, or omit rows that appeared
+  // after the cache was built.
   function openInApp() {
+    refreshMatchedInfos();
     var payload = buildBridgePayload();
     if (payload.theory.length + payload.praktikum.length === 0) return;
     var url = bridgeUrl(payload);
@@ -1636,12 +1726,15 @@
       isPraktikumCard: isPraktikumCard,
       scrapeCard: scrapeCard,
       getCardElement: getCardElement,
+      collectMatchedInfos: collectMatchedInfos,
+      refreshMatchedInfos: refreshMatchedInfos,
       // The handoff destination and the URL built from it, so the suite can pin
       // the canonical production domain instead of reading the source by hand.
       APP_BASE_URL: APP_BASE_URL,
       bridgeUrl: bridgeUrl,
       __setState: function (next) { state = next; },
-      __getState: function () { return state; }
+      __getState: function () { return state; },
+      __getMatchedInfos: function () { return matchedInfos; }
     };
   }
 })();

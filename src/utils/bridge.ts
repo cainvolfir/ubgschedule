@@ -137,6 +137,37 @@ function dedupeById<T extends { id: string }>(rows: T[]): T[] {
 }
 
 /**
+ * Drop rows that describe the same session, keeping the first.
+ *
+ * A user's own selection can list one session once, but nothing stops a broken
+ * or hand-edited payload from carrying it twice under different ids. Two
+ * identical rows would then render as two boxes on the result step and, worse,
+ * collide with each other (same day, same time) and inflate the 'bertabrakan'
+ * count. The key is content, not identity: a session is unique when its course
+ * code, class, day, time and room all match. Two genuinely different meetings
+ * always differ in at least one of those, so no real row is ever merged.
+ */
+function dedupeByContent<T>(rows: T[], key: (row: T) => string): T[] {
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    const id = key(row).toUpperCase();
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+
+/** Content key for a theory row: code + class + day + time + room. */
+function theoryContentKey(row: DataTeoriMentah): string {
+  return [row.KodeMK, row.Kelas, row.Hari, row.Jam, row.Ruang].join('|');
+}
+
+/** Content key for a practical row: code + class + day + time + room. */
+function praktikumContentKey(row: PraktikumCandidate): string {
+  return [row.kodeMk || row.courseName, row.kelas, row.hari, row.jam, row.ruang].join('|');
+}
+
+/**
  * Parse a decoded bridge payload.
  * Throws a message fit to show the user when the JSON is malformed or carries
  * no usable rows at all; individual bad rows are dropped, not fatal.
@@ -156,13 +187,15 @@ export function parseBridgePayload(jsonText: string): BridgePayload {
   const rawTheory = Array.isArray(source.theory) ? source.theory : [];
   const rawPraktikum = Array.isArray(source.praktikum) ? source.praktikum : [];
 
-  const theory = dedupeById(
-    rawTheory.map(normalizeTheoryRow).filter((row): row is DataTeoriMentah => row !== null)
+  const theory = dedupeByContent(
+    dedupeById(rawTheory.map(normalizeTheoryRow).filter((row): row is DataTeoriMentah => row !== null)),
+    theoryContentKey
   );
-  const praktikum = dedupeById(
-    rawPraktikum
-      .map(normalizePraktikumRow)
-      .filter((row): row is PraktikumCandidate => row !== null)
+  const praktikum = dedupeByContent(
+    dedupeById(
+      rawPraktikum.map(normalizePraktikumRow).filter((row): row is PraktikumCandidate => row !== null)
+    ),
+    praktikumContentKey
   );
 
   if (theory.length === 0 && praktikum.length === 0) {

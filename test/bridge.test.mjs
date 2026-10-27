@@ -199,6 +199,59 @@ test('parseBridgePayload dedupes rows that share an id', () => {
   assert.equal(parsed.theory[0].MataKuliah, 'Pertama');
 });
 
+test('parseBridgePayload dedupes theory rows that describe one session', () => {
+  // Same code + class + day + time + room under DIFFERENT ids: one session. It
+  // must collapse, or the result step draws it twice and flags a phantom clash.
+  const parsed = parseBridgePayload(
+    JSON.stringify({
+      theory: [
+        theoryRow('t1', { KodeMK: 'IF184201', Kelas: 'A', Hari: 'Senin', Jam: '08.00-09.40', Ruang: 'R.301' }),
+        theoryRow('t2', { KodeMK: 'IF184201', Kelas: 'A', Hari: 'Senin', Jam: '08.00-09.40', Ruang: 'R.301' }),
+      ],
+    })
+  );
+  assert.equal(parsed.theory.length, 1);
+  assert.equal(parsed.theory[0].id, 't1', 'the first row wins');
+});
+
+test('parseBridgePayload keeps theory rows that differ in any session field', () => {
+  const base = { KodeMK: 'IF184201', Kelas: 'A', Hari: 'Senin', Jam: '08.00-09.40', Ruang: 'R.301' };
+  const variants = [
+    { ...base, Kelas: 'B' },
+    { ...base, Hari: 'Selasa' },
+    { ...base, Jam: '10.00-11.40' },
+    { ...base, Ruang: 'R.302' },
+    { ...base, KodeMK: 'TI2019' },
+  ];
+  for (const variant of variants) {
+    const parsed = parseBridgePayload(
+      JSON.stringify({ theory: [theoryRow('t1', base), theoryRow('t2', variant)] })
+    );
+    assert.equal(parsed.theory.length, 2, `a differing ${JSON.stringify(variant)} must survive`);
+  }
+});
+
+test('parseBridgePayload dedupes practical rows that describe one session', () => {
+  const parsed = parseBridgePayload(
+    JSON.stringify({
+      praktikum: [
+        labRow('l1', { kodeMk: 'IF184201', kelas: 'A', hari: 'Rabu', jam: '10.00-11.40', ruang: 'LAB 1' }),
+        labRow('l2', { kodeMk: 'IF184201', kelas: 'A', hari: 'Rabu', jam: '10.00-11.40', ruang: 'LAB 1' }),
+      ],
+    })
+  );
+  assert.equal(parsed.praktikum.length, 1);
+});
+
+test('parseBridgePayload matches the content key case-insensitively', () => {
+  const parsed = parseBridgePayload(
+    JSON.stringify({
+      theory: [theoryRow('t1', { Ruang: 'R.301' }), theoryRow('t2', { Ruang: 'r.301' })],
+    })
+  );
+  assert.equal(parsed.theory.length, 1, 'a case-only room difference is the same room');
+});
+
 test('parseBridgePayload rejects malformed JSON and shapeless payloads', () => {
   assert.throws(() => parseBridgePayload('{not json'), /JSON/);
   assert.throws(() => parseBridgePayload('[]'), /objek jadwal/);
@@ -294,7 +347,10 @@ test('applyBridgeToStore fills the step-2 selection maps per course code', () =>
     parseBridgePayload(
       JSON.stringify({
         theory: [theoryRow('t1', { KodeMK: 'IF184201' }), theoryRow('t2', { KodeMK: 'TI2019' })],
-        praktikum: [labRow('l1', { kodeMk: 'IF184201' }), labRow('l2', { kodeMk: 'IF184201' })],
+        praktikum: [
+          labRow('l1', { kodeMk: 'IF184201', keterangan: 'PRAKTIKUM - Kelompok A1', ruang: 'LAB 1' }),
+          labRow('l2', { kodeMk: 'IF184201', keterangan: 'PRAKTIKUM - Kelompok A2', ruang: 'LAB 2' }),
+        ],
       })
     ),
     store
