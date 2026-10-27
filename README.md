@@ -149,7 +149,26 @@ Opsi ekspor yang tersedia:
 dilipat, mendukung penyaringan banyak mata kuliah dan banyak kelas sekaligus, lengkap
 dengan tombol tampilkan semua dan pencocokan kelas terhadap daftar mata kuliah yang
 disimpan. Fungsinya memudahkan saat mengunduh berkas jadwal dari portal. Userscript ini
-berdiri sendiri, tidak ikut dibundel oleh Vite.
+berdiri sendiri, tidak ikut dibundel oleh Vite. Salinannya juga disajikan di
+`public/userscripts/ubg-labkom-helper.user.js` supaya bisa ditautkan dari aplikasi.
+
+Penyaringan bersifat fail-closed: kartu hanya ditampilkan kalau berhasil di-parse
+(punya judul dan rentang jam) dan cocok dengan daftar MK yang disimpan. Kode MK
+dicocokkan sebagai token utuh, bukan substring, dan kelas dicocokkan per token
+sehingga kode ruang seperti `LAB A1` tidak dianggap sebagai kelas A.
+
+#### Jalur 2: Buka di UBG Schedule
+
+Di bawah penghitung sesi ada tombol **Buka di UBG Schedule**. Tombol itu mengambil
+kartu yang sedang tampil, memisahkannya menjadi teori dan praktikum, lalu membukanya di
+aplikasi ini lewat `https://ubgschedule.vercel.app/#bridge=<payload>`.
+
+- Teori masuk ke `theory` sebagai `DataTeoriMentah` dengan id `bridge-theory-<n>`.
+- Praktikum (ruangan atau keterangan mengandung Lab/Praktikum) masuk ke `praktikum`
+  sebagai `PraktikumCandidate` dengan id `bridge-lab-<n>`.
+- Payload adalah JSON lalu base64 URL-safe, dibaca oleh `src/utils/bridge.ts` saat
+  aplikasi dimuat, ditulis ke store, dan hash-nya langsung dibersihkan dengan
+  `history.replaceState` supaya reload service worker tidak mengimpor ulang.
 
 ### PWA
 
