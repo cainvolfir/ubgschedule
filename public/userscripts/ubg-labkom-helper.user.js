@@ -1342,6 +1342,55 @@
     return '';
   }
 
+  /*
+   * A day name as a whole token anywhere in a container's text, welded or not.
+   *
+   * The day heading is a sibling element inside the day's section, so
+   * textContent welds it to the card count that follows: the section reads
+   * 'SENIN159 Sesi Perkuliahan...'. A plain \b test finds no boundary between
+   * 'SENIN' and '1' because both are word characters, so the left and right
+   * bounds are spelled out here: a letter on either side means the run is part
+   * of a longer word, not a day.
+   */
+  var HARI_HEADING_RE = /(?:^|[^A-Z])(SENIN|SELASA|RABU|KAMIS|JUMAT|SABTU|MINGGU)(?=$|[^A-Z])/;
+
+  // The canonical Title Case day named by a container's text, else ''.
+  function hariFromHeading(text) {
+    var m = HARI_HEADING_RE.exec(String(text || '').toUpperCase());
+    if (!m) return '';
+    return m[1].charAt(0) + m[1].slice(1).toLowerCase();
+  }
+
+  /*
+   * The day a card belongs to.
+   *
+   * The card's own box does NOT print the day. The portal heads each day with a
+   * heading inside a section container and puts that day's cards BELOW it, so
+   * the day lives on an ancestor, not on the card. Reading the card's own text
+   * alone therefore returned '' for every card on the portal, which put every
+   * row on one empty day.
+   *
+   * So the card's own text is read first (a card that does print its day is
+   * authoritative), and only when that is silent do we climb. The climb stops at
+   * the first ancestor whose text names a day, which is the day's own section,
+   * and it never reaches <body>, because the page as a whole lists every day at
+   * once and would answer 'Senin' for a Tuesday card.
+   */
+  function resolveDayForCard(card) {
+    if (!card) return '';
+    var own = extractHari(card.textContent || '');
+    if (own) return own;
+    var node = card.parentElement;
+    var body = document && document.body;
+    var root = document && document.documentElement;
+    while (node && node !== body && node !== root) {
+      var found = hariFromHeading(node.textContent || '');
+      if (found) return found;
+      node = node.parentElement;
+    }
+    return '';
+  }
+
   // Room as printed: 'R.301', 'LAB 1', 'RUANG TEORI 2'. Prefers the labelled
   // segment, then a token that looks like a room, and refuses to guess.
   function extractRuang(text, labelled) {
@@ -1445,7 +1494,10 @@
       MataKuliah: mataKuliah,
       KodeMK: kodeMk,
       Kelas: kelas,
-      Hari: extractHari(text),
+      // The day usually lives on the card's section ancestor, not on the card
+      // itself. info.el is absent when a card is built by hand, in which case
+      // the card's own text is all there is to read.
+      Hari: resolveDayForCard(info.el) || extractHari(text),
       // The time range is read off the whole card text: segmenting the card
       // splits '08.00' into '08' and '00', so the labelled segment alone would
       // lose the separator the range needs.
@@ -1721,6 +1773,8 @@
       cardRowType: cardRowType,
       prodiGlueBefore: prodiGlueBefore,
       extractHari: extractHari,
+      hariFromHeading: hariFromHeading,
+      resolveDayForCard: resolveDayForCard,
       extractRuang: extractRuang,
       extractKodeMk: extractKodeMk,
       isPraktikumCard: isPraktikumCard,

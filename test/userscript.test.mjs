@@ -106,6 +106,125 @@ function entry(spec) {
   return { title: spec.title || 'Pemrograman Web', text: cardText(spec) };
 }
 
+/* ------------------------------------------------------------- resolveDayForCard */
+
+/*
+ * The portal does NOT print the day on a card. It heads each day with a heading
+ * inside a section container and puts that day's cards below it:
+ *
+ *   <div class="bg-white rounded-2xl ...">      <- day section
+ *     <h4>SENIN</h4> ... '159 Sesi Perkuliahan'  (welded by textContent)
+ *     <div> ...card... </div>
+ *   </div>
+ *
+ * So the day lives on an ancestor. Reading the card's own text alone returned ''
+ * for every card, which put the whole schedule on one empty day: 17 rows, no day
+ * on any of them, all bucketed together and reported as clashing.
+ */
+function makeDaySection(day, cards) {
+  const cardNodes = cards.map((card) =>
+    makeNode({
+      children: [
+        makeNode({ tag: 'h4', text: card.title }),
+        makeNode({ text: card.meta }),
+      ],
+    })
+  );
+  // The heading is a sibling of the cards inside the section, and textContent
+  // welds it to the section's own count: 'SENIN' + '159' -> 'SENIN159'.
+  const section = makeNode({
+    text: day ? day + '159 Sesi Perkuliahan' : '159 Sesi Perkuliahan',
+    children: cardNodes,
+  });
+  return { section, cardNodes };
+}
+
+test('resolveDayForCard reads the day off the card section ancestor', () => {
+  const { cardNodes } = makeDaySection('SENIN', [
+    { title: 'Pemrograman Web', meta: 'KODE MK: IF184201 JAM: 08.00-09.40' },
+    { title: 'Basis Data', meta: 'KODE MK: TI2019 JAM: 10.00-11.40' },
+  ]);
+  for (const card of cardNodes) {
+    assert.equal(us.resolveDayForCard(card), 'Senin');
+  }
+});
+
+test('resolveDayForCard reads every day name the section may head with', () => {
+  const days = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'];
+  for (const day of days) {
+    const { cardNodes } = makeDaySection(day, [
+      { title: 'MK', meta: 'KODE MK: IF184201 JAM: 08.00-09.40' },
+    ]);
+    const expected = day.charAt(0) + day.slice(1).toLowerCase();
+    assert.equal(us.resolveDayForCard(cardNodes[0]), expected, day);
+  }
+});
+
+test('resolveDayForCard prefers the day printed on the card itself', () => {
+  // A card that prints its own day is authoritative; the section may head a
+  // different day if the portal ever nests cards under the wrong heading.
+  const { section, cardNodes } = makeDaySection('SENIN', [
+    { title: 'Pemrograman Web', meta: 'KODE MK: IF184201 HARI: Jumat JAM: 08.00-09.40' },
+  ]);
+  assert.equal(us.resolveDayForCard(cardNodes[0]), 'Jumat');
+  assert.ok(section.textContent.includes('SENIN'));
+});
+
+test('resolveDayForCard returns an empty day when no ancestor names one', () => {
+  const card = makeNode({ children: [makeNode({ tag: 'h4', text: 'MK' })] });
+  makeNode({ text: '159 Sesi Perkuliahan', children: [card] });
+  assert.equal(us.resolveDayForCard(card), '');
+  assert.equal(us.resolveDayForCard(null), '');
+  assert.equal(us.resolveDayForCard(undefined), '');
+});
+
+test('resolveDayForCard never climbs as far as <body>', () => {
+  // The page body lists every day at once. Reaching it would answer 'Senin' for
+  // a Tuesday card, which is worse than answering nothing.
+  const card = makeNode({ children: [makeNode({ tag: 'h4', text: 'MK' })] });
+  const grid = makeNode({ text: '159 Sesi Perkuliahan', children: [card] });
+  const body = makeNode({ text: 'SENIN SELASA RABU', children: [grid] });
+  sandbox.document.body = body;
+  sandbox.document.documentElement = body;
+  try {
+    assert.equal(us.resolveDayForCard(card), '', 'body must not lend its own day');
+  } finally {
+    sandbox.document.body = null;
+    sandbox.document.documentElement = null;
+  }
+});
+
+test('resolveDayForCard does not read a day out of a longer word', () => {
+  const { cardNodes } = makeDaySection('KELASSENINX', [
+    { title: 'MK', meta: 'KODE MK: IF184201 JAM: 08.00-09.40' },
+  ]);
+  assert.equal(us.resolveDayForCard(cardNodes[0]), '', 'SENINX is not Senin');
+});
+
+test('hariFromHeading titles the day and refuses a glued word', () => {
+  assert.equal(us.hariFromHeading('SENIN159 Sesi Perkuliahan'), 'Senin');
+  assert.equal(us.hariFromHeading('SENIN 159 Sesi Perkuliahan'), 'Senin');
+  assert.equal(us.hariFromHeading('Rabu'), 'Rabu');
+  assert.equal(us.hariFromHeading('KELASSENINX 08.00'), '');
+  assert.equal(us.hariFromHeading('159 Sesi Perkuliahan'), '');
+});
+
+test('scrapeCard takes the day from the card element when it has one', () => {
+  // End to end through the scraper: the section supplies the day the card box
+  // does not print, and the row arrives dated instead of empty.
+  const { cardNodes } = makeDaySection('SELASA', [
+    { title: 'Pemrograman Web', meta: 'KODE MK: IF184201 KELAS: A JAM: 08.00-09.40 RUANG: R.301' },
+  ]);
+  const row = us.scrapeCard({
+    el: cardNodes[0],
+    title: 'Pemrograman Web',
+    text: cardNodes[0].textContent.replace(/\s+/g, ' ').trim(),
+    matches: courses,
+  });
+  assert.equal(row.Hari, 'Selasa');
+  assert.equal(row.Jam, '08.00-09.40');
+});
+
 /* ----------------------------------------------------------- card detection */
 
 /**
@@ -886,4 +1005,70 @@ test('bridgeUrl puts the payload on the canonical origin', () => {
   const encodedPart = url.slice(url.indexOf('#bridge=') + '#bridge='.length);
   assert.ok(encodedPart.length > 0, 'the hash must carry a payload');
   assert.ok(!/[+/=]/.test(encodedPart), 'the payload must stay URL-safe');
+});
+
+/* ------------------------------------------- bridge hand-off, end to end */
+
+/*
+ * The full path the student takes: the portal's own DOM shape in, a decoded
+ * bridge payload out, then the result step's grouping and clash pass over it.
+ *
+ * This is the check that would have caught the reported fault. Every card on the
+ * portal sits under a day section and prints no day of its own, so before the
+ * fix every row arrived with Hari '', the result step drew nothing under JADWAL
+ * AKHIR, and all 17 rows were bucketed onto one empty day and reported as
+ * mutually clashing.
+ */
+test('a portal-shaped DOM hands over rows that land on their real days', async () => {
+  const { dayGroups } = await import('../src/utils/hari.ts');
+  const { findCollisions } = await import('../src/utils/collision.ts');
+
+  // Two day sections, one with two cards, one with a card that prints no day.
+  const sectionA = makeDaySection('SENIN', [
+    { title: 'Pemrograman Web', meta: 'KODE MK: IF184201 KELAS: A JAM: 08.00-09.40 RUANG: R.301 KETERANGAN: TEORI' },
+    { title: 'Basis Data', meta: 'KODE MK: TI2019 KELAS: B JAM: 10.00-11.40 RUANG: R.302 KETERANGAN: TEORI' },
+  ]);
+  const sectionC = makeDaySection('RABU', [
+    { title: 'Jaringan Komputer', meta: 'KODE MK: TI2020 KELAS: A JAM: 08.00-09.40 RUANG: LAB 1 KETERANGAN: PRAKTIKUM' },
+  ]);
+
+  const cards = [...sectionA.cardNodes, ...sectionC.cardNodes].map((el) => ({
+    el,
+    title: el.querySelectorAll('h4')[0].textContent,
+    text: el.textContent.replace(/\s+/g, ' ').trim(),
+    matches: [{ code: 'IF184201', kelas: 'A' }],
+  }));
+
+  const payload = us.buildPayloadFromCards(cards);
+  assert.equal(payload.theory.length, 2, 'the two theory cards come through');
+  assert.equal(payload.praktikum.length, 1, 'the lab card comes through');
+
+  // Every row carries the day from its own section, not an empty string.
+  assert.deepEqual(
+    payload.theory.map((r) => r.Hari),
+    ['Senin', 'Senin'],
+    'both theory cards sit under the SENIN section'
+  );
+  assert.equal(payload.praktikum[0].hari, 'Rabu');
+
+  // Grouped the way the result step groups them: one heading per real day.
+  const rows = [
+    ...payload.theory.map((r) => ({ id: r.id, hari: r.Hari, jam: r.Jam })),
+    ...payload.praktikum.map((r) => ({ id: r.id, hari: r.hari, jam: r.jam })),
+  ];
+  assert.deepEqual(dayGroups(rows).map((g) => g.hari), ['Senin', 'Rabu']);
+
+  // Senin 08.00-09.40 and Rabu 08.00-09.40 are the same slot on different days:
+  // no clash. The two Senin rows do not overlap either.
+  assert.deepEqual([...findCollisions(rows)], [], 'no clash on this schedule');
+});
+
+test('a merged day heading that welds to its count still resolves', () => {
+  // The real section text from the user's DevTools dump: the heading is welded
+  // to the section's card count, and reads 'SENIN159 Sesi Perkuliahan...'.
+  const { section, cardNodes } = makeDaySection('SENIN', [
+    { title: 'Pemrograman Web', meta: 'KODE MK: IF184201 KELAS: A JAM: 08.00-09.40 RUANG: R.301' },
+  ]);
+  assert.ok(section.textContent.includes('SENIN159'), 'the section really is welded');
+  assert.equal(us.resolveDayForCard(cardNodes[0]), 'Senin');
 });

@@ -1,21 +1,15 @@
 import { useState, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Clock, MapPin, UserCircle, Copy, Image, Prohibit,
-  CheckCircle, Warning, ArrowLeft, Trash, PencilSimple,
-} from '@phosphor-icons/react';
+import { Copy, Image, Prohibit, CheckCircle, Warning, ArrowLeft } from '@phosphor-icons/react';
 import WizardHeader from './WizardHeader';
 import { EditModal } from './EditModal';
 import { useJadwalStore, type DataTeoriMentah, type PraktikumCandidate } from '../store/useJadwalStore';
 import { isPraktikumClass } from '../utils/courseCode';
-import { findCollisions, parseTimeToMinutes } from '../utils/collision';
+import { findCollisions, parseTimeToMinutes, byStartTime } from '../utils/collision';
+import { dayGroups, dayLabel, normalizeHari } from '../utils/hari';
+import { scheduleTextLines } from '../utils/scheduleExport';
+import ScheduleDaySections, { type UnifiedClass } from './ScheduleDaySections';
 
 interface ResultProps { onBack?: () => void; }
-
-interface UnifiedClass {
-  id: string; kode: string; nama: string; kelas: string; keterangan: string; sks: string;
-  hari: string; jam: string; ruang: string; dosen: string; isPraktikum: boolean;
-}
 
 function mergeSequentialSlots(classes: UnifiedClass[]): UnifiedClass[] {
   const prakOnly = classes.filter(c => c.isPraktikum);
@@ -55,8 +49,6 @@ function mergeSequentialSlots(classes: UnifiedClass[]): UnifiedClass[] {
   return [...theoryOnly, ...merged];
 }
 
-const HARI_ORDER = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
-
 export default function ResultStep({ onBack }: ResultProps) {
   const { jadwalTeoriTerpilih, selectedCandidateIds, praktikumCandidates, selectedTheoryRowIds, setJadwalTeoriTerpilih, setSelectedTheoryRowIds, setPraktikumCandidates, toggleCandidateId, reset, setWizardStep } = useJadwalStore();
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
@@ -91,14 +83,14 @@ export default function ResultStep({ onBack }: ResultProps) {
   const unified: UnifiedClass[] = useMemo(() => {
     const theory: UnifiedClass[] = jadwalTeoriTerpilih.map((r: DataTeoriMentah) => ({
       id: r.id, kode: r.KodeMK, nama: r.MataKuliah, kelas: r.Kelas, keterangan: r.Keterangan || '',
-      sks: r.SKS, hari: r.Hari, jam: r.Jam, ruang: r.Ruang, dosen: r.DosenPengampuh,
+      sks: r.SKS, hari: normalizeHari(r.Hari), jam: r.Jam, ruang: r.Ruang, dosen: r.DosenPengampuh,
       isPraktikum: isPraktikumClass({ keterangan: r.Keterangan, nama: r.MataKuliah, ruang: r.Ruang, kelas: r.Kelas }),
     }));
     const prak: UnifiedClass[] = praktikumCandidates
       .filter((c: PraktikumCandidate) => selectedCandidateIds.includes(c.id))
       .map((c: PraktikumCandidate) => ({
         id: c.id, kode: c.courseName, nama: c.courseName, kelas: c.kelas, keterangan: c.keterangan || '',
-        sks: '1', hari: c.hari, jam: c.jam, ruang: c.ruang, dosen: c.dosen, isPraktikum: true,
+        sks: '1', hari: normalizeHari(c.hari), jam: c.jam, ruang: c.ruang, dosen: c.dosen, isPraktikum: true,
       }));
     return mergeSequentialSlots([...theory, ...prak]);
   }, [jadwalTeoriTerpilih, selectedCandidateIds, praktikumCandidates]);
@@ -106,28 +98,25 @@ export default function ResultStep({ onBack }: ResultProps) {
   const collisions = useMemo(() => findCollisions(unified), [unified]);
   const collisionCount = collisions.size;
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, UnifiedClass[]>();
-    for (const c of unified) { const arr = map.get(c.hari) || []; arr.push(c); map.set(c.hari, arr); }
-    return map;
-  }, [unified]);
+  /*
+   * Every row lands in a group, in the order the page shows them: the seven
+   * canonical days first, then any other group (an unreadable day, or a day
+   * outside the list) in first-seen order. Walking only the canonical day list
+   * here is what made a schedule with unreadable days render as blank space
+   * under the heading, with nothing on screen to say a row had gone missing.
+   */
+  const days = useMemo(() => dayGroups(unified), [unified]);
 
   const totalSKS = useMemo(() => unified.reduce((s, c) => s + parseInt(c.sks || '0'), 0), [unified]);
   const totalKelas = unified.length;
 
   const copyToClipboard = useCallback(() => {
-    const lines: string[] = ['JADWAL UBG SCHEDULE', '=================='];
-    for (const hari of HARI_ORDER) {
-      const items = grouped.get(hari);
-      if (!items || items.length === 0) continue;
-      lines.push('', hari.toUpperCase());
-      for (const c of items.sort((a: UnifiedClass, b: UnifiedClass) => (parseTimeToMinutes(a.jam)?.start ?? 0) - (parseTimeToMinutes(b.jam)?.start ?? 0))) {
-        lines.push('  ' + c.jam + ' | ' + c.nama + ' (' + c.kelas + ') | ' + c.ruang + ' | ' + c.dosen + ' | ' + c.sks + ' SKS' + (c.isPraktikum ? ' [Praktikum]' : ''));
-      }
-    }
-    navigator.clipboard.writeText(lines.join('\n'));
+    // Built from the SAME group list the page renders, so a group outside the
+    // seven canonical days reaches the clipboard too instead of vanishing from
+    // the export while it is visible on screen.
+    navigator.clipboard.writeText(scheduleTextLines(days).join('\n'));
     triggerSuccess('copy');
-  }, [grouped, triggerSuccess]);
+  }, [days, triggerSuccess]);
 
   const downloadImage = useCallback(() => {
     const canvas = document.createElement('canvas');
@@ -232,15 +221,11 @@ export default function ResultStep({ onBack }: ResultProps) {
     };
 
     // --- Phase 1: Measure total height ---
-    const daysWithClasses: { hari: string; items: UnifiedClass[] }[] = [];
-    for (const hari of HARI_ORDER) {
-      const items = grouped.get(hari);
-      if (!items || items.length === 0) continue;
-      daysWithClasses.push({
-        hari,
-        items: items.sort((a, b) => (parseTimeToMinutes(a.jam)?.start ?? 0) - (parseTimeToMinutes(b.jam)?.start ?? 0)),
-      });
-    }
+    // Same walk the page uses, so the picture carries every row the screen does:
+    // a group outside the seven canonical days is exported, not dropped.
+    const daysWithClasses: { hari: string; items: UnifiedClass[] }[] = days
+      .filter((day) => day.items.length > 0)
+      .map((day) => ({ hari: day.hari, items: [...day.items].sort(byStartTime) }));
 
     let totalH = PAD + BANNER_H + 16; // top padding + banner + gap after banner
     for (const day of daysWithClasses) {
@@ -321,7 +306,7 @@ export default function ResultStep({ onBack }: ResultProps) {
       ctx.font = `bold 20px ${FONT}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`📅  ${day.hari.toUpperCase()}`, hdrX + 16, curY + DAY_HEADER_H / 2);
+      ctx.fillText(`📅  ${dayLabel(day.hari).toUpperCase()}`, hdrX + 16, curY + DAY_HEADER_H / 2);
 
       // Item count badge on right
       ctx.font = `bold 13px ${FONT}`;
@@ -458,7 +443,7 @@ export default function ResultStep({ onBack }: ResultProps) {
       URL.revokeObjectURL(url);
     }, 'image/png');
     triggerSuccess('image');
-  }, [grouped, totalSKS, totalKelas, collisionCount, collisions, triggerSuccess]);
+  }, [days, totalSKS, totalKelas, collisions, triggerSuccess]);
 
   const handleReset = useCallback(() => {
     reset();
@@ -489,61 +474,14 @@ export default function ResultStep({ onBack }: ResultProps) {
               </div>
             )}
 
-            {HARI_ORDER.map(hari => {
-              const items = grouped.get(hari);
-              if (!items || items.length === 0) return null;
-              return (
-                <section key={hari} className="flex flex-col gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-black rounded-none" />
-                    <h2 className="text-2xl font-black uppercase tracking-wide">{hari}</h2>
-                    <div className="h-1 bg-black rounded-none opacity-10" />
-                  </div>
-                  <motion.div
-                    className="grid grid-cols-1 md:grid-cols-2 gap-5"
-                  >
-                    {items.sort((a: UnifiedClass, b: UnifiedClass) => (parseTimeToMinutes(a.jam)?.start ?? 0) - (parseTimeToMinutes(b.jam)?.start ?? 0)).map((c: UnifiedClass) => {
-                      const isCollided = collisions.has(c.id);
-                      const cardBg = isCollided ? 'bg-[#FFD13B]' : c.isPraktikum ? 'bg-secondary' : 'bg-white';
-                      return (
-                        <motion.div key={c.id} className={"relative border-2 border-black rounded-none p-5 shadow-brutal hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[6px_6px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-brutal transition-transform group " + cardBg}>
-                          {isCollided && (
-                            <motion.div
-                              className="absolute -top-4 -right-2 bg-error text-white border-2 border-black px-3 py-1 font-black text-sm rounded-none shadow-brutal-sm flex items-center gap-1 z-10"
-                              animate={{ x: [-3, 3, -3, 3, 0] }}
-                              transition={{ duration: 0.25, repeat: Infinity, repeatDelay: 3 }}
-                            >
-                              <Warning weight="bold" /> Bentrok!
-                            </motion.div>
-                          )}
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex gap-2 flex-wrap">
-                              <span className={(c.isPraktikum ? 'bg-white text-black' : 'bg-tertiary text-white') + " px-2 py-0.5 text-xs font-extrabold border-2 border-black rounded-none uppercase"}>{c.kode}</span>
-                              <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-none">{c.sks} SKS</span>
-                              {c.isPraktikum ? (
-                                <span className="bg-black text-white px-2 py-0.5 text-xs font-extrabold rounded-none uppercase">Praktikum</span>
-                              ) : (
-                                <span className="bg-blue-100 text-black px-2 py-0.5 text-xs font-extrabold border-2 border-black rounded-none uppercase">Teori</span>
-                              )}
-                            </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 shrink-0">
-                              <button className="w-8 h-8 flex items-center justify-center bg-[#DBEAFE] border-2 border-black rounded-none hover:bg-tertiary hover:text-white transition-colors" onClick={() => setEditingClass(c)}><PencilSimple weight="bold" /></button>
-                              <button className="w-8 h-8 flex items-center justify-center bg-red-100 border-2 border-black rounded-none hover:bg-error hover:text-white transition-colors" onClick={() => handleDelete(c)}><Trash weight="bold" /></button>
-                            </div>
-                          </div>
-                          <h3 className="text-xl font-black leading-tight mb-4 uppercase">{c.nama}</h3>
-                          <div className={"space-y-2 text-sm font-bold border-2 border-black rounded-none p-3 " + (isCollided ? 'bg-white/70' : c.isPraktikum ? 'bg-white/70 backdrop-blur-sm' : 'bg-background')}>
-                            <div className="flex items-center gap-2"><Clock weight="bold" className={"text-lg " + (isCollided ? 'text-error' : '')} /> {c.jam}</div>
-                            <div className="flex items-center gap-2"><MapPin weight="bold" className="text-lg text-tertiary" /> {c.ruang}</div>
-                            <div className="flex items-center gap-2 truncate"><UserCircle weight="bold" className="text-lg text-tertiary" /> {c.dosen}</div>
-                            </div>
-                          </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                </section>
-              );
-            })}
+            {/* Every row is in `days`, so every row gets a section: a day the
+                page cannot read is grouped and labelled, never dropped. */}
+            <ScheduleDaySections
+              days={days}
+              collisions={collisions}
+              onEdit={setEditingClass}
+              onDelete={handleDelete}
+            />
           </div>
 
           {/* RIGHT: Sidebar */}

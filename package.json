@@ -10,6 +10,7 @@
     "test": "node --test \"test/*.test.mjs\"",
     "test:component": "esbuild test/component.check.tsx --bundle --format=cjs --platform=node --jsx=automatic --outfile=test/.component.check.cjs --log-level=error && node test/.component.check.cjs",
     "test:kelas": "esbuild test/kelasBadge.check.tsx --bundle --format=cjs --platform=node --jsx=automatic --outfile=test/.kelasBadge.check.cjs --log-level=error && node test/.kelasBadge.check.cjs",
+    "test:resultstep": "esbuild test/resultStep.check.tsx --bundle --format=cjs --platform=node --jsx=automatic --outfile=test/.resultStep.check.cjs --log-level=error && node test/.resultStep.check.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

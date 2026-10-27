@@ -8,7 +8,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores(['dist']),
   // Bundled test runners are build artifacts (esbuild output), not source.
-  globalIgnores(['test/.component.check.cjs', 'test/.kelasBadge.check.cjs']),
+  globalIgnores(['test/.component.check.cjs', 'test/.kelasBadge.check.cjs', 'test/.resultStep.check.cjs']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

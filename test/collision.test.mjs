@@ -88,3 +88,56 @@ test('a duplicate session does not hide a real clash beside it', () => {
 test('findCollisions reports an empty set for an empty schedule', () => {
   assert.equal(findCollisions([]).size, 0);
 });
+
+/* ------------------------------------------------- empty and unreadable days */
+
+/*
+ * The phantom-clash bug: every row whose day could not be read was bucketed
+ * under one empty key, which put the whole schedule on a day it shared, so all
+ * 17 rows were flagged as clashing with each other. An unreadable day is a
+ * field we could not read, not a day everyone has in common: no verdict is the
+ * only honest answer, and it is what the page must show.
+ */
+
+test('findCollisions never flags rows whose day is empty', () => {
+  const undated = Array.from({ length: 17 }, (_, i) =>
+    row('r' + i, { hari: '', jam: '0' + (8 + (i % 4)) + '.00-09.40' })
+  );
+  assert.deepEqual([...findCollisions(undated)], [], '17 unreadable days are not 17 clashes');
+});
+
+test('findCollisions never flags rows whose day is only whitespace', () => {
+  const blank = [
+    row('a', { hari: '   ', jam: '08.00-09.40' }),
+    row('b', { hari: '\t', jam: '08.00-09.40' }),
+  ];
+  assert.deepEqual([...findCollisions(blank)], []);
+});
+
+test('an unreadable day cannot invent a clash with a real day', () => {
+  // The row with no day must stay out of the Senin bucket, so only the two real
+  // Senin rows are compared, and only the genuine overlap is flagged.
+  const mixed = [
+    row('a', { hari: 'Senin', jam: '08.00-09.40' }),
+    row('b', { hari: 'Senin', jam: '10.00-11.40' }),
+    row('c', { hari: '', jam: '08.30-10.00' }),
+  ];
+  assert.deepEqual([...findCollisions(mixed)], [], 'the undated row joins no day');
+});
+
+test('findCollisions compares days case- and form-insensitively', () => {
+  // 'SENIN' and 'Senin' are one day: they used to sit in two buckets and the
+  // real clash between them went unreported.
+  const mixedCase = [
+    row('a', { kode: 'IF184201', hari: 'SENIN', jam: '08.00-09.40' }),
+    row('b', { kode: 'TI2019', hari: 'Senin', jam: '09.00-10.40' }),
+  ];
+  assert.deepEqual([...findCollisions(mixedCase)].sort(), ['a', 'b']);
+});
+
+test('sameSession treats differently cased days as one day', () => {
+  const a = { kode: 'IF184201', kelas: 'A', hari: 'SENIN', jam: '08.00-09.40' };
+  assert.equal(sameSession(a, { ...a, hari: 'Senin' }), true);
+  assert.equal(sameSession(a, { ...a, hari: 'Selasa' }), false);
+  assert.equal(sameSession(a, { ...a, hari: '' }), false);
+});
