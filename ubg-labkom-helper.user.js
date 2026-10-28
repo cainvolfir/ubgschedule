@@ -1361,6 +1361,55 @@
     return m[1].charAt(0) + m[1].slice(1).toLowerCase();
   }
 
+  // Run a selector without letting a hand-built node or a malformed selector
+  // take the whole pass down. Both wrappers return null when there is nothing to
+  // match, which is the same answer a real DOM gives.
+  function queryFirst(node, selector) {
+    if (!node || typeof node.querySelector !== 'function') return null;
+    try { return node.querySelector(selector) || null; } catch (e) { return null; }
+  }
+
+  function queryAll(node, selector) {
+    if (!node || typeof node.querySelectorAll !== 'function') return [];
+    try { return node.querySelectorAll(selector) || []; } catch (e) { return []; }
+  }
+
+  function closestTo(node, selector) {
+    if (!node || typeof node.closest !== 'function') return null;
+    try { return node.closest(selector) || null; } catch (e) { return null; }
+  }
+
+  /*
+   * The day section the portal paints around each day's cards, and the heading
+   * span inside it.
+   *
+   * The day is printed once per section as a capitalised heading ('SENIN'),
+   * never on the card box itself, so the card has to reach for its section. The
+   * class shape is named here so the reach is a direct hit rather than a blind
+   * climb; the climb below is still there for any section the classes miss.
+   */
+  var DAY_SECTION_RE = 'div.bg-white.rounded-2xl, div.bg-white';
+  var DAY_HEADING_RE = 'span.uppercase, .uppercase';
+
+  // The day named by a section's heading span, or '' when no span names one.
+  // Every span is tried: the first capitalised span in a section may be a badge
+  // ('3 SKS'), and missing the heading because of it would date the card wrong.
+  function dayFromHeadingSpan(section) {
+    var spans = queryAll(section, DAY_HEADING_RE);
+    for (var i = 0; i < spans.length; i++) {
+      var day = extractHari((spans[i] && spans[i].textContent) || '');
+      if (day) return day;
+    }
+    return '';
+  }
+
+  // A day named inside a container: its heading span first, then its flattened
+  // text, which carries the heading welded to the card count ('SENIN159').
+  function dayFromContainer(container) {
+    if (!container) return '';
+    return dayFromHeadingSpan(container) || hariFromHeading(container.textContent || '');
+  }
+
   /*
    * The day a card belongs to.
    *
@@ -1370,21 +1419,26 @@
    * alone therefore returned '' for every card on the portal, which put every
    * row on one empty day.
    *
-   * So the card's own text is read first (a card that does print its day is
-   * authoritative), and only when that is silent do we climb. The climb stops at
-   * the first ancestor whose text names a day, which is the day's own section,
-   * and it never reaches <body>, because the page as a whole lists every day at
-   * once and would answer 'Senin' for a Tuesday card.
+   * The card's own text is read first (a card that does print its day is
+   * authoritative). Then the section the card sits in is reached directly, by
+   * class and by the uppercase heading span inside it: that is where the portal
+   * actually spells the day, so it answers without a climb. Only when both are
+   * silent does the climb run, and it stops at the first ancestor whose text
+   * names a day and never reaches <body>, because the page as a whole lists
+   * every day at once and would answer 'Senin' for a Tuesday card.
    */
   function resolveDayForCard(card) {
     if (!card) return '';
     var own = extractHari(card.textContent || '');
     if (own) return own;
+    // The day's own section, named by the classes the portal paints it with.
+    var day = dayFromContainer(closestTo(card, DAY_SECTION_RE));
+    if (day) return day;
     var node = card.parentElement;
     var body = document && document.body;
     var root = document && document.documentElement;
     while (node && node !== body && node !== root) {
-      var found = hariFromHeading(node.textContent || '');
+      var found = dayFromContainer(node);
       if (found) return found;
       node = node.parentElement;
     }
@@ -1462,6 +1516,153 @@
     return '';
   }
 
+  /* ==========================================================================
+   * 8b. DOM-first field extraction
+   * ==========================================================================
+   * The card element is the live DOM node, and the portal prints most fields as
+   * an icon followed by the value. The flattened textContent that the labelled
+   * reader works from welds those siblings together ('Lab RPL 2A'), which is
+   * fine for a field whose value is one token but wrong for a room, a lecturer
+   * or a class label, where the whole value is several words.
+   *
+   * So the fields the icons name are read off the DOM FIRST, and the labelled
+   * text reader is the fallback: it still carries the semester, the course code
+   * and the day, and it still runs for cards built by hand in the tests, where
+   * there is no element to read.
+   * ======================================================================== */
+
+  // icon -> field. The portal prints each field as <i class="fa-solid fa-user">
+  // next to the value, so the icon's own parent holds exactly that value.
+  // The class selector is spelled out rather than left loose: a
+  // '[class*="fa-user"]' test would also match 'fa-users-rectangle' and hand the
+  // class label to the lecturer reader.
+  var ICON_DOSEN = 'i.fa-user, .fa-user';
+  var ICON_RUANG = 'i.fa-location-dot, .fa-location-dot, i.fa-map-marker-alt, .fa-map-marker-alt';
+  var ICON_KELAS = 'i.fa-users-rectangle, .fa-users-rectangle';
+  var ICON_LAB = 'i.fa-flask, .fa-flask';
+  var ICON_THEORY = 'i.fa-book-open, .fa-book-open';
+
+  // Collapse a node's text the way textContent leaves it: runs of whitespace
+  // become one space, and the ends are trimmed.
+  function nodeText(node) {
+    if (!node) return '';
+    return String(node.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+
+  // The value an icon introduces: the text of the icon's own parentElement, which
+  // is the element the portal wraps a single value in. The parent's whole text is
+  // the value, so a multi-word room ('Lab RPL 2', 'Sport Center') survives intact
+  // rather than being cut at the first space.
+  //
+  // Two shapes are refused rather than guessed at, because a wrong value is worse
+  // than none: a parent that IS the card (the icon is a loose marker, and its
+  // text would weld every field together), and a parent holding more than one
+  // icon (a row of fields, whose text would weld the lecturer to the room).
+  function valueBesideIcon(card, icon) {
+    var holder = (icon && icon.parentElement) || null;
+    if (!holder || holder === card) return '';
+    if (holder.querySelectorAll && holder.querySelectorAll('i, svg').length > 1) return '';
+    return nodeText(holder);
+  }
+
+  // The value the icon for a field introduces, else ''.
+  //
+  // The icon's own parentElement is the unit the portal wraps a single value in,
+  // so that element's text IS the value. Two shapes are refused rather than
+  // guessed at, because a wrong value is worse than none:
+  //   - the parent IS the card, meaning the icon is a loose marker inside the
+  //     whole card; reading it would weld every field on the card together;
+  //   - the parent holds more than one icon, meaning it is a row of fields, and
+  //     its text would weld the lecturer to the room.
+  function domFieldValue(card, selector) {
+    var icon = queryFirst(card, selector);
+    if (!icon) return '';
+    return valueBesideIcon(card, icon);
+  }
+
+  /*
+   * A lecturer name as the portal prints it: the icon's parent text, which is
+   * the name alone. A leading label word is only peeled off when it is written
+   * as a label, i.e. followed by a colon or a dash ('Dosen : I Nyoman'). A name
+   * that merely STARTS with the word ('Dosen Dua, M.Kom') is left whole, because
+   * stripping on the bare word would eat a real lecturer's name.
+   */
+  var DOSEN_LABEL_RE = /^(?:DOSEN\s*PENGAMPUH|DOSEN|PENGAMPUH)\s*[:\-]\s*/i;
+  function domDosen(card) {
+    var raw = domFieldValue(card, ICON_DOSEN);
+    if (!raw) return '';
+    return raw.replace(DOSEN_LABEL_RE, '').trim();
+  }
+
+  // The room as printed beside the location icon: 'Lab RPL 2', '2B', 'GS4A',
+  // 'SC2', 'Sport Center', 'Online'. The value is the DOM's own text, so it is
+  // kept exactly as printed rather than re-cased: a room the portal writes in
+  // Title Case is not the same room once mangled, and the app renders it as-is.
+  var RUANG_LABEL_RE = /^(?:RUANG|RUANGAN|LOKASI|ROOM)\s*[:\-]?\s*/i;
+  function domRuang(card) {
+    var raw = domFieldValue(card, ICON_RUANG);
+    if (!raw) return '';
+    return raw.replace(RUANG_LABEL_RE, '').trim();
+  }
+
+  /*
+   * The class label beside the users icon.
+   *
+   * The portal prints 'Kelas A' or 'Kelas A (Kelompok A2)'. The app stores the
+   * section alone ('A'), so the label is reduced to its letter when the text
+   * names one ('Kelas A (Kelompok A2)' -> 'A'), and a bare section token passes
+   * through unchanged. Anything else is returned with only the label word
+   * stripped, so a shape this reader does not recognise is handed over as printed
+   * rather than guessed at.
+   */
+  var KELAS_LETTER_RE = /\bKELAS\s*([A-L])\d{0,2}\b/i;
+  var KELAS_BARE_RE = /^([A-L])\d{0,2}$/;
+  function domKelas(card) {
+    var raw = domFieldValue(card, ICON_KELAS);
+    if (!raw) return '';
+    var m = KELAS_LETTER_RE.exec(raw);
+    if (m) return m[1].toUpperCase();
+    var bare = raw.trim().toUpperCase();
+    if (KELAS_BARE_RE.test(bare)) return bare;
+    // No 'Kelas X' label to read: keep the first token when it is a section, and
+    // otherwise the cleaned label as printed.
+    var cleaned = normaliseClass(raw);
+    var first = cleaned.split(/\s+/)[0] || '';
+    return KELAS_BARE_RE.test(first) ? first : cleaned;
+  }
+
+  // An SKS badge: '2T SKS', '2PT Lab', '3T SKS', '1PT Lab', '2 SKS'. The count
+  // is printed BEFORE the word, so the label reader (which reads after 'SKS')
+  // misses it and the badge itself has to be read. The optional T/PT marks the
+  // theory/practical split and is not part of the count.
+  var SKS_BADGE_DOM_RE = /(\d+)\s*(?:T|PT)?\s*(?:SKS|Lab)\b/i;
+  function domSks(card) {
+    if (!card) return '';
+    // A badge span first: the portal rounds the count in its own element.
+    var badges = queryAll(card, 'span.px-2\\.5, span[class*="px-2.5"], .badge, span');
+    for (var i = 0; i < badges.length; i++) {
+      var text = nodeText(badges[i]);
+      var m = SKS_BADGE_DOM_RE.exec(text);
+      if (m) return m[1];
+    }
+    var any = SKS_BADGE_DOM_RE.exec(nodeText(card));
+    return any ? any[1] : '';
+  }
+
+  // The row type the card itself proves: a flask icon or the words 'Praktikum
+  // Lab' mark a practical, a book icon or 'Kuliah Teori' marks theory. Returns
+  // 'PRAKTIKUM', 'TEORI' or '' so an unmarked card leaves the text reader to
+  // decide.
+  function domRowType(card) {
+    if (!card) return '';
+    if (queryFirst(card, ICON_LAB)) return 'PRAKTIKUM';
+    if (queryFirst(card, ICON_THEORY)) return 'TEORI';
+    var text = nodeText(card).toUpperCase();
+    if (hasBoundedMarker(text, 'PRAKTIKUM')) return 'PRAKTIKUM';
+    if (hasBoundedMarker(text, 'TEORI')) return 'TEORI';
+    return '';
+  }
+
   // Scrape one matched card into the flat field set the bridge needs. The
   // returned keys are the bridge's own neutral shape; buildPayloadFromCards()
   // projects them into DataTeoriMentah or PraktikumCandidate.
@@ -1470,6 +1671,10 @@
     // The card's own <h4> is the course name. A card without one is not a card
     // we can name, so it is skipped rather than labelled with its code.
     var mataKuliah = info.title || '';
+    // The card's live element, when the caller has one. A card built by hand in
+    // a test has none, and the labelled text reader below is then the only
+    // source, which is why every DOM read is allowed to come back empty.
+    var el = info.el || null;
     // The title is a text node inside the card, so it also sits in `text` and
     // would bleed into the last labelled value. Read the fields from text with
     // the title removed; keep the untouched text for time, day and row type,
@@ -1481,14 +1686,18 @@
       ? String(labelled.kodeMk).split(/\s+/)[0].toUpperCase()
       : '';
     if (!kodeMk) kodeMk = saved.code || extractKodeMk(fieldsText);
-    // Prefer the section the card actually proves; fall back to the saved one.
-    var kelas = normaliseClass(labelled.kelas || saved.kelas || '');
-    var ruang = extractRuang(text, labelled.ruang || '');
+    // Every field the icons name is read off the DOM first and falls back to the
+    // labelled text: the DOM holds the value whole, the text holds whatever the
+    // labels printed, and either may be the only one present.
+    var kelas = normaliseClass(domKelas(el) || labelled.kelas || saved.kelas || '');
+    var ruang = extractRuang(text, domRuang(el) || labelled.ruang || '');
+    var dosen = domDosen(el) || labelled.dosen || '';
+    var sks = domSks(el) || labelled.sks || '';
     var keterangan = labelled.keterangan || '';
     // The card's own row type is the strongest signal; the room and keterangan
     // markers only add to it. A card that says 'Kuliah Teori' is theory even
     // when a lab marker appears elsewhere in its text.
-    var jenis = cardRowType(text);
+    var jenis = domRowType(el) || cardRowType(text);
     if (!jenis && LAB_MARK_RE.test(keterangan)) jenis = 'PRAKTIKUM';
     return {
       MataKuliah: mataKuliah,
@@ -1497,15 +1706,15 @@
       // The day usually lives on the card's section ancestor, not on the card
       // itself. info.el is absent when a card is built by hand, in which case
       // the card's own text is all there is to read.
-      Hari: resolveDayForCard(info.el) || extractHari(text),
+      Hari: resolveDayForCard(el) || extractHari(text),
       // The time range is read off the whole card text: segmenting the card
       // splits '08.00' into '08' and '00', so the labelled segment alone would
       // lose the separator the range needs.
       Jam: normaliseJam(text),
       Ruang: ruang,
-      Dosen: labelled.dosen || '',
+      Dosen: dosen,
       SMT: labelled.smt || '',
-      SKS: labelled.sks || '',
+      SKS: sks,
       Keterangan: keterangan || jenis || '-'
     };
   }
@@ -1775,6 +1984,13 @@
       extractHari: extractHari,
       hariFromHeading: hariFromHeading,
       resolveDayForCard: resolveDayForCard,
+      dayFromHeadingSpan: dayFromHeadingSpan,
+      dayFromContainer: dayFromContainer,
+      domDosen: domDosen,
+      domRuang: domRuang,
+      domKelas: domKelas,
+      domSks: domSks,
+      domRowType: domRowType,
       extractRuang: extractRuang,
       extractKodeMk: extractKodeMk,
       isPraktikumCard: isPraktikumCard,

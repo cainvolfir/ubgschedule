@@ -940,6 +940,323 @@ test('buildPayloadFromCards files a glued theory card as theory', () => {
   assert.deepEqual(payload.theory.map((r) => r.KodeMK), GLUED_CARDS.map((c) => c.code));
 });
 
+/* ----------------------------------------------------- scrapeCard: DOM-first */
+
+/*
+ * The real Labkom card, as the portal prints it.
+ *
+ * Every field below the title is an icon followed by its value, and the app
+ * needs the whole value: a room reads 'Lab RPL 2' or 'Sport Center', a lecturer
+ * reads 'I Nyoman Switrayana, S.T.,M.T'. Reading those out of flattened
+ * textContent welds the icon glyphs to the value and cuts the value at the first
+ * space, so the DOM is read first and the text reader is the fallback.
+ *
+ * This stub carries exactly the surface scrapeCard touches on a card element:
+ * querySelector(All), closest, classList, getAttribute, parentElement and
+ * textContent. Its output was checked byte for byte against jsdom over the same
+ * markup (all six cards agreed), so the shape is faithful without adding a DOM
+ * library as a dependency.
+ */
+function domSelectorParts(compound) {
+  const out = { tag: '', classes: [], attr: null };
+  let rest = String(compound).trim();
+  const tag = /^[a-zA-Z][a-zA-Z0-9-]*/.exec(rest);
+  if (tag) { out.tag = tag[0].toUpperCase(); rest = rest.slice(tag[0].length); }
+  const attr = /\[([^\]]+)\]$/.exec(rest);
+  if (attr) {
+    const am = /^([\w-]+)(\*?=)?["']?([^"']*)["']?$/.exec(attr[1]);
+    if (am) out.attr = { name: am[1], op: am[2] || '=', value: am[3] };
+    rest = rest.slice(0, rest.length - attr[0].length);
+  }
+  const classRe = /\.((?:\\.|[^.[\]])+)/g;
+  let m;
+  while ((m = classRe.exec(rest)) !== null) out.classes.push(m[1].replace(/\\(.)/g, '$1'));
+  return out;
+}
+
+function domMatchesCompound(node, compound) {
+  const c = domSelectorParts(compound);
+  if (c.tag && node.tagName !== c.tag) return false;
+  for (const cls of c.classes) if (!node.classList.contains(cls)) return false;
+  if (c.attr) {
+    const value = node.getAttribute(c.attr.name) || '';
+    if (c.attr.op === '*=' && !value.includes(c.attr.value)) return false;
+    if (c.attr.op === '=' && value !== c.attr.value) return false;
+  }
+  return true;
+}
+
+function domMatchesAny(node, selector) {
+  return String(selector)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .some((compound) => domMatchesCompound(node, compound));
+}
+
+/** A card-graph node: the DOM surface the DOM-first readers actually use. */
+function domNode({ tag = 'div', class: cls = '', attr = {}, text = '', children = [] } = {}) {
+  const node = {
+    tagName: tag.toUpperCase(),
+    text,
+    children,
+    parentElement: null,
+    _classes: String(cls).split(/\s+/).filter(Boolean),
+  };
+  node.classList = {
+    contains: (c) => node._classes.includes(c),
+    toString: () => node._classes.join(' '),
+  };
+  node.getAttribute = (name) =>
+    (name === 'class'
+      ? node._classes.join(' ')
+      : attr[name] != null ? String(attr[name]) : null);
+  const descendants = () => {
+    const found = [];
+    const walk = (n) => {
+      for (const child of n.children) { found.push(child); walk(child); }
+    };
+    walk(node);
+    return found;
+  };
+  node.querySelectorAll = (selector) => {
+    const sel = String(selector);
+    if (sel === 'h4') return descendants().filter((n) => n.tagName === 'H4');
+    return descendants().filter((n) => domMatchesAny(n, sel));
+  };
+  node.querySelector = (selector) => node.querySelectorAll(selector)[0] || null;
+  node.closest = (selector) => {
+    let cur = node;
+    while (cur) {
+      if (domMatchesAny(cur, selector)) return cur;
+      cur = cur.parentElement;
+    }
+    return null;
+  };
+  Object.defineProperty(node, 'textContent', {
+    get: () => [node.text, ...node.children.map((c) => c.textContent)].join(''),
+  });
+  for (const child of children) child.parentElement = node;
+  return node;
+}
+
+/*
+ * One card as the portal renders it: a type row (icon + label + SKS badge), the
+ * <h4> title, then one icon row each for lecturer, room and class.
+ */
+function domCard(spec) {
+  return domNode({
+    tag: 'div',
+    class: 'card border rounded-xl p-3',
+    children: [
+      domNode({
+        tag: 'div',
+        class: 'flex items-center gap-2',
+        children: [
+          domNode({ tag: 'i', class: 'fa-solid ' + spec.icon }),
+          domNode({ tag: 'span', class: 'uppercase text-xs', text: spec.type }),
+          domNode({ tag: 'span', class: 'px-2.5 py-0.5 rounded-full text-xs', text: spec.sks }),
+        ],
+      }),
+      domNode({ tag: 'h4', class: 'font-semibold', text: spec.title }),
+      domNode({
+        tag: 'div',
+        class: 'flex items-center gap-1',
+        children: [
+          domNode({ tag: 'i', class: 'fa-solid fa-user' }),
+          domNode({ tag: 'span', text: spec.dosen }),
+        ],
+      }),
+      domNode({
+        tag: 'div',
+        class: 'flex items-center gap-1',
+        children: [
+          domNode({ tag: 'i', class: 'fa-solid fa-location-dot' }),
+          domNode({ tag: 'span', text: spec.ruang }),
+        ],
+      }),
+      domNode({
+        tag: 'div',
+        class: 'flex items-center gap-1',
+        children: [
+          domNode({ tag: 'i', class: 'fa-solid fa-users-rectangle' }),
+          domNode({ tag: 'span', text: spec.kelas }),
+        ],
+      }),
+      domNode({ tag: 'div', text: spec.jam }),
+    ],
+  });
+}
+
+// Wrap cards in the day section the portal paints: an uppercase heading span and
+// the section's own card count, with the cards below them.
+function domDaySection(day, cards) {
+  const section = domNode({
+    tag: 'div',
+    class: 'bg-white rounded-2xl shadow',
+    children: [
+      domNode({
+        tag: 'div',
+        class: 'flex items-center justify-between',
+        children: [
+          domNode({ tag: 'span', class: 'uppercase font-bold', text: day }),
+          domNode({ tag: 'span', class: 'text-xs', text: '159 Sesi Perkuliahan' }),
+        ],
+      }),
+      domNode({ tag: 'div', class: 'grid grid-cols-3', children: cards }),
+    ],
+  });
+  return section;
+}
+
+// Turn a card node into the { el, title, text, matches } info scrapeCard takes,
+// exactly the way collectMatchedInfos() builds it from the live DOM.
+function cardInfo(el) {
+  const titleEl = el.querySelector('h4');
+  return {
+    el,
+    title: titleEl ? titleEl.textContent.replace(/\s+/g, ' ').trim() : '',
+    text: el.textContent.replace(/\s+/g, ' ').trim(),
+    matches: [{ code: 'IF184201', kelas: 'A' }],
+  };
+}
+
+// The six cards the portal prints, covering every room shape and both row types.
+const REAL_CARDS = [
+  { day: 'SENIN', title: 'Struktur Data', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '2T SKS',
+    dosen: 'I Nyoman Switrayana, S.T.,M.T', ruang: 'Lab RPL 2', kelas: 'Kelas A (Kelompok A2)',
+    jam: '08.00 - 09.40 WITA', expect: { Kelas: 'A', SKS: '2', Ruang: 'Lab RPL 2', Keterangan: 'TEORI' } },
+  { day: 'SENIN', title: 'Pemrograman Web', icon: 'fa-flask', type: 'Praktikum Lab', sks: '1PT Lab',
+    dosen: 'Dosen Dua, M.Kom', ruang: 'Sport Center', kelas: 'Kelas B',
+    jam: '10.00 - 11.40 WITA', expect: { Kelas: 'B', SKS: '1', Ruang: 'Sport Center', Keterangan: 'PRAKTIKUM' } },
+  { day: 'RABU', title: 'Basis Data', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '3T SKS',
+    dosen: 'Rina Sari, S.Kom', ruang: 'Online', kelas: 'Kelas C (Kelompok C1)',
+    jam: '13.00 - 14.40 WITA', expect: { Kelas: 'C', SKS: '3', Ruang: 'Online', Keterangan: 'TEORI' } },
+  { day: 'KAMIS', title: 'Jaringan Komputer', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '2T SKS',
+    dosen: 'Budi, M.T', ruang: '2B', kelas: 'Kelas A',
+    jam: '07.00 - 08.40 WITA', expect: { Kelas: 'A', SKS: '2', Ruang: '2B', Keterangan: 'TEORI' } },
+  { day: 'JUMAT', title: 'Sistem Operasi', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '3T SKS',
+    dosen: 'Sari, M.Kom', ruang: 'GS4A', kelas: 'Kelas D',
+    jam: '09.00 - 10.40 WITA', expect: { Kelas: 'D', SKS: '3', Ruang: 'GS4A', Keterangan: 'TEORI' } },
+  { day: 'SABTU', title: 'Multimedia', icon: 'fa-flask', type: 'Praktikum Lab', sks: '1PT Lab',
+    dosen: 'Tono, M.Kom', ruang: 'SC2', kelas: 'Kelas A (Kelompok A1)',
+    jam: '11.00 - 12.40 WITA', expect: { Kelas: 'A', SKS: '1', Ruang: 'SC2', Keterangan: 'PRAKTIKUM' } },
+];
+
+test('scrapeCard reads every field off the real Labkom card DOM', () => {
+  for (const spec of REAL_CARDS) {
+    const row = us.scrapeCard(cardInfo(domCard(spec)));
+    assert.equal(row.Dosen, spec.dosen, `${spec.title}: lecturer name kept whole`);
+    assert.equal(row.Ruang, spec.expect.Ruang, `${spec.title}: room as printed`);
+    assert.equal(row.Kelas, spec.expect.Kelas, `${spec.title}: section letter`);
+    assert.equal(row.SKS, spec.expect.SKS, `${spec.title}: SKS badge count`);
+    assert.equal(row.Keterangan, spec.expect.Keterangan, `${spec.title}: row type`);
+  }
+});
+
+test('domDosen keeps a multi-word lecturer name and its titles intact', () => {
+  const card = domCard({ title: 'MK', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '2T SKS',
+    dosen: 'I Nyoman Switrayana, S.T.,M.T', ruang: '2B', kelas: 'Kelas A', jam: '08.00 - 09.40 WITA' });
+  assert.equal(us.domDosen(card), 'I Nyoman Switrayana, S.T.,M.T');
+  // A name that merely starts with the label word is a name, not a label.
+  const named = domCard({ title: 'MK', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '2T SKS',
+    dosen: 'Dosen Dua, M.Kom', ruang: '2B', kelas: 'Kelas A', jam: '08.00 - 09.40 WITA' });
+  assert.equal(us.domDosen(named), 'Dosen Dua, M.Kom');
+});
+
+test('domRuang keeps the room whole instead of cutting it at the first space', () => {
+  for (const ruang of ['Lab RPL 2', 'Sport Center', '2B', 'GS4A', 'SC2', 'Online']) {
+    const card = domCard({ title: 'MK', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '2T SKS',
+      dosen: 'A, M.T', ruang, kelas: 'Kelas A', jam: '08.00 - 09.40 WITA' });
+    assert.equal(us.domRuang(card), ruang);
+  }
+});
+
+test('domKelas reads the section letter out of a spelled-out class label', () => {
+  const cases = [
+    ['Kelas A', 'A'], ['Kelas B', 'B'], ['Kelas C', 'C'], ['Kelas D', 'D'],
+    ['Kelas A (Kelompok A2)', 'A'], ['Kelas A (Kelompok A1)', 'A'],
+    ['Kelas C (Kelompok C1)', 'C'], ['A', 'A'], ['A1', 'A1'],
+  ];
+  for (const [label, expected] of cases) {
+    const card = domCard({ title: 'MK', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '2T SKS',
+      dosen: 'A, M.T', ruang: '2B', kelas: label, jam: '08.00 - 09.40 WITA' });
+    assert.equal(us.domKelas(card), expected, label);
+  }
+});
+
+test('domSks reads the count out of every badge shape the portal prints', () => {
+  const cases = [['2T SKS', '2'], ['2PT Lab', '2'], ['3T SKS', '3'], ['1PT Lab', '1'], ['2 SKS', '2'], ['3SKS', '3']];
+  for (const [badge, expected] of cases) {
+    const card = domCard({ title: 'MK', icon: 'fa-book-open', type: 'Kuliah Teori', sks: badge,
+      dosen: 'A, M.T', ruang: '2B', kelas: 'Kelas A', jam: '08.00 - 09.40 WITA' });
+    assert.equal(us.domSks(card), expected, badge);
+  }
+});
+
+test('domRowType reads the type from the card icon, not just the words', () => {
+  const lab = domCard({ title: 'MK', icon: 'fa-flask', type: 'Praktikum Lab', sks: '1PT Lab',
+    dosen: 'A, M.T', ruang: 'SC2', kelas: 'Kelas A', jam: '08.00 - 09.40 WITA' });
+  assert.equal(us.domRowType(lab), 'PRAKTIKUM');
+  const theory = domCard({ title: 'MK', icon: 'fa-book-open', type: 'Kuliah Teori', sks: '2T SKS',
+    dosen: 'A, M.T', ruang: '2B', kelas: 'Kelas A', jam: '08.00 - 09.40 WITA' });
+  assert.equal(us.domRowType(theory), 'TEORI');
+  // A card with no icon and no type word leaves the caller to decide.
+  assert.equal(us.domRowType(domNode({ tag: 'div', children: [domNode({ tag: 'h4', text: 'MK' })] })), '');
+});
+
+test('resolveDayForCard reads the day off the uppercase heading span', () => {
+  for (const spec of REAL_CARDS) {
+    const section = domDaySection(spec.day, [domCard(spec)]);
+    const card = section.querySelector('div.card');
+    const expected = spec.day.charAt(0) + spec.day.slice(1).toLowerCase();
+    assert.equal(us.resolveDayForCard(card), expected, spec.day);
+    assert.equal(us.scrapeCard(cardInfo(card)).Hari, expected);
+  }
+});
+
+test('domFieldValue refuses a parent that holds a whole row of icons', () => {
+  // A holder with more than one icon is the row, not one field, so reading its
+  // text would weld lecturer and room together. The icon's own parent is the
+  // unit; when the icon has no parent of its own, nothing is invented.
+  const card = domNode({
+    tag: 'div',
+    class: 'card',
+    children: [
+      domNode({ tag: 'h4', text: 'MK' }),
+      domNode({
+        tag: 'div',
+        class: 'row',
+        children: [
+          domNode({ tag: 'i', class: 'fa-solid fa-user' }),
+          domNode({ tag: 'i', class: 'fa-solid fa-location-dot' }),
+          domNode({ tag: 'span', text: 'weld' }),
+        ],
+      }),
+    ],
+  });
+  assert.equal(us.domDosen(card), '', 'a row of icons is not a lecturer value');
+  assert.equal(us.domRuang(card), '');
+});
+
+test('scrapeCard falls back to the text reader for a card with no element', () => {
+  // Cards built by hand have no `el`; every DOM read comes back empty and the
+  // labelled text still supplies the fields, so the old path is intact.
+  const row = us.scrapeCard({
+    title: 'Pemrograman Web',
+    text: cardText({
+      code: 'IF184201', kelas: 'A', sks: '3', smt: '3', dosen: 'Dosen Satu',
+      hari: 'Senin', jam: '08.00-09.40', ruang: 'R.301', keterangan: 'TEORI',
+    }),
+    matches: courses,
+  });
+  assert.equal(row.Dosen, 'Dosen Satu');
+  assert.equal(row.Ruang, 'R.301');
+  assert.equal(row.Kelas, 'A');
+  assert.equal(row.SKS, '3');
+  assert.equal(row.SMT, '3');
+});
+
 /* ------------------------------------------------------------- payload encoding */
 
 test('encodePayload produces a URL-safe base64 the app can decode', () => {
