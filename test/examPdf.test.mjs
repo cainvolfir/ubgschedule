@@ -1,11 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { isExamPdfSchedule, parseExamPdfTokens } from '../src/utils/examPdf.ts';
+import { isExamPdfSchedule, parseExamPdfTokens, isCourseCode } from '../src/utils/examPdf.ts';
 
-const FIXTURE = process.env.EXAM_PDF_FIXTURE
+const JSON_FIXTURE = new URL('./fixtures/examTokens.json', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
+const PDF_FIXTURE = process.env.EXAM_PDF_FIXTURE
   || 'C:/Users/Cain/AppData/Local/hermes/attachments/Program_Studi_S1_Ilmu_Komputer_Teknik_pdf.pdf';
-const hasFixture = existsSync(FIXTURE);
+const hasJsonFixture = existsSync(JSON_FIXTURE);
+const hasPdfFixture = existsSync(PDF_FIXTURE);
+const hasFixture = hasJsonFixture || hasPdfFixture;
 
 /** A regular lecture export: day header, time after the code, no exam markers. */
 const LECTURE_TOKENS = [
@@ -22,8 +25,11 @@ const LECTURE_TOKENS = [
 ];
 
 async function readExamTokens() {
+  if (hasJsonFixture) {
+    return JSON.parse(readFileSync(JSON_FIXTURE, 'utf-8'));
+  }
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const doc = await pdfjs.getDocument({ data: new Uint8Array(readFileSync(FIXTURE)) }).promise;
+  const doc = await pdfjs.getDocument({ data: new Uint8Array(readFileSync(PDF_FIXTURE)) }).promise;
   const tokens = [];
   for (let pageNo = 1; pageNo <= doc.numPages; pageNo++) {
     const page = await doc.getPage(pageNo);
@@ -34,6 +40,13 @@ async function readExamTokens() {
 }
 
 const rowsPromise = hasFixture ? readExamTokens().then(parseExamPdfTokens) : null;
+
+test('isCourseCode matches standard UBG course codes', () => {
+  assert.equal(isCourseCode('IK1IW31006'), true);
+  assert.equal(isCourseCode('ISKK350131'), true);
+  assert.equal(isCourseCode('ABC'), false);
+  assert.equal(isCourseCode(''), false);
+});
 
 test('isExamPdfSchedule recognizes the exam layout', () => {
   const tokens = ['Jadwal Ujian Tengah Semester', '', 'Program Studi: S1 Ilmu Komputer', ''];

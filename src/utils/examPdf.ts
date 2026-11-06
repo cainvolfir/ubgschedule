@@ -14,7 +14,10 @@ import type { DataTeoriMentah } from '../store/useJadwalStore';
 
 /** Em dash and en dash stay out of the source, so the dash is written escaped. */
 const JAM_RE = /^\d{1,2}[:.]\d{2}\s*[-\u2013]\s*\d{1,2}[:.]\d{2}$/;
-const KODE_RE = /^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/;
+export const KODE_RE = /^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/;
+export function isCourseCode(s: string): boolean {
+  return KODE_RE.test(s.trim());
+}
 const TANGGAL_RE = /^(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/;
 const SKS_RE = /^(\d+)\s*SKS$/i;
 const MAHASISWA_RE = /^\d+\s*mahasiswa$/i;
@@ -74,7 +77,7 @@ export function parseExamPdfTokens(tokens: string[]): DataTeoriMentah[] {
 
     for (let j = at - 1; j >= floor; j--) {
       if (tokens[j].trim() !== 'RUANG') continue;
-      ruang = tokens.slice(j + 1, at).map((t) => t.trim()).find(Boolean) || '';
+      ruang = tokens.slice(j + 1, at).map((t) => t.trim()).filter(Boolean).join(' ');
       break;
     }
 
