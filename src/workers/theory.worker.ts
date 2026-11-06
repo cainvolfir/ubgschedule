@@ -1,5 +1,6 @@
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { parseTheorySheetMatrix } from '../utils/theorySheet';
+import { isCourseCode, isExamPdfSchedule, parseExamPdfTokens } from '../utils/examPdf';
 
 function log(step: string, data?: unknown) {
   self.postMessage({ type: 'LOG', step, data });
@@ -40,10 +41,6 @@ function isMetode(s: string): boolean {
 
 function isHari(s: string): boolean {
   return HARI_PATTERN.test(s.trim());
-}
-
-function isCourseCode(s: string): boolean {
-  return /^(?=[A-Z]{2})(?=.*[0-9])[A-Z0-9]{8,10}$/.test(s);
 }
 
 function prevNonSpace(tokens: string[], from: number): number {
@@ -143,6 +140,17 @@ self.onmessage = async (e: MessageEvent) => {
       'NO_TEXT',
       'File PDF ini tidak mengandung teks digital yang dapat dibaca (seluruh teks tercetak sebagai kurva vektor oleh driver Microsoft Print to PDF). Silakan gunakan file XLSX hasil unduh dari web kampus yang sudah include jadwal lengkap.'
     );
+    return;
+  }
+
+  if (isExamPdfSchedule(tokens)) {
+    log('FILE_TYPE', 'Detected exam schedule PDF format, using exam parser');
+    const result = parseExamPdfTokens(tokens);
+    log('RESULT', { total: result.length, first3: result.slice(0, 3) });
+    self.postMessage({
+      type: 'RESULT',
+      data: result,
+    });
     return;
   }
 
